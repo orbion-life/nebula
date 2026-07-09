@@ -1,0 +1,46 @@
+# Nebula Discover — OPTIONAL research dependencies (Python side)
+#
+# ============================ IMPORTANT ============================
+# NOTHING in this file is required to run Nebula Discover.
+# The core demo is a TypeScript app: `npm install && npm run dev`.
+# `npm test` and `npm run build` do NOT depend on anything below.
+#
+# These are OPTIONAL research adapters. Install them only if you are
+# wiring a live adapter locally (GPU recommended for models). Each is
+# commented out on purpose so `pip install -r` is a deliberate choice.
+# ===================================================================
+
+# ---- public data / parsing (CPU, lightweight-ish) ----
+# biopython>=1.83
+# gemmi>=0.6
+# biotite>=0.40
+# rdkit-pypi>=2022.9        # or install rdkit via conda
+
+# ---- retrieval / embeddings (GPU recommended for ESM) ----
+# torch>=2.2                # required by fair-esm; match your CUDA build
+# fair-esm>=2.0.0           # ESM-2 embeddings (public analog search ONLY)
+# faiss-cpu>=1.7            # or faiss-gpu; vector index for analog search
+# hnswlib>=0.8              # lightweight ANN alternative to FAISS
+# sentence-transformers>=2.5
+
+# ---- physics / spin dynamics / electronic structure ----
+# radicalpy>=0.6            # radical-pair spin dynamics
+# qutip>=5.0                # open quantum systems / master equations
+# pyscf>=2.5                # electronic-structure calculations
+# scipy>=1.11               # solve_ivp reference ODE integration
+# jax>=0.4                  # accelerated / differentiable sweeps (optional)
+# numpyro>=0.13             # Bayesian uncertainty over sweep parameters
+
+# ---- protein design handoffs (GPU required; heavy installs) ----
+# NOTE: these are DESIGN HANDOFFS, not the discovery engine, and they
+# produce PUBLIC-DEMO artifacts only in this project.
+# RFdiffusion  -> install from https://github.com/RosettaCommons/RFdiffusion
+# LigandMPNN   -> install from https://github.com/dauparas/LigandMPNN
+# ProteinMPNN  -> install from https://github.com/dauparas/ProteinMPNN
+# Boltz        -> pip install boltz    (structure/complex prediction)
+
+# Claim boundary reminder:
+# - embeddings are for PUBLIC ANALOG SEARCH ONLY, never spin prediction
+# - physics outputs are SYNTHETIC ASSUMPTION SWEEPS unless real data is loaded
+# - design outputs are PUBLIC DEMO HANDOFFS, never validated sensors or
+#   private/commercial candidate sequences

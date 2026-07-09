@@ -1,0 +1,10 @@
+node_modules
+dist
+.DS_Store
+*.local
+coverage
+.vite
+
+# Private local audit terms — never committed. Holds the exact private strings
+# (home paths, company domain, retired codenames) used only for local leak scans.
+.leak-terms.local.json
