@@ -114,7 +114,7 @@ export function Simulate({ result, selectedId, seed, instrumentId, setInstrument
 
           {inst.rfAvailable && !collapse && (
             <>
-              <RfChart freq={art.rf.freq_MHz} contrast={art.rf.deltaYieldFraction} control={art.rf.control_b1_zero} />
+              <RfChart freq={art.rf.freq_MHz} contrast={art.rf.rfResponseNormalized} control={art.rf.control_b1_zero} />
               <p className="figcap">RF contrast is frequency-resolved from the spin Hamiltonian’s eigen-gaps — a real resonance, not a scalar gain. The RF-off control is flat.</p>
             </>
           )}
@@ -159,7 +159,12 @@ export function Simulate({ result, selectedId, seed, instrumentId, setInstrument
               return (
                 <tr key={r.hypothesisId} className={r.rank === 1 ? "top" : ""}>
                   <td className="r">#{r.rank}</td>
-                  <td>{h.scaffoldFamily.replace(/_/g, " ")}</td>
+                  <td>
+                    {h.scaffoldFamily.replace(/_/g, " ")}{" "}
+                    <span className="tag-assume" title={r.evidenceSource}>
+                      {r.evidenceSource === "generated_artifact" ? "physics" : "proxy"}
+                    </span>
+                  </td>
                   <td className={ev.observable ? "obs" : "noobs"}>{ev.observable ? "observable" : "below floor"}</td>
                   <td className="sc">{r.score.toFixed(2)}</td>
                 </tr>

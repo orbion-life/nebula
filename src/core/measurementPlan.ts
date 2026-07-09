@@ -20,22 +20,26 @@ function radicalPairSignatureText(inst: InstrumentProfile): string {
   const d = RADICAL_PAIR_ARTIFACT.data;
   const lfe = Math.min(...d.mfePercent);
   const lfeField = d.B0_mT[d.mfePercent.indexOf(lfe)];
-  const rfIdx = d.rf.deltaYieldFraction.indexOf(Math.min(...d.rf.deltaYieldFraction));
+  const rfIdx = d.rf.rfResponseNormalized.indexOf(Math.min(...d.rf.rfResponseNormalized));
   const rfFreq = d.rf.freq_MHz[rfIdx];
   const rfClause = inst.rfAvailable
     ? ` plus an RF-frequency resonance near ${rfFreq.toFixed(0)} MHz (RF off = flat control)`
     : " (no RF actuation on this instrument — static-field curve only)";
+  // Ensemble range so the nominal point is not read as the only outcome (W4).
+  const means = d.ensemble.meanMfePercent;
+  const emin = Math.min(...means);
+  const emax = Math.max(...means);
   return `A non-monotonic ΔF/F vs static field: a low-field dip near ${lfeField.toFixed(
     1,
   )} mT (~${lfe.toFixed(1)}% of the yield) rising to a high-field saturation within ${
     inst.staticFieldRange_mT[1]
-  } mT${rfClause}.`;
+  } mT${rfClause}. Across the parameter ensemble the field effect spans ~${emin.toFixed(1)}%…+${emax.toFixed(1)}% of the yield.`;
 }
 
-function splitControls(route: MechanismRoute): {
-  positive: string[];
-  negative: string[];
-} {
+function splitControls(
+  route: MechanismRoute,
+  isRP: boolean,
+): { positive: string[]; negative: string[] } {
   const negative: string[] = [];
   const positive: string[] = [];
   for (const c of route.controlRequirements) {
@@ -54,6 +58,15 @@ function splitControls(route: MechanismRoute): {
   }
   // Every plan carries the mandatory flat photobleach control as a negative.
   negative.push("Illuminated no-stimulus photobleach control (must stay flat)");
+  // Radical-pair magnetofluorescence has O2 (paramagnetic; first-order
+  // confounder) and temperature (sets recombination/relaxation) as MANDATORY
+  // controls, independent of the route's own list.
+  if (isRP) {
+    const has = (needle: string) =>
+      [...positive, ...negative].some((c) => c.toLowerCase().includes(needle));
+    if (!has("oxygen")) positive.push("Deoxygenated vs air-saturated O₂ control (mandatory for radical-pair)");
+    if (!has("temperature")) positive.push("Temperature-clamped control (recombination/relaxation depend on T)");
+  }
   return { positive, negative };
 }
 
@@ -65,7 +78,7 @@ export function buildMeasurementPlan(
   rank: number,
 ): MeasurementPlan {
   const isRP = route.simulatorPlugin === "radical_pair_response_proxy";
-  const { positive, negative } = splitControls(route);
+  const { positive, negative } = splitControls(route, isRP);
   const kill = buildFalsificationCriteria(h, route).bullets[0];
 
   const expectedSignature = isRP

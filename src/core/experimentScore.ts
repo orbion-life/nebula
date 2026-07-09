@@ -194,7 +194,7 @@ export function scoreExperiments(
       score: scoreOf(components),
       rank: 0,
       components,
-      simulationDriven: true,
+      evidenceSource: input.evidence.source,
       label: "ranked_for_experiment_value_not_predicted_performance",
       rationaleOneLine: rationaleFor(components, input.evidence),
     };

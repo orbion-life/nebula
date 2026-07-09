@@ -39,7 +39,12 @@ export function Explain({ result, selectedId, setSelectedId, onBack, onContinue 
                   <tr key={r.hypothesisId} className={r.hypothesisId === selectedId ? "top" : ""}
                     onClick={() => setSelectedId(r.hypothesisId)} style={{ cursor: "pointer" }}>
                     <td className="r">#{r.rank}</td>
-                    <td>{h.scaffoldFamily.replace(/_/g, " ")}</td>
+                    <td>
+                      {h.scaffoldFamily.replace(/_/g, " ")}{" "}
+                      <span className="tag-assume" title={r.evidenceSource}>
+                        {r.evidenceSource === "generated_artifact" ? "physics" : "proxy"}
+                      </span>
+                    </td>
                     <td className={ev.observable ? "obs" : "noobs"}>{ev.observable ? "observable" : "below floor"}</td>
                     <td className="sc">{r.score.toFixed(2)}</td>
                   </tr>

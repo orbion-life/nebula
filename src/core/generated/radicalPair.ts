@@ -83,8 +83,10 @@ export const RadicalPairArtifactSchema = z.object({
       workingField_mT: z.number(),
       b1_mT: z.number(),
       freq_MHz: z.array(z.number()),
-      deltaYieldFraction: z.array(z.number()),
+      // Normalized to unit peak; only resonance POSITIONS are physical.
+      rfResponseNormalized: z.array(z.number()),
       control_b1_zero: z.array(z.number()),
+      units: z.string(),
       fidelity: z.string(),
     }),
   }),
@@ -115,7 +117,7 @@ export function validateRadicalPairArtifact(input: unknown): RadicalPairValidati
     if (!sameLength) {
       return { ok: false, issues: ["field-indexed arrays have mismatched lengths"] };
     }
-    if (d.rf.freq_MHz.length !== d.rf.deltaYieldFraction.length) {
+    if (d.rf.freq_MHz.length !== d.rf.rfResponseNormalized.length) {
       return { ok: false, issues: ["rf frequency/response arrays have mismatched lengths"] };
     }
     return { ok: true, data: parsed.data };

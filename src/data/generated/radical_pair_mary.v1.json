@@ -10,7 +10,7 @@
     "numpy": "2.4.6",
     "scipy": "1.16.0",
     "seed": 1337,
-    "runtimeSeconds": 28.45
+    "runtimeSeconds": 18.37
   },
   "model": {
     "radicalPair": "FAD*- (flavin_anion) + TrpH*+ (tryptophan_cation)",
@@ -40,7 +40,7 @@
     "dFF_assumptionDerived": "assumption-derived (transduction coefficient applied)",
     "ensemble.stdMfePercent": "simulation uncertainty band",
     "controls": "simulation (counterfactual controls)",
-    "rf.deltaYieldFraction": "simulation (rotating-frame resonance model)"
+    "rf.rfResponseNormalized": "simulation (rotating-frame resonance model, normalized)"
   },
   "parameters": [
     {
@@ -658,7 +658,7 @@
         119.0,
         120.0
       ],
-      "deltaYieldFraction": [
+      "rfResponseNormalized": [
         -0.000298,
         -0.000358,
         -0.000471,
@@ -902,8 +902,9 @@
         -0.0,
         -0.0
       ],
+      "units": "normalized to unit peak; resonance positions physical, amplitude arbitrary",
       "fidelity": "rotating-frame resonance-structure model; positions from exact static-H eigen-gaps; not full Floquet"
     }
   },
-  "contentHash": "b6ee984baed0cad16a27d53ce4d15d929660e0f9cd2f0099f37e7623e7426239"
+  "contentHash": "b0bf79f7d0e588172c727f087f03f8609487a2cac0d379ba6c66c00d82c6c8f9"
 }

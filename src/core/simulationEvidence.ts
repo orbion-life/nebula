@@ -32,6 +32,10 @@ interface RouteSignatureSpec {
   needsRF: boolean;
 }
 
+// Non-radical-pair peaks are UNCITED, illustrative mechanism-shaped magnitudes
+// (order-of-magnitude only), NOT fitted or measured. Routes carrying these are
+// tagged source: "analytic_proxy" so they can never be presented as the
+// generated-artifact physics. Only the radical-pair route uses computed physics.
 const ROUTE_SIGNATURE: Record<RouteClass, RouteSignatureSpec> = {
   // Radical-pair peaks are overwritten from the artifact; the value here is a
   // fallback only.
@@ -50,20 +54,6 @@ const NUISANCE_FLOOR = 0.05;
 
 function clamp01(x: number): number {
   return Math.max(0, Math.min(1, x));
-}
-
-function peakAbsInField(
-  values: number[],
-  fields: number[],
-  range: [number, number],
-): number {
-  let peak = 0;
-  for (let i = 0; i < values.length; i++) {
-    if (fields[i] >= range[0] && fields[i] <= range[1]) {
-      peak = Math.max(peak, Math.abs(values[i]));
-    }
-  }
-  return peak;
 }
 
 /** Fluorescence transduction coefficient recorded in the artifact provenance. */
@@ -88,8 +78,17 @@ export function radicalPairSignature(
   const phi0 = art.singletYield[0];
   const mfe = mfeOverride ?? art.mfePercent;
   const dff = mfe.map((m) => c * phi0 * (m / 100));
-  const signature = peakAbsInField(dff, art.B0_mT, fieldRange);
-  const ensembleStd = (c * phi0 * Math.max(...art.ensemble.stdMfePercent)) / 100;
+  // Peak |ΔF/F| within the instrument's reachable field, and the ensemble std
+  // AT that field (not the global-max std) — an honest per-signature uncertainty.
+  let signature = 0;
+  let peakIdx = 0;
+  for (let i = 0; i < dff.length; i++) {
+    if (art.B0_mT[i] >= fieldRange[0] && art.B0_mT[i] <= fieldRange[1] && Math.abs(dff[i]) > signature) {
+      signature = Math.abs(dff[i]);
+      peakIdx = i;
+    }
+  }
+  const ensembleStd = (c * phi0 * art.ensemble.stdMfePercent[peakIdx]) / 100;
   return { signature, ensembleStd };
 }
 
@@ -197,7 +196,7 @@ export function computeSimulationEvidence(
     source,
     artifactRef,
     signatureMetric,
-    signatureUnit: "ΔF/F (fractional)",
+    signatureUnit: "ΔF/F (assumption-derived, F₀-normalized)",
     expectedSNR,
     observable,
     ensembleStd,

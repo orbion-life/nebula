@@ -371,15 +371,14 @@ def main() -> None:
             "workingField_mT": rf_working_b0,
             "b1_mT": rf_b1,
             "freq_MHz": [round(float(x), 3) for x in freqs_mhz],
-            "deltaYieldFraction": [round(float(x), 6) for x in rf_spec],
+            # Normalised to unit peak: only resonance POSITIONS are physical; the
+            # amplitude is arbitrary/normalised, NOT a fractional yield change.
+            "rfResponseNormalized": [round(float(x), 6) for x in rf_spec],
             "control_b1_zero": [round(float(x), 6) for x in rf_spec_control],
+            "units": "normalized to unit peak; resonance positions physical, amplitude arbitrary",
             "fidelity": "rotating-frame resonance-structure model; positions from exact static-H eigen-gaps; not full Floquet",
         },
     }
-
-    content_hash = hashlib.sha256(
-        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
-    ).hexdigest()
 
     artifact = {
         "artifact": ARTIFACT_ID,
@@ -415,12 +414,20 @@ def main() -> None:
             "dFF_assumptionDerived": "assumption-derived (transduction coefficient applied)",
             "ensemble.stdMfePercent": "simulation uncertainty band",
             "controls": "simulation (counterfactual controls)",
-            "rf.deltaYieldFraction": "simulation (rotating-frame resonance model)",
+            "rf.rfResponseNormalized": "simulation (rotating-frame resonance model, normalized)",
         },
         "parameters": parameters_block(KS_NOMINAL, KT_NOMINAL, KR_NOMINAL, C_TRANSDUCTION),
         "data": payload,
-        "contentHash": content_hash,
     }
+
+    # Content hash covers ALL claim-bearing fields (label, model, seriesLabels,
+    # parameters, data) — everything except the volatile `generator` block — so
+    # tampering with an assumption or disclaimer changes the hash.
+    hashable = {k: v for k, v in artifact.items() if k != "generator"}
+    content_hash = hashlib.sha256(
+        json.dumps(hashable, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    artifact["contentHash"] = content_hash
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(artifact, indent=2) + "\n")

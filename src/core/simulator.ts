@@ -106,7 +106,7 @@ function radicalPairTraces(): Trace[] {
     xLabel: "RF frequency (MHz)",
     yLabel: "normalized contrast",
     x: art.rf.freq_MHz,
-    y: art.rf.deltaYieldFraction,
+    y: art.rf.rfResponseNormalized,
     condition: `fixed B0 = ${art.rf.workingField_mT} mT, B1 = ${art.rf.b1_mT} mT; resonance from static-Hamiltonian eigen-gaps (not a scalar gain)`,
     requiredControl: "RF off (B1 = 0) reference — must be flat",
     isControl: false,

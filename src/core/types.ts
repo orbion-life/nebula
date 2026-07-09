@@ -464,7 +464,10 @@ export interface BenchmarkComparison {
   measuredQualitative: string;
   simulatedFeature: string;
   agreementKind: "qualitative_reproduction" | "quantitative" | "no_comparison";
-  matches: boolean;
+  /** Whether the simulated feature is consistent with the benchmark's mechanism
+   *  CLASS. Deliberately not named "matches": this is never a validated match to
+   *  measured values (a different system, qualitative only). */
+  mechanismClassConsistent: boolean;
   residualUncertainty: string;
   disclaimer: string;
 }
@@ -489,8 +492,9 @@ export interface ExperimentScore {
   score: number;
   rank: number;
   components: ExperimentScoreComponents;
-  /** The score is derived from SimulationEvidence + InstrumentProfile. */
-  simulationDriven: true;
+  /** Provenance of the signature the score used: the generated spin-dynamics
+   *  artifact, or a transparent (uncited, illustrative) mechanism-shaped proxy. */
+  evidenceSource: "generated_artifact" | "analytic_proxy";
   label: "ranked_for_experiment_value_not_predicted_performance";
   rationaleOneLine: string;
 }

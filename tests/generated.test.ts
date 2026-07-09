@@ -35,7 +35,7 @@ describe("generated radical-pair artifact", () => {
   it("RF response is frequency-resolved and vanishes without drive (B1=0)", () => {
     const rf = RADICAL_PAIR_ARTIFACT.data.rf;
     // A real resonance produces a non-trivial dip somewhere in the spectrum.
-    expect(Math.min(...rf.deltaYieldFraction)).toBeLessThan(-0.1);
+    expect(Math.min(...rf.rfResponseNormalized)).toBeLessThan(-0.1);
     // With no RF drive the response is flat (RF is not a scalar multiplier).
     expect(Math.max(...rf.control_b1_zero.map(Math.abs))).toBeLessThan(1e-6);
   });

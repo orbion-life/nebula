@@ -89,7 +89,7 @@ function radicalPairFeatures(): {
   const d = RADICAL_PAIR_ARTIFACT.data;
   const lfeDepthPercent = Math.min(...d.mfePercent);
   const hfeMaxPercent = Math.max(...d.mfePercent);
-  const rfIdx = d.rf.deltaYieldFraction.indexOf(Math.min(...d.rf.deltaYieldFraction));
+  const rfIdx = d.rf.rfResponseNormalized.indexOf(Math.min(...d.rf.rfResponseNormalized));
   const rfPeakFreqMHz = d.rf.freq_MHz[rfIdx];
   return { lfeDepthPercent, hfeMaxPercent, rfPeakFreqMHz };
 }
@@ -112,7 +112,7 @@ export function buildBenchmarkComparisons(route: MechanismRoute): BenchmarkCompa
           0,
         )} MHz, produced from the static-Hamiltonian eigen-gaps (a flat B1=0 control confirms it is not a scalar gain).`,
         agreementKind: "qualitative_reproduction",
-        matches: true,
+        mechanismClassConsistent: true,
         residualUncertainty:
           "The resonance POSITION and amplitude depend on the hyperfine set and working field; our truncated two-nucleus model reproduces the existence of an RF resonance, not the published frequency or magnitude.",
         disclaimer: NO_FABRICATION_DISCLAIMER,
@@ -127,7 +127,7 @@ export function buildBenchmarkComparisons(route: MechanismRoute): BenchmarkCompa
           1,
         )}%) and a high-field saturation (~+${f.hfeMaxPercent.toFixed(1)}%).`,
         agreementKind: "qualitative_reproduction",
-        matches: true,
+        mechanismClassConsistent: true,
         residualUncertainty:
           "Sign and magnitude of the field effect are model- and system-dependent; our flavin–tryptophan pair is a different system than the benchmark protein.",
         disclaimer: NO_FABRICATION_DISCLAIMER,
@@ -145,9 +145,9 @@ export function buildBenchmarkComparisons(route: MechanismRoute): BenchmarkCompa
         measuredQualitative:
           "Public report: a fluorescent-protein-derived system supports optically addressable spin (ODMR-like) states.",
         simulatedFeature:
-          "Simulated ODMR-like contrast trace has a resonance feature; this route is capped diagnostic-only because a clean protein ODMR contrast is not established for arbitrary constructs.",
-        agreementKind: "qualitative_reproduction",
-        matches: true,
+          "No triplet-FP spin-dynamics artifact is generated in this build; this route uses only a mechanism-shaped proxy and is scored on measurement value alone, capped diagnostic-only because a clean protein ODMR contrast is not established for arbitrary constructs.",
+        agreementKind: "no_comparison",
+        mechanismClassConsistent: false,
         residualUncertainty:
           "Contrast magnitude and ambient-condition observability are not established for a generic construct.",
         disclaimer: NO_FABRICATION_DISCLAIMER,
@@ -170,7 +170,7 @@ export function buildBenchmarkComparisons(route: MechanismRoute): BenchmarkCompa
         "No spin-linked public benchmark applies to this route class; it is scored on measurement value alone.",
       simulatedFeature: "n/a",
       agreementKind: "no_comparison",
-      matches: false,
+      mechanismClassConsistent: false,
       residualUncertainty: "n/a",
       disclaimer:
         "This route is not compared to a spin-sensing benchmark; its simulation is a mechanism-shaped proxy.",

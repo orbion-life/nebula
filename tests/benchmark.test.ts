@@ -25,12 +25,12 @@ describe("public benchmark comparison", () => {
     const odmr = comparisons.find((c) => c.benchmarkId === "bm_flavoprotein_odmr")!;
     expect(odmr).toBeTruthy();
     expect(odmr.agreementKind).toBe("qualitative_reproduction");
-    expect(odmr.matches).toBe(true);
+    expect(odmr.mechanismClassConsistent).toBe(true);
     expect(odmr.citation.doi).toBe("10.1038/s41587-026-03158-5");
     // The comparison must be GROUNDED in the artifact: the RF resonance it cites
     // is actually present (a real dip), reproducibly.
     const rf = RADICAL_PAIR_ARTIFACT.data.rf;
-    expect(Math.min(...rf.deltaYieldFraction)).toBeLessThan(0);
+    expect(Math.min(...rf.rfResponseNormalized)).toBeLessThan(0);
     // No fabricated measured numbers in the public/qualitative description.
     expect(odmr.measuredQualitative).not.toMatch(/\d+(\.\d+)?\s*(%|mT|MHz|ns)/);
     expect(odmr.disclaimer.toLowerCase()).toContain("no measured numeric values");
