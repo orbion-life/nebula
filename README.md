@@ -2,36 +2,41 @@
 
 **Built with Claude: Life Sciences** · Decide what deserves measurement first.
 
-> 3-minute demo: [`DEMO_SCRIPT.md`](./DEMO_SCRIPT.md) · Submission pack: [`SUBMISSION.md`](./SUBMISSION.md) · Claude map: [`CLAUDE_TRANSPARENCY.md`](./CLAUDE_TRANSPARENCY.md)
+> Operating guide: [`CLAUDE.md`](./CLAUDE.md) · 3-minute demo: [`DEMO_SCRIPT.md`](./DEMO_SCRIPT.md) · Submission pack: [`SUBMISSION.md`](./SUBMISSION.md) · Claude map: [`CLAUDE_TRANSPARENCY.md`](./CLAUDE_TRANSPARENCY.md)
 
 **Decide what deserves measurement first.**
 
-Nebula Discover is a public, open-source discovery-module concept for Nebula. It
-turns a messy protein-sensor / biomaterials objective into public **construct
-hypotheses**, transparent **mechanism routes**, **synthetic multimodal
-measurement signatures**, rationale + uncertainty, a **measurement-worthiness**
-ranking, and a claim-safe **measurement handoff**.
+Nebula Discover is a public, open-source **counterfactual measurement studio**.
+Given a public protein scaffold, a sensing objective, an environment, and an
+**instrument**, it grounds the objective in public evidence, **simulates the
+physics of every candidate mechanism route**, ranks them by **experiment value**,
+and returns the one measurement worth running next — with the result that would
+falsify it.
 
 It is a small scientific instrument for asking:
 
-> If this mechanism route were true, what would the experiment look like, what
-> controls would be required, and what claim are we allowed to make?
+> Given this scaffold, objective, environment, and instrument, which mechanism
+> and measurement should we test next — and what would falsify it?
 
-## What it does
+## What it does — simulation happens BEFORE ranking
 
 ```text
-sensing objective
-  -> structured constraints
+sensing objective + instrument
+  -> structured constraints (Zod-validated)
+  -> public evidence bundle (real DOIs)
   -> public construct hypotheses
-  -> mechanism routes
-  -> physics data generation
-  -> multimodal signal simulation
-  -> rationale + uncertainty
-  -> measurement-worthiness ranking
-  -> measurement handoff
-  -> mandatory adversarial swarm review
-  -> falsification criteria + collaborator handoff
+  -> mechanism routes (anchored / assumed / unknown steps)
+  -> parameter ensembles (provenance on every value)
+  -> SIMULATION EVIDENCE for every candidate, under the instrument
+  -> experiment-value ranking (8 open components, no offset)
+  -> one decisive measurement plan + kill criterion
+  -> retrospective public-benchmark comparison
+  -> claim audit + collaborator handoff
 ```
+
+The radical-pair route is **real spin dynamics** (RadicalPy): a versioned,
+provenance-tagged artifact is generated offline and consumed only after Zod
+validation. Changing the physics or the instrument changes the ranking.
 
 ## What it does NOT do
 
@@ -50,9 +55,13 @@ prediction."** See [`IP_BOUNDARY.md`](./IP_BOUNDARY.md).
 
 ```bash
 npm install
-npm run dev      # open the local app
-npm test         # run the deterministic + boundary test suite
-npm run build    # typecheck + production build
+npm run dev            # open the local studio
+npm test               # deterministic + boundary + acceptance suite (vitest)
+npm run build          # typecheck + production build
+npm audit --omit=dev   # production dependency audit (expect 0)
+
+# OPTIONAL, offline — regenerate the radical-pair physics artifact:
+python3 scripts/physics/radical_pair_mary.py
 ```
 
 ## Demo objective
@@ -73,22 +82,29 @@ claim live, and exports a measurement handoff (Markdown/JSON).
 
 ## Architecture
 
+See [`CLAUDE.md`](./CLAUDE.md) for the full operating guide and boundaries.
+
 | Module | File |
 | --- | --- |
-| Objective compiler | `src/core/objectiveCompiler.ts` |
-| Public evidence cards (real, DOI-cited) | `src/core/fixtures/evidenceCards.ts` |
+| Objective compiler (+ Zod validation) | `src/core/objectiveCompiler.ts`, `src/core/schema.ts` |
+| Public evidence bundle + cards (real DOIs) | `src/core/evidenceBundle.ts`, `src/core/fixtures/evidenceCards.ts` |
+| Public benchmarks + retrospective comparison | `src/core/benchmark.ts` |
 | Construct hypothesis generator | `src/core/constructGenerator.ts` |
 | Mechanism router + route registry | `src/core/mechanismRouter.ts`, `src/core/fixtures/routes.ts` |
-| Physics data generation | `src/core/physics.ts` |
-| Multimodal simulator (deterministic) | `src/core/simulator.ts`, `src/core/rng.ts` |
+| Instrument profiles | `src/core/fixtures/instruments.ts` |
+| Parameter ensembles + provenance | `src/core/parameterEnsemble.ts` |
+| Radical-pair physics (RadicalPy) + Zod loader | `scripts/physics/radical_pair_mary.py`, `src/data/generated/`, `src/core/generated/radicalPair.ts` |
+| Simulation evidence (per candidate) | `src/core/simulationEvidence.ts`, `src/core/simulator.ts`, `src/core/rng.ts` |
+| Experiment-value ranking (8 components, no offset) | `src/core/experimentScore.ts` |
+| Measurement plan (decisive next experiment) | `src/core/measurementPlan.ts`, `src/core/falsification.ts` |
 | Rationale + evidence | `src/core/rationale.ts` |
-| Measurement-worthiness ranking | `src/core/ranking.ts` |
-| Design adapter (stub/precomputed) | `src/core/designAdapter.ts` |
+| Design adapter (stub/precomputed, optional) | `src/core/designAdapter.ts` |
 | Claim firewall | `src/core/claimFirewall.ts` |
-| Mandatory adversarial swarm | `src/core/swarm/` (see `docs/SWARM_ARCHITECTURE.md`) |
+| Deterministic release audit (CI gate, not a product feature) | `src/core/swarm/` (see `docs/SWARM_ARCHITECTURE.md`) |
 | Export (measurement handoff) | `src/core/export.ts` |
-| Pipeline orchestrator | `src/core/pipeline.ts` |
-| Tufte-style UI | `src/ui/` |
+| Pipeline orchestrator | `src/core/pipeline.ts`, `src/core/discoverCore.ts` |
+| Cinematic Tufte UI (Ask · Explain · Simulate · Measure next) | `src/ui/App.tsx`, `src/ui/screens/`, `src/ui/components/` |
+| Claude review artifacts | `artifacts/claude/` |
 
 ## Evidence & citations
 
@@ -114,15 +130,15 @@ rewrites them; the demo shows this downgrade live while the plots stay visible.
 ## Why so many adapters?
 
 Nebula Discover is **not a wrapper around one model** — it is a
-construct-hypothesis and measurement-worthiness *workflow*. Different parts of the
+construct-hypothesis and experiment-value *workflow*. Different parts of the
 question are answered by different tools:
 
 - **Public evidence sources** (UniProt, RCSB, AlphaFold DB, FPbase) ground a
   hypothesis in citable public data.
 - **Embeddings / retrieval** (ESM, FAISS) find **public analogs** — never predict
   spin response.
-- **Spin-dynamics & electronic-structure** tools (RadicalPy, QuTiP, PySCF) would
-  deepen the *synthetic* mechanism sweep.
+- **Spin-dynamics** (RadicalPy) genuinely powers the radical-pair route; QuTiP /
+  PySCF would deepen the *synthetic* mechanism sweep further.
 - **Protein-design models** (RFdiffusion, LigandMPNN, ProteinMPNN, Boltz) are
   downstream **handoffs**, not the discovery engine.
 
