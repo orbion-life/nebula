@@ -345,6 +345,192 @@ export interface SwarmConsensus {
   summary: string;
 }
 
+// ===========================================================================
+// Phase 2 — counterfactual measurement-studio contracts.
+//
+// These extend the authoritative schema so the pipeline can SIMULATE every
+// candidate/route BEFORE ranking, score the *experiment* (not predicted sensor
+// performance), and hand off one decisive measurement. Every numeric parameter
+// carries full provenance (source type, citation/assumption, range, unit,
+// uncertainty, applicability limits).
+// ===========================================================================
+
+export type ParameterSourceType =
+  | "database" // e.g. RadicalPy molecule-database hyperfine couplings
+  | "literature" // a cited public reference
+  | "assumption" // a transparent sandbox assumption
+  | "instrument" // an instrument-profile constraint
+  | "user_constraint"; // derived from the user's objective
+
+/**
+ * Full provenance for one numeric (or database-descriptor) parameter. This is
+ * the contract the acceptance test "every numeric parameter has provenance"
+ * checks against.
+ */
+export interface ParameterProvenance {
+  name: string;
+  value: number | string;
+  unit: string;
+  range: [number, number];
+  uncertainty: Uncertainty;
+  sourceType: ParameterSourceType;
+  /** DOI/citation string for literature/database, or a labelled assumption. */
+  citationOrAssumption: string;
+  applicabilityLimits: string;
+}
+
+/** A drawn ensemble over provenance parameters producing a signature band. */
+export interface ParameterEnsemble {
+  routeId: string;
+  seed: number;
+  nMembers: number;
+  members: Array<Record<string, number>>;
+  parameters: ParameterProvenance[];
+  label: "synthetic_parameter_ensemble_not_validation";
+}
+
+/** A public benchmark reference chosen to anchor a route (never proof). */
+export interface BenchmarkRef {
+  id: string;
+  system: string;
+  observable: string;
+  relevance: string;
+  claimCeiling: ClaimLevel;
+  citation: Citation;
+}
+
+/** A public scaffold analog (retrieval only — never a spin-response prediction). */
+export interface PublicAnalog {
+  id: string;
+  name: string;
+  family: string;
+  publicRef: string;
+  score: number;
+}
+
+/** Public evidence assembled for an objective (grounding, not validation). */
+export interface EvidenceBundle {
+  objectiveText: string;
+  cards: EvidenceCard[];
+  benchmarks: BenchmarkRef[];
+  analogs: PublicAnalog[];
+  assembledFrom: EvidenceSource[];
+  note: string;
+}
+
+/**
+ * Instrument capabilities/limits. This is an INPUT to the pipeline: changing it
+ * changes observability/SNR per route and therefore the ranking (acceptance
+ * test "physics/instrument constraints can change the ranking").
+ */
+export interface InstrumentProfile {
+  id: string;
+  label: string;
+  readoutModes: ReadoutMode[];
+  /** Fractional noise floor; a signature below this is not observable. */
+  minDetectableDeltaFOverF: number;
+  integrationTimeS: number;
+  staticFieldRange_mT: [number, number];
+  rfAvailable: boolean;
+  rfFreqRange_MHz: [number, number];
+  rfB1_mT: number;
+  illuminationControllable: boolean;
+  oxygenControl: boolean;
+  temperatureControl: boolean;
+  notes: string;
+}
+
+/**
+ * Simulation evidence for a single candidate/route, computed BEFORE ranking and
+ * under a specific InstrumentProfile. This is what makes the ranking
+ * physics-driven rather than heuristic.
+ */
+export interface SimulationEvidence {
+  routeId: string;
+  hypothesisId: string;
+  source: "generated_artifact" | "analytic_proxy";
+  /** e.g. "radical_pair_mary.v1@<hash>" when backed by a generated artifact. */
+  artifactRef?: string;
+  /** Peak observable signature within the instrument's reachable range. */
+  signatureMetric: number;
+  signatureUnit: string;
+  /** Expected SNR = signatureMetric / instrument noise floor. */
+  expectedSNR: number;
+  observable: boolean;
+  /** Uncertainty-band magnitude (ensemble std, fractional). */
+  ensembleStd: number;
+  /** 0..1 — how distinguishable the signature is from nuisances/controls. */
+  mechanismDiscrimination: number;
+  /** 0..1 — fraction of the route's required controls the instrument can run. */
+  controlCompleteness: number;
+  /** 0..1 — confounder/nuisance swamping risk. */
+  nuisanceRisk: number;
+  traces: Trace[];
+  /** series id -> "public_measurement" | "simulation" | "assumption". */
+  seriesProvenance: Record<string, "public_measurement" | "simulation" | "assumption">;
+  seed: number;
+}
+
+/**
+ * Retrospective benchmark comparison. Public/measured signatures are described
+ * QUALITATIVELY and never fabricated as numbers; a qualitative reproduction is
+ * only ever labelled as such.
+ */
+export interface BenchmarkComparison {
+  benchmarkId: string;
+  citation: Citation;
+  measuredObservable: string;
+  measuredQualitative: string;
+  simulatedFeature: string;
+  agreementKind: "qualitative_reproduction" | "quantitative" | "no_comparison";
+  matches: boolean;
+  residualUncertainty: string;
+  disclaimer: string;
+}
+
+/** Transparent experiment-value scoring components (replaces heuristic worthiness). */
+export interface ExperimentScoreComponents {
+  expectedInformationGain: number;
+  expectedObservabilitySNR: number;
+  instrumentCompatibility: number;
+  mechanismDiscrimination: number;
+  uncertaintyReduction: number;
+  controlCompleteness: number;
+  /** subtracted */
+  executionBurden: number;
+  /** subtracted */
+  nuisanceConfounderRisk: number;
+}
+
+export interface ExperimentScore {
+  hypothesisId: string;
+  routeId: string;
+  score: number;
+  rank: number;
+  components: ExperimentScoreComponents;
+  /** The score is derived from SimulationEvidence + InstrumentProfile. */
+  simulationDriven: true;
+  label: "ranked_for_experiment_value_not_predicted_performance";
+  rationaleOneLine: string;
+}
+
+/** The decisive next-experiment plan — the top product output. */
+export interface MeasurementPlan {
+  hypothesisId: string;
+  routeId: string;
+  rank: number;
+  instrumentId: string;
+  whatToMeasure: string;
+  expectedSignature: string;
+  expectedUncertainty: string;
+  nullExpectation: string;
+  positiveControls: string[];
+  negativeControls: string[];
+  competingExplanations: string[];
+  killCriterion: string;
+  informationGained: string;
+}
+
 /** The full end-to-end result of the Discover pipeline. */
 export interface DiscoverResult {
   product: "Nebula Discover";
