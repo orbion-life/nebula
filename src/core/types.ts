@@ -220,25 +220,6 @@ export interface SimulationOutput {
   confounders: string[];
 }
 
-export interface WorthinessComponents {
-  routeSupport: number;
-  readoutCompatibility: number;
-  constructExecutability: number;
-  cofactorFeasibility: number;
-  controlQuality: number;
-  nuisanceRiskPenalty: number;
-  uncertaintyPenalty: number;
-}
-
-export interface MeasurementWorthiness {
-  hypothesisId: string;
-  score: number;
-  rank: number;
-  components: WorthinessComponents;
-  label: "ranked_for_measurement_triage_not_performance";
-  rationaleOneLine: string;
-}
-
 export interface RationaleCard {
   kind:
     | "why_measure_first"
@@ -531,23 +512,43 @@ export interface MeasurementPlan {
   informationGained: string;
 }
 
-/** The full end-to-end result of the Discover pipeline. */
+/**
+ * The full end-to-end result of the Discover pipeline.
+ *
+ * Pipeline order (Phase 2): objective → evidence bundle → construct hypotheses →
+ * mechanism routes → parameter ensembles → SIMULATION EVIDENCE for every
+ * candidate → experiment-value ranking → selected → measurement plan → benchmark
+ * comparison → claim audit. Simulation happens BEFORE ranking; the ranking is
+ * derived from the simulation evidence and the instrument, not a heuristic.
+ */
 export interface DiscoverResult {
   product: "Nebula Discover";
   status: "diagnostic_only_not_validated";
   objective: ObjectiveInput;
+  /** Instrument whose limits gate observability and shape the ranking. */
+  instrument: InstrumentProfile;
+  evidenceBundle: EvidenceBundle;
   hypotheses: ConstructHypothesis[];
-  ranking: MeasurementWorthiness[];
+  parameterEnsembles: ParameterEnsemble[];
+  /** Simulation evidence for EVERY candidate, computed before ranking. */
+  simulationEvidence: SimulationEvidence[];
+  /** Experiment-value ranking (replaces heuristic worthiness; no offset). */
+  ranking: ExperimentScore[];
   selectedHypothesisId: string;
   selectedRoute: MechanismRoute;
   parameterSpace: PhysicsParameterSpace;
+  /** Display traces for the selected route (synthetic assumption sweep). */
   simulation: SimulationOutput;
   rationale: RationaleCard[];
+  /** The decisive next-experiment card for the top-ranked hypothesis. */
+  measurementPlan: MeasurementPlan;
+  /** Retrospective public-benchmark comparison for the selected route. */
+  benchmarkComparisons: BenchmarkComparison[];
   designAdapter: DesignAdapterOutput;
   requiredControls: string[];
   confounders: string[];
   blockedClaimExample: ClaimAudit;
   allowedClaimExample: string;
-  /** Mandatory post-pipeline adversarial swarm review (deterministic). */
+  /** Mandatory post-pipeline adversarial swarm review (deterministic release audit). */
   swarmReview: SwarmConsensus;
 }

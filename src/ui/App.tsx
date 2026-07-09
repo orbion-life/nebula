@@ -5,14 +5,14 @@ import { generateParameterSpace } from "../core/physics";
 import { simulate } from "../core/simulator";
 import { routeById } from "../core/fixtures/routes";
 import { evidenceById } from "../core/fixtures/evidenceCards";
-import { RANKING_WEIGHTS } from "../core/ranking";
+import { EXPERIMENT_WEIGHTS } from "../core/experimentScore";
 import { auditClaim } from "../core/claimFirewall";
 import { exportJson, exportMarkdown } from "../core/export";
 import { vectorAnalogSearch } from "../core/analogIndex";
 import type {
   ConstructHypothesis,
-  MeasurementWorthiness,
-  WorthinessComponents,
+  ExperimentScore,
+  ExperimentScoreComponents,
 } from "../core/types";
 import {
   LIBRARY_REGISTRY,
@@ -39,14 +39,15 @@ const CLAUDE_ROLES = [
   "demo-director",
 ];
 
-const COMPONENT_LABELS: Array<[keyof WorthinessComponents, string, boolean]> = [
-  ["routeSupport", "route support", false],
-  ["readoutCompatibility", "readout match", false],
-  ["constructExecutability", "executability", false],
-  ["cofactorFeasibility", "cofactor feasibility", false],
-  ["controlQuality", "control quality", false],
-  ["nuisanceRiskPenalty", "nuisance penalty", true],
-  ["uncertaintyPenalty", "uncertainty penalty", true],
+const COMPONENT_LABELS: Array<[keyof ExperimentScoreComponents, string, boolean]> = [
+  ["expectedInformationGain", "information gain", false],
+  ["expectedObservabilitySNR", "observability / SNR", false],
+  ["instrumentCompatibility", "instrument fit", false],
+  ["mechanismDiscrimination", "discrimination", false],
+  ["uncertaintyReduction", "uncertainty reduction", false],
+  ["controlCompleteness", "controls runnable", false],
+  ["executionBurden", "execution burden", true],
+  ["nuisanceConfounderRisk", "nuisance risk", true],
 ];
 
 export function App() {
@@ -240,12 +241,14 @@ export function App() {
           })}
         </div>
         <p className="footnote">
-          Weights are open: route support {pct(RANKING_WEIGHTS.routeSupport)},
-          readout {pct(RANKING_WEIGHTS.readoutCompatibility)}, executability{" "}
-          {pct(RANKING_WEIGHTS.constructExecutability)}, cofactor{" "}
-          {pct(RANKING_WEIGHTS.cofactorFeasibility)}, controls{" "}
-          {pct(RANKING_WEIGHTS.controlQuality)}, minus nuisance/uncertainty
-          penalties. Ranking is for measurement triage, not predicted performance.
+          Weights are open: information gain {pct(EXPERIMENT_WEIGHTS.expectedInformationGain)},
+          observability {pct(EXPERIMENT_WEIGHTS.expectedObservabilitySNR)}, instrument fit{" "}
+          {pct(EXPERIMENT_WEIGHTS.instrumentCompatibility)}, discrimination{" "}
+          {pct(EXPERIMENT_WEIGHTS.mechanismDiscrimination)}, uncertainty reduction{" "}
+          {pct(EXPERIMENT_WEIGHTS.uncertaintyReduction)}, controls{" "}
+          {pct(EXPERIMENT_WEIGHTS.controlCompleteness)}, minus execution-burden and
+          nuisance penalties. No display offset. Ranking is experiment value, not
+          predicted performance.
         </p>
       </section>
 
@@ -610,7 +613,7 @@ function HypCard({
   onSelect,
 }: {
   h: ConstructHypothesis;
-  r: MeasurementWorthiness;
+  r: ExperimentScore;
   selected: boolean;
   onSelect: () => void;
 }) {

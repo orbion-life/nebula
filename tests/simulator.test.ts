@@ -13,12 +13,21 @@ describe("multimodal simulator", () => {
     expect(a).toEqual(b);
   });
 
-  it("produces different traces for different seeds", () => {
+  it("physics traces are seed-independent but seeded nuisance traces vary", () => {
     const route = routeByClass("LOV_flavin_radical_pair")!;
     const space = generateParameterSpace(route);
     const a = simulate(route, space, 1);
     const b = simulate(route, space, 2);
-    expect(a.traces[0].y).not.toEqual(b.traces[0].y);
+    // The radical-pair MARY curve is deterministic spin-dynamics output from the
+    // generated artifact: it must NOT depend on the RNG seed.
+    const physA = a.traces.find((t) => t.id === "delta_f_vs_b")!;
+    const physB = b.traces.find((t) => t.id === "delta_f_vs_b")!;
+    expect(physA.y).toEqual(physB.y);
+    // The illustrative nuisance curves carry seeded acquisition noise, so they
+    // must differ between seeds (the RNG is actually wired in).
+    const nuisA = a.traces.find((t) => t.id === "oxygen_nuisance")!;
+    const nuisB = b.traces.find((t) => t.id === "oxygen_nuisance")!;
+    expect(nuisA.y).not.toEqual(nuisB.y);
   });
 
   it("labels every simulation as a synthetic assumption sweep", () => {

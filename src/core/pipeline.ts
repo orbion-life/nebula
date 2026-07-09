@@ -23,8 +23,9 @@ export { runDiscoverCore, type DiscoverCore } from "./discoverCore";
 export function runDiscover(
   raw: RawObjective,
   seed = 1337,
+  instrumentId?: string,
 ): DiscoverResult {
-  const core = runDiscoverCore(raw, seed);
+  const core = runDiscoverCore(raw, seed, instrumentId);
   const swarmReview = runSwarmPanel({ result: { ...core, swarmReview: undefined! }, raw, seed });
   return { ...core, swarmReview };
 }

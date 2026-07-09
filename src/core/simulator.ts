@@ -1,5 +1,6 @@
 import { hashSeed, linspace, mulberry32, noise, round } from "./rng";
 import { nominal } from "./physics";
+import { RADICAL_PAIR_ARTIFACT } from "./generated/radicalPair";
 import type {
   MechanismRoute,
   PhysicsParameterSpace,
@@ -11,42 +12,23 @@ import { SYNTHETIC_TRACE_LABEL } from "./types";
 /**
  * Multimodal signal simulator.
  *
- * MECHANISM-SHAPED PROXIES, not physics solvers. Every trace is a synthetic
- * assumption sweep, deterministic for a fixed seed. These curves show what a
- * measurement COULD look like under the stated assumptions so a team can decide
- * whether it is worth measuring — they are not predictions of biology.
+ * The radical-pair route is driven by the Python-generated spin-dynamics
+ * artifact (src/data/generated/radical_pair_mary.v1.json): a real Zeeman +
+ * hyperfine + Haberkorn + relaxation MARY curve and an eigenspectrum-derived RF
+ * response. RF is a frequency-resolved resonance, NOT a scalar multiplier.
  *
- * proxy equations (see .claude/skills/physics-data-simulation):
- *   saturating(B)    = amplitude * B^2 / (B^2 + Bhalf^2)  // high-field rise
- *   lowFieldEffect(B)= depth * (B/Blfe) * exp(1 - B/Blfe) // non-monotonic dip
- *   response(B)      = saturating(B) - lowFieldEffect(B)
- *   rf_effect        = response(B) * rf_gain
+ * The remaining routes use transparent MECHANISM-SHAPED PROXIES (not physics
+ * solvers). Every trace is a synthetic assumption sweep, deterministic for a
+ * fixed seed. These curves show what a measurement COULD look like under the
+ * stated assumptions so a team can decide whether it is worth measuring — they
+ * are not predictions of biology.
+ *
+ * proxy equations (non-radical-pair routes):
  *   bleach(t)        = exp(-k_bleach * t) + baseline_drift * t
- *   observed(t)      = baseline + response * bleach - nuisance
- *
- * The field response deliberately includes a low-field effect (LFE): radical-pair
- * magnetic field effects are characteristically NON-monotonic at low field, not a
- * clean saturating rise. This is still a mechanism-SHAPED proxy — the shape is
- * illustrative and the sign/magnitude are not claimed for any real construct.
+ *   observed(t)      = baseline + response - nuisance
  */
 
 const DEFAULT_SEED = 1337;
-
-/**
- * Radical-pair field response proxy including a low-field effect.
- * Not a spin-Hamiltonian solution; shape is illustrative only.
- */
-function rpResponse(
-  b: number,
-  amp: number,
-  bHalf: number,
-  lfeDepth: number,
-  bLfe: number,
-): number {
-  const saturating = (amp * b * b) / (b * b + bHalf * bHalf);
-  const lowFieldEffect = lfeDepth * (b / bLfe) * Math.exp(1 - b / bLfe);
-  return saturating - lowFieldEffect;
-}
 
 export function simulate(
   route: MechanismRoute,
@@ -58,7 +40,7 @@ export function simulate(
 
   switch (route.simulatorPlugin) {
     case "radical_pair_response_proxy":
-      traces.push(...radicalPairTraces(space, routeSeed));
+      traces.push(...radicalPairTraces());
       break;
     case "triplet_lifetime_proxy":
       traces.push(...tripletTraces(space, routeSeed));
@@ -95,74 +77,43 @@ export function simulate(
   };
 }
 
-function radicalPairTraces(
-  space: PhysicsParameterSpace,
-  seed: number,
-): Trace[] {
-  const amp = nominal(space, "response_amplitude");
-  const bHalf = nominal(space, "field_half_saturation_Bhalf");
-  const lfeDepth = nominal(space, "lfe_depth");
-  const bLfe = nominal(space, "lfe_field_Blfe");
-  const rfGain = nominal(space, "rf_gain");
-  const noiseAmp = nominal(space, "acquisition_noise");
+/**
+ * Radical-pair traces from the generated spin-dynamics artifact (real physics).
+ * The MARY curve carries the characteristic non-monotonic low-field effect, and
+ * the RF trace is a frequency-resolved resonance (never a scalar multiplier).
+ * No synthetic noise is added: these are the deterministic model outputs.
+ */
+function radicalPairTraces(): Trace[] {
+  const art = RADICAL_PAIR_ARTIFACT.data;
 
-  const B = linspace(0, 10, 40);
-
-  const rngOff = mulberry32(seed + 1);
   const dFvsB: Trace = {
     id: "delta_f_vs_b",
-    title: "ΔF/F vs static magnetic field (with low-field effect)",
+    title: "ΔF/F vs static magnetic field (radical-pair spin dynamics)",
     xLabel: "B field (mT)",
-    yLabel: "ΔF/F",
-    x: B,
-    y: B.map((b) =>
-      round(rpResponse(b, amp, bHalf, lfeDepth, bLfe) + noise(rngOff, noiseAmp)),
-    ),
+    yLabel: "ΔF/F (assumption-derived)",
+    x: art.B0_mT,
+    y: art.dFF_assumptionDerived,
     condition:
-      "RF off, illuminated — illustrative radical-pair proxy incl. low-field dip; shape illustrative, sign/magnitude not claimed",
-    requiredControl: "Illuminated no-field baseline",
+      "singlet-born FAD•−/TrpH•+ pair; Zeeman + hyperfine + Haberkorn + relaxation; low-field effect visible",
+    requiredControl: "Illuminated no-field baseline; subtract photobleach control",
     isControl: false,
     isNuisance: false,
   };
 
-  const rngOn = mulberry32(seed + 2);
-  const dFvsB_RF: Trace = {
-    id: "delta_f_vs_b_rf_on",
-    title: "ΔF/F vs field, RF on",
-    xLabel: "B field (mT)",
-    yLabel: "ΔF/F",
-    x: B,
-    y: B.map((b) =>
-      round(
-        rpResponse(b, amp, bHalf, lfeDepth, bLfe) * rfGain +
-          noise(rngOn, noiseAmp),
-      ),
-    ),
-    condition: "RF on, illuminated — same illustrative proxy scaled by RF gain",
-    requiredControl: "RF off/on paired acquisition",
+  const rf: Trace = {
+    id: "delta_yield_vs_rf",
+    title: "Fluorescence contrast vs RF frequency (resonance)",
+    xLabel: "RF frequency (MHz)",
+    yLabel: "normalized contrast",
+    x: art.rf.freq_MHz,
+    y: art.rf.deltaYieldFraction,
+    condition: `fixed B0 = ${art.rf.workingField_mT} mT, B1 = ${art.rf.b1_mT} mT; resonance from static-Hamiltonian eigen-gaps (not a scalar gain)`,
+    requiredControl: "RF off (B1 = 0) reference — must be flat",
     isControl: false,
     isNuisance: false,
   };
 
-  // RF off/on contrast at fixed field as a bar-like 2-point trace.
-  const rngC = mulberry32(seed + 3);
-  const fixedB = 6;
-  const off = rpResponse(fixedB, amp, bHalf, lfeDepth, bLfe);
-  const on = off * rfGain;
-  const rfContrast: Trace = {
-    id: "rf_off_on_contrast",
-    title: "RF off/on contrast at fixed field",
-    xLabel: "condition",
-    yLabel: "ΔF/F",
-    x: [0, 1],
-    y: [round(off + noise(rngC, noiseAmp)), round(on + noise(rngC, noiseAmp))],
-    condition: `fixed B = ${fixedB} mT`,
-    requiredControl: "Interleaved RF off/on with same illumination",
-    isControl: false,
-    isNuisance: false,
-  };
-
-  return [dFvsB, dFvsB_RF, rfContrast];
+  return [dFvsB, rf];
 }
 
 function tripletTraces(

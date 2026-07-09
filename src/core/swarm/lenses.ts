@@ -56,23 +56,10 @@ export const SWARM_LENSES: SwarmLensDefinition[] = [
     run: ({ result, raw, seed }) => {
       const findings: SwarmFinding[] = [];
       const again = runDiscoverCore(raw, seed);
-      const core = {
-        product: result.product,
-        status: result.status,
-        objective: result.objective,
-        hypotheses: result.hypotheses,
-        ranking: result.ranking,
-        selectedHypothesisId: result.selectedHypothesisId,
-        selectedRoute: result.selectedRoute,
-        parameterSpace: result.parameterSpace,
-        simulation: result.simulation,
-        rationale: result.rationale,
-        designAdapter: result.designAdapter,
-        requiredControls: result.requiredControls,
-        confounders: result.confounders,
-        blockedClaimExample: result.blockedClaimExample,
-        allowedClaimExample: result.allowedClaimExample,
-      };
+      // Compare the full core deterministically (robust to added fields): strip
+      // the swarm layer from the panel's view of the result and re-run the core.
+      const { swarmReview: _omitSwarm, ...core } = result;
+      void _omitSwarm;
       if (JSON.stringify(again) !== JSON.stringify(core)) {
         findings.push({
           severity: "blocker",
@@ -211,12 +198,12 @@ export const SWARM_LENSES: SwarmLensDefinition[] = [
       }
       if (
         result.ranking.some(
-          (r) => r.label !== "ranked_for_measurement_triage_not_performance",
+          (r) => r.label !== "ranked_for_experiment_value_not_predicted_performance",
         )
       ) {
         findings.push({
           severity: "blocker",
-          message: "Ranking is not labeled measurement-triage (not performance).",
+          message: "Ranking is not labeled experiment-value (not predicted performance).",
           theme: "product-identity",
         });
       }

@@ -1,3 +1,5 @@
+import { buildMeasurementPlan } from "./measurementPlan";
+import { routeById } from "./fixtures/routes";
 import type {
   DiscoverResult,
   MechanismRoute,
@@ -53,6 +55,31 @@ export function exportMarkdown(
   lines.push(`- Desired readouts: ${result.objective.desiredReadouts.join(", ")}`);
   lines.push(`- Material context: ${result.objective.materialContext}`);
   lines.push(`- Expression host: ${result.objective.expressionHost}`);
+  lines.push(`- Instrument: ${result.instrument.label} (noise floor ΔF/F ≥ ${result.instrument.minDetectableDeltaFOverF}, field ${result.instrument.staticFieldRange_mT[0]}–${result.instrument.staticFieldRange_mT[1]} mT, RF ${result.instrument.rfAvailable ? "available" : "none"})`);
+  lines.push("");
+  lines.push(`## Measure this next (decisive experiment)`);
+  lines.push("");
+  // Keep the handoff consistent with the SELECTED hypothesis: rebuild the plan
+  // for a UI-selected non-top hypothesis so the downloaded brief always matches.
+  const mp =
+    hypothesisId === result.selectedHypothesisId
+      ? result.measurementPlan
+      : (() => {
+          const ev = result.simulationEvidence.find((e) => e.hypothesisId === hypothesisId);
+          const rt = routeById(hyp.mechanismRouteId);
+          return ev && rt
+            ? buildMeasurementPlan(hyp, rt, ev, result.instrument, rank.rank)
+            : result.measurementPlan;
+        })();
+  lines.push(`- **What to measure:** ${mp.whatToMeasure}`);
+  lines.push(`- **Expected signature:** ${mp.expectedSignature}`);
+  lines.push(`- **Expected uncertainty:** ${mp.expectedUncertainty}`);
+  lines.push(`- **Null expectation:** ${mp.nullExpectation}`);
+  lines.push(`- **Positive controls:** ${mp.positiveControls.join("; ") || "none"}`);
+  lines.push(`- **Negative controls:** ${mp.negativeControls.join("; ")}`);
+  lines.push(`- **Competing explanations:** ${mp.competingExplanations.join("; ")}`);
+  lines.push(`- **Kill criterion:** ${mp.killCriterion}`);
+  lines.push(`- **Information gained:** ${mp.informationGained}`);
   lines.push("");
   lines.push(`## Selected construct hypothesis`);
   lines.push("");
@@ -70,13 +97,29 @@ export function exportMarkdown(
     lines.push(`- ${s.step} (${s.support.replace(/_/g, " ")})`);
   }
   lines.push("");
-  lines.push(`## Ranking (measurement-worthiness, not performance)`);
+  lines.push(`## Ranking (experiment value, not predicted performance)`);
   lines.push("");
   lines.push(`| Rank | Hypothesis | Score | Note |`);
   lines.push(`| --- | --- | --- | --- |`);
   for (const r of result.ranking) {
     const h = result.hypotheses.find((x) => x.id === r.hypothesisId)!;
     lines.push(`| ${r.rank} | ${h.scaffoldFamily} | ${r.score.toFixed(3)} | ${r.rationaleOneLine} |`);
+  }
+  lines.push("");
+  lines.push(`## Retrospective public-benchmark comparison`);
+  lines.push("");
+  for (const b of result.benchmarkComparisons) {
+    if (b.agreementKind === "no_comparison") {
+      lines.push(`- ${b.measuredQualitative}`);
+      continue;
+    }
+    lines.push(
+      `- **${b.agreementKind.replace(/_/g, " ")}** vs ${b.citation.authors.split(",")[0]} et al. (${b.citation.year}), doi:${b.citation.doi}`,
+    );
+    lines.push(`  - Public (qualitative): ${b.measuredQualitative}`);
+    lines.push(`  - Simulated: ${b.simulatedFeature}`);
+    lines.push(`  - Residual: ${b.residualUncertainty}`);
+    lines.push(`  - ${b.disclaimer}`);
   }
   lines.push("");
   lines.push(`## Rationale cards`);
