@@ -27,12 +27,16 @@ assumption parameter with a stated range; dF/F series are labelled
 "assumption-derived".
 
 RF response: at a fixed working field, the RF-frequency spectrum is built from
-the EXACT eigenspectrum of the static Hamiltonian. Resonances sit at the
-eigen-gaps f_k = (E_i - E_j)/2*pi; each contributes a Lorentzian whose amplitude
-scales with the RF Rabi coupling |<i|Sx|j>|^2 * |Delta S-character| and whose
-width is set by the relaxation rate. RF is therefore frequency-resolved and
-grounded in the level structure — it is NOT a scalar multiplier of the trace.
-Fidelity is labelled "rotating-frame resonance-structure model, not full Floquet".
+the EXACT eigenspectrum of the static Hamiltonian. Resonance POSITIONS sit at
+the eigen-gaps f_k = (E_i - E_j)/2*pi and are the only physically-claimed output;
+each line's relative weight uses the RF Rabi coupling |<i|Sx|j>|^2 * |Delta
+S-character| with a relaxation-set width. IMPORTANT: the returned trace is
+NORMALISED to unit peak, so the B1 magnitude is divided out of the OUTPUT — B1
+acts only as an on/off switch (B1=0 -> flat control; any B1>0 -> the identical
+normalised lineshape). The returned amplitudes are therefore arbitrary /
+normalised units, NOT a physical fractional yield change; do not read magnitude
+from them. Fidelity is labelled "rotating-frame resonance-structure model, not
+full Floquet".
 
 Determinism: the field/RF solves are deterministic (no RNG). The uncertainty
 ensemble uses numpy Generator(PCG64) with a FIXED seed recorded in the artifact,
@@ -164,10 +168,15 @@ def rf_resonance_spectrum(sim: LiouvilleSimulation, b0_mt: float, b1_mt: float,
                           freqs_mhz: np.ndarray, kr: float) -> np.ndarray:
     """Frequency-resolved RF response from the exact static-Hamiltonian eigenspectrum.
 
-    Resonances sit at eigen-gaps; each Lorentzian's amplitude scales with the RF
-    Rabi coupling |<i|Sx|j>|^2 weighted by the change in singlet character it
-    drives, and the linewidth is set by the relaxation rate. B1 enters through
-    the Rabi frequency — NOT as a scalar gain on the whole trace.
+    Resonance POSITIONS sit at eigen-gaps; each Lorentzian's relative weight uses
+    the RF Rabi coupling |<i|Sx|j>|^2 weighted by the change in singlet character
+    it drives, and the linewidth is set by the relaxation rate.
+
+    NOTE: the trace is normalised to unit peak before return, so the B1 magnitude
+    is divided out of the OUTPUT. B1 is effectively an on/off switch here (B1=0
+    -> flat; any B1>0 -> the same normalised shape). Only the resonance FREQUENCY
+    positions are claimed; the returned amplitudes are normalised/arbitrary units,
+    not a physical fractional yield change.
     """
     H = np.asarray(sim.total_hamiltonian(B0=float(b0_mt), D=0.0, J=0.0))
     # In Liouville space total_hamiltonian returns a commutator superoperator;
