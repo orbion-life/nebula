@@ -10,7 +10,7 @@ owns execution**; Claude owns bounded authoring and review under constraints.
 | `objectiveCompiler.ts`, zod schema | Parse messy objectives |
 | `constructGenerator.ts`, routes registry | Hypothesis framing |
 | `simulator.ts`, `physics.ts`, PRNG | Explain sweeps (not run them) |
-| `ranking.ts` weights | Rationale prose |
+| `experimentScore.ts` weights | Rationale prose |
 | `claimFirewall.ts` | Red-team wording |
 | `src/core/swarm/` orchestrator | Mirror swarm in sessions |
 | `export.ts`, falsification rules | Handoff narration |
@@ -24,9 +24,9 @@ owns execution**; Claude owns bounded authoring and review under constraints.
 | mechanism-router | mechanism-route | `src/core/mechanismRouter.ts`, `fixtures/routes.ts` |
 | physics-data-simulator | physics-data-simulation | `src/core/simulator.ts`, `tests/simulator.test.ts` |
 | rationale-explainer | rationale-evidence | `src/core/rationale.ts`, `src/core/falsification.ts` |
-| measurement-worthiness-ranker | measurement-worthiness | `src/core/ranking.ts` |
+| measurement-worthiness-ranker | measurement-worthiness | `src/core/experimentScore.ts` |
 | design-adapter | design-adapter | `src/core/designAdapter.ts` |
-| swarm-orchestrator | adversarial-swarm | `src/core/swarm/`, `tests/swarm.test.ts`, UI §08 |
+| swarm-orchestrator | adversarial-swarm | `src/core/swarm/`, `tests/swarm.test.ts` (release audit) |
 | scientific-skeptic | hackathon-judge-qa, falsification-path | Swarm lenses + skills |
 | claim-boundary-auditor | claim-boundary | `src/core/claimFirewall.ts`, `tests/claim.test.ts` |
 | visual-system-director | visual-system, accessibility-demo-pass | `src/ui/`, `theme.css` |

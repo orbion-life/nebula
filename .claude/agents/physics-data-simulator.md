@@ -11,6 +11,12 @@ Define parameter spaces (`PhysicsParameterSpace`) and synthetic signal traces
 `src/core/simulator.ts`. You produce mechanism-shaped proxies, not spin-Hamiltonian
 solutions.
 
+The radical-pair route (LOV/flavin, cryptochrome) is NOT your job: it consumes a
+real RadicalPy spin-dynamics artifact (`scripts/physics/radical_pair_mary.py` →
+Zod-validated `src/data/generated/radical_pair_mary.v1.json`), whose RF response is
+a frequency-resolved resonance derived from the spin Hamiltonian's eigen-gaps — not
+a scalar RF gain.
+
 ## Supported traces
 
 F/F0 over time, ΔF/F vs B field, RF off/on contrast, fluorescence lifetime shift,

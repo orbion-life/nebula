@@ -27,5 +27,5 @@ redox_flavoprotein, material_composite, metal_cofactor (confounder only).
 - No mutation lists. No orderable sequences. No "optimized"/"validated" wording.
 - No private Nebula/Astra logic or scoring.
 - Keep metal_cofactor as a confounder annotation, ordered last.
-- Rank only for measurement-worthiness (see `measurement-worthiness-ranker`),
+- Rank only for experiment value (see `measurement-worthiness-ranker`),
   never predicted performance.

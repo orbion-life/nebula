@@ -11,7 +11,7 @@ See [`src/adapters/types.ts`](../src/adapters/types.ts):
 ```ts
 interface AdapterResult<T> {
   adapter: string;
-  available: boolean;           // false in the Sunday-safe default
+  available: boolean;           // false in the offline-safe default
   status: "unavailable" | "fixture_fallback" | "ran";
   wouldDo: string;              // what a configured adapter would do
   requiredSetup: string;        // what you must install/configure

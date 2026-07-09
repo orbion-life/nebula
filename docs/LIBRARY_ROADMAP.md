@@ -7,7 +7,7 @@ the narrative version.
 
 ## Two layers
 
-### 1. Sunday-safe core (runs on a normal laptop)
+### 1. Laptop-safe core (runs on a normal laptop)
 
 | Library | Status | Role |
 | --- | --- | --- |
@@ -15,7 +15,8 @@ the narrative version.
 | zod | installed | runtime validation at the pipeline boundary |
 | Fuse.js | installed | offline fuzzy **public analog search** (retrieval fallback) |
 | Deterministic TS math / ODE | installed | seeded PRNG + mechanism-shaped proxy traces |
-| d3 / visx / recharts | documented future | richer charts (we currently hand-roll Tufte-style SVG to stay dependency-light) |
+| visx | installed | scales/shape/axes behind the Tufte-style signal charts |
+| d3 / recharts | documented future | richer chart options beyond the visx-based Tufte charts |
 | 3Dmol.js | documented future | in-browser public structure viewer |
 | SQLite | documented future | optional local caching of public fixtures |
 
@@ -32,16 +33,19 @@ gracefully to a safe demo fixture when not configured.
 - **retrieval** — ESM-2 / ESM-C embeddings, FAISS (adapters); hnswlib,
   sentence-transformers (documented future). Used for **public analog search only**.
 - **physics** — RadicalPy, QuTiP, PySCF (adapters); scipy.solve_ivp, JAX, NumPyro
-  (documented future). Would replace the deterministic proxy with real dynamics.
+  (documented future). The radical-pair route already ships **real** offline
+  RadicalPy spin dynamics (precomputed, Zod-validated); a live adapter would extend
+  real dynamics to the remaining proxy routes.
 - **design_adapter** — RFdiffusion, LigandMPNN, ProteinMPNN, Boltz (adapters).
   Downstream design **handoffs**, not the discovery engine.
 
 ## What runs in the current demo
 
 Objective compile → public evidence (with real citations) → construct hypotheses
-→ mechanism route → deterministic physics proxy → multimodal synthetic traces →
-measurement-worthiness ranking → measurement handoff export. All offline,
-deterministic for a fixed seed.
+→ mechanism route → physics simulation (real RadicalPy spin dynamics for the
+radical-pair route; deterministic proxy otherwise) → multimodal synthetic traces
+for every candidate → experiment-value ranking → measurement handoff export. All
+offline, deterministic for a fixed seed.
 
 ## What is implemented now (beyond stubs)
 
@@ -53,7 +57,8 @@ deterministic for a fixed seed.
 - **ODE cross-check**: `src/core/ode.ts` RK4 integrator validates the photokinetic
   proxy (always-on test); `scripts/solve_ivp_crosscheck.py` is the optional scipy
   reference.
-- **visx** charts and an opt-in **3Dmol.js** public-structure viewer (lazy-loaded).
+- **visx-based** Tufte-style signal charts (`src/ui/charts/LineChart.tsx`) plus
+  dedicated MARY/RF spin-dynamics charts. No 3D structure viewer in the demo path.
 
 ## What is stubbed / precomputed
 
@@ -69,7 +74,7 @@ deterministic for a fixed seed.
   design models (RFdiffusion / LigandMPNN / ProteinMPNN / Boltz) — GPU
   recommended. See `requirements-research.txt` (optional, commented).
 
-## Deliberately out of scope for the Sunday demo
+## Deliberately out of scope for the demo
 
 - Any live GPU model run in the critical demo path.
 - Any private ranking, calibration, partner data, or wet-lab feedback.

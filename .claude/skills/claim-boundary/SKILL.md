@@ -16,8 +16,8 @@ sequence alone predicts spin response; synthetic traces validate biology.
 
 ## Prefer
 
-public construct hypothesis; measurement-worthiness; source-backed rationale;
-synthetic assumption sweep; requires measurement; collaborator handoff.
+public construct hypothesis; experiment value (measurement triage); source-backed
+rationale; synthetic assumption sweep; requires measurement; collaborator handoff.
 
 ## Rewrite pattern
 

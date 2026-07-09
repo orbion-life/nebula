@@ -10,9 +10,9 @@ Use before recording or submitting.
 ## Checks
 
 app builds; tests pass (72+); demo path works offline; exports match UI selection;
-falsification in rationale + export; swarm §08 in demo script; all traces labeled
-synthetic; no private strings; no unsafe claims; CLAUDE_TRANSPARENCY.md current;
-SUBMISSION.md ready; CI workflow passes.
+falsification in rationale + export; release audit (swarm) covered in demo script;
+all traces labeled synthetic; no private strings; no unsafe claims;
+CLAUDE_TRANSPARENCY.md current; SUBMISSION.md ready; CI workflow passes.
 
 ## Commands
 

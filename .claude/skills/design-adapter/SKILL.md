@@ -7,7 +7,7 @@ description: Represent RFdiffusion/LigandMPNN/ProteinMPNN as optional, public-de
 
 Reference: `src/core/designAdapter.ts`, `src/core/fixtures/designAdapterDemo.ts`.
 
-## Sunday rule
+## Core-demo rule
 
 The app must work if no design tool runs live. Use `template_stub` or
 `precomputed_demo` unless a live run is trivial. Degrade gracefully on failure.

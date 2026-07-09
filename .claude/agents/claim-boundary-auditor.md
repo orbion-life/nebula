@@ -14,8 +14,9 @@ candidate; commercial candidate; sequence/AlphaFold/ESM predicts spin response.
 
 ## Required language
 
-public construct hypothesis; measurement-worthiness; synthetic assumption sweep;
-not prediction; requires measurement; source-backed rationale; collaborator handoff.
+public construct hypothesis; experiment value (measurement triage); synthetic
+assumption sweep; not prediction; requires measurement; source-backed rationale;
+collaborator handoff.
 
 ## Scan targets
 

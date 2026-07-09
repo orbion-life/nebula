@@ -7,15 +7,16 @@ description: Articulate why Nebula Discover is a pipeline workflow, not a single
 
 ## Narrative (30 seconds)
 
-Nebula Discover is a **measurement-worthiness workflow**: objective → public
-hypotheses → mechanism routes → synthetic sweeps → falsification → ranking →
-handoff → mandatory swarm. AlphaFold, ESM, RFdiffusion are **optional adapters**
+Nebula Discover is an **experiment-value workflow**: objective → public
+hypotheses → mechanism routes → simulated sweeps (every candidate) →
+experiment-value ranking → measurement plan + falsification → handoff →
+deterministic release audit. AlphaFold, ESM, RFdiffusion are **optional adapters**
 in `src/adapters/` — not the discovery engine.
 
 ## Proof points
 
 - `src/core/libraryRegistry.ts` — adapter map
-- UI §09 — pipeline diagram
+- `src/core/pipeline.ts` — multi-stage pipeline (not one model call)
 - `tests/` — 70+ deterministic tests
 - No network required for core demo
 
@@ -23,7 +24,7 @@ in `src/adapters/` — not the discovery engine.
 
 | Wrapper | Discover |
 | --- | --- |
-| One LLM call | 9 UI stages + swarm |
-| No claim firewall | Live downgrade §06 |
-| No falsification | Kill rules §05 |
+| One LLM call | Multi-stage pipeline + release audit |
+| No claim firewall | Live claim firewall (Measure next) |
+| No falsification | Kill criterion (Measure next) |
 | No tests | Full test suite |

@@ -10,12 +10,12 @@ Pipeline to keep working end to end:
 4. mechanism router (`src/core/mechanismRouter.ts`, `fixtures/routes.ts`)
 5. physics data generation (`src/core/physics.ts`)
 6. multimodal simulation (`src/core/simulator.ts`)
-7. rationale/evidence cards (`src/core/rationale.ts`)
-8. measurement-worthiness ranking (`src/core/ranking.ts`)
-9. design adapter panel (`src/core/designAdapter.ts`)
-10. claim-boundary audit (`src/core/claimFirewall.ts`)
-11. export (`src/core/export.ts`)
-12. **mandatory adversarial swarm** (`src/core/swarm.ts` → `swarmReview` on every result)
+7. simulation evidence for every candidate, under an instrument (`src/core/simulationEvidence.ts`)
+8. experiment-value ranking, after simulation (`src/core/experimentScore.ts`)
+9. rationale/evidence cards + measurement plan (`src/core/rationale.ts`, `src/core/measurementPlan.ts`)
+10. design adapter, optional handoff (`src/core/designAdapter.ts`)
+11. claim-boundary audit + export (`src/core/claimFirewall.ts`, `src/core/export.ts`)
+12. **mandatory deterministic release audit** (`src/core/swarm/` → `swarmReview` on every result)
 13. tests (`tests/`)
 
 Keep it deterministic for a fixed seed. Do not spend time on live

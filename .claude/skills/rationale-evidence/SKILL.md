@@ -10,7 +10,7 @@ Reference: `src/core/rationale.ts`, `src/core/fixtures/evidenceCards.ts`.
 ## Cards (max three bullets each)
 
 why measure first; mechanism route; evidence anchors; failure modes; required
-controls; claim boundary.
+controls; falsification criteria (kill rules); claim boundary.
 
 ## Evidence relations
 

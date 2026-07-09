@@ -19,7 +19,7 @@ description: Polish GitHub repo and hackathon submission materials for first-imp
 
 Nebula Discover turns messy protein-sensor objectives into ranked public construct
 hypotheses, synthetic assumption sweeps, falsification criteria, and claim-safe
-measurement handoffs — with a mandatory adversarial swarm on every run.
+measurement handoffs — with a deterministic release audit on every run.
 
 ## Do not
 

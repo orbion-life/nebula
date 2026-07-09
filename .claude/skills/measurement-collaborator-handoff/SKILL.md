@@ -7,7 +7,7 @@ description: Turn Discover export into a one-page wet-lab measurement brief for 
 
 ## Input
 
-Download Markdown handoff from UI §07 (selected hypothesis).
+Download Markdown handoff from the Measure next screen (selected hypothesis).
 
 ## Output structure (1 page)
 

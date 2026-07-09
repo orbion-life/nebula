@@ -6,7 +6,7 @@
 
 Turn a messy protein-sensor objective into ranked public construct hypotheses,
 synthetic assumption sweeps, falsification criteria, and a claim-safe measurement
-handoff — with a mandatory 10-lens adversarial swarm on every run.
+handoff — with a deterministic 10-lens release audit gating every run.
 
 ## Problem
 
@@ -51,12 +51,13 @@ See [`IP_BOUNDARY.md`](./IP_BOUNDARY.md).
 **Title:** Nebula Discover — Decide What Deserves Measurement First
 
 **Description:** A public discovery workflow for protein-sensor teams: objective →
-construct hypotheses → mechanism routes → synthetic traces → falsification criteria
-→ measurement-worthiness ranking → claim-safe handoff. Mandatory hierarchical
-map-reduce adversarial swarm on every result. Deterministic, offline, fully tested.
+construct hypotheses → mechanism routes → synthetic traces (every candidate) →
+experiment-value ranking → falsification criteria → claim-safe handoff.
+Deterministic hierarchical map-reduce release audit on every result.
+Deterministic, offline, fully tested.
 
-**Claude:** Visible panel of 13 agents and 25+ skills; deterministic code owns
-schemas, simulator, firewall, and swarm; Claude parses objectives and authors
-rationale under structured constraints.
+**Claude:** A bounded, transparent set of 13 agents and 25+ skills as Claude's
+working method; deterministic code owns schemas, simulator, firewall, and swarm;
+Claude parses objectives and authors rationale under structured constraints.
 
 **Try it:** Clone repo → `npm test` → `npm run dev` → paste demo objective → Run Discover.

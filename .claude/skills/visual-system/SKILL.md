@@ -9,7 +9,7 @@ Reference: `src/ui/theme.css`, `src/ui/charts/LineChart.tsx`, `src/ui/App.tsx`.
 
 ## Required visuals
 
-compiled-constraint cards; top-3 hypotheses with worthiness component bars;
+compiled-constraint cards; top-3 routes with experiment-value component bars;
 construct map; mechanism causal chain; small-multiple signal traces; controls /
 nuisance tags; claim firewall; export preview.
 

@@ -27,7 +27,7 @@ see `docs/SWARM_ARCHITECTURE.md`.
 ## Procedure
 
 1. Run `npm test tests/swarm.test.ts` — all architecture tests must pass.
-2. Run the demo objective with seed `1337`; inspect UI section **08**.
+2. Run the demo objective with seed `1337`; open the **Release audit** disclosure on the Measure next screen.
 3. Confirm `swarmReview.architecture === hierarchical-map-reduce-producer-reviewer`.
 4. If verdict is `fail`, patch `arbiter.requiredPatches` and re-run.
 5. Document accepted warnings in the demo script.

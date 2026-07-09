@@ -11,17 +11,17 @@ Run after recording, before upload.
 
 - [ ] Never said "validated sensor" or "predicts magnetic response"
 - [ ] Said "synthetic assumption sweep, not prediction" on screen
-- [ ] Said "measurement-worthiness, not performance"
+- [ ] Said "experiment value, not predicted performance"
 
 ## Visual
 
-- [ ] §01 objective compile visible
-- [ ] §02 ranking with open weights
-- [ ] §04 traces + parameter table
-- [ ] §05 falsification card visible
-- [ ] §06 firewall downgrade
-- [ ] §07 export for selected hypothesis
-- [ ] §08 swarm (sentry + committee)
+- [ ] Ask: objective compiled + instrument
+- [ ] Explain: routes ranked by experiment value (open weights)
+- [ ] Simulate: traces + parameter provenance table
+- [ ] Measure next: falsification kill criterion visible
+- [ ] Measure next: claim firewall downgrade
+- [ ] Measure next: handoff export for selected hypothesis
+- [ ] Measure next: Release audit disclosure (deterministic)
 - [ ] Seed stable (1337 demo)
 
 ## Length

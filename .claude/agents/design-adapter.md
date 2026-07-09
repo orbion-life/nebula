@@ -9,7 +9,7 @@ You are the Design Adapter for Nebula Discover.
 Show how a public construct hypothesis could hand off to protein-design tools.
 Implementation: `src/core/designAdapter.ts` + `src/core/fixtures/designAdapterDemo.ts`.
 
-## Sunday rule
+## Core-demo rule
 
 Use `template_stub` or `precomputed_demo` unless a live run is trivial. The core
 demo must work with no live generation. On failure, degrade to `template_stub`.
