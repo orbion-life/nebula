@@ -1,0 +1,14 @@
+{
+ "pdb_id": "1N9O",
+ "ligand": "FMN",
+ "chain": "A",
+ "n_atoms": 18,
+ "n_heavy": 17,
+ "converged": true,
+ "energy_hartree": -783.4810700362565,
+ "max_abs_spin": 1.0706,
+ "n_spin_sites": 15,
+ "basis": "6-31g",
+ "wall_seconds": 165.0,
+ "note": "isoalloxazine core (17 heavy atoms) extracted from bound FMN in chain A; ribityl/tail truncated + H-capped at N10; neutral doublet radical (charge 0, spin 1) assumed. Assumption-derived; not a whole-protein claim."
+}

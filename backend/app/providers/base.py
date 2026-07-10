@@ -64,9 +64,12 @@ class ProviderBase:
     provider: ProviderId
     release_header: str | None = None  # e.g. "x-uniprot-release"
 
-    def __init__(self, *, offline: bool = True, timeout: float = 15.0) -> None:
+    def __init__(self, *, offline: bool = True, timeout: float = 15.0, record: bool = False) -> None:
         self.offline = offline
         self.timeout = timeout
+        # when True (live only), successful fetches are also persisted as committed
+        # offline fixtures — this is how the reproducible offline demo index is built.
+        self.record = record
         self._fx = FIXTURES_DIR / self.provider.value
         self._cache = CACHE_DIR / self.provider.value
 
@@ -125,11 +128,17 @@ class ProviderBase:
 
         cached = self._cache_get(url)
         if cached is not None:
+            if self.record:  # persist even on a cache hit, so index-building never misses a fixture
+                self._fx.mkdir(parents=True, exist_ok=True)
+                self._fixture_path(fixture_key).write_text(json.dumps(cached, indent=1))
             return Fetched(cached, Provenance(mode=RetrievalMode.cached, http_status=200, **prov_kw))
 
         try:
             data, status, hdrs = self._http_get(url, headers=headers, accept=accept)
             self._cache_put(url, data)
+            if self.record:
+                self._fx.mkdir(parents=True, exist_ok=True)
+                self._fixture_path(fixture_key).write_text(json.dumps(data, indent=1))
             return Fetched(
                 data,
                 Provenance(
@@ -160,6 +169,9 @@ class ProviderBase:
 
         cache = self._cache / f"{_key(url)}.txt"
         if cache.exists() and (time.time() - cache.stat().st_mtime) < CACHE_TTL_SECONDS:
+            if self.record:
+                self._fx.mkdir(parents=True, exist_ok=True)
+                fx.write_text(cache.read_text())
             return cache.read_text(), Provenance(mode=RetrievalMode.cached, http_status=200, **prov_kw)
         try:
             h = {"User-Agent": USER_AGENT, **(headers or {})}
@@ -169,6 +181,9 @@ class ProviderBase:
                 text = r.text
             self._cache.mkdir(parents=True, exist_ok=True)
             cache.write_text(text)
+            if self.record:
+                self._fx.mkdir(parents=True, exist_ok=True)
+                fx.write_text(text)
             return text, Provenance(mode=RetrievalMode.live, http_status=r.status_code, **prov_kw)
         except Exception as exc:
             if fx.exists():

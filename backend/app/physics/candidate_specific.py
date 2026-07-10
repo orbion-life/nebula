@@ -11,11 +11,12 @@ label stands.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import subprocess
 import sys
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from ..contracts.enums import ParameterSourceType, Uncertainty
@@ -23,6 +24,11 @@ from ..contracts.provenance import ParameterProvenance
 from .cluster import extract_isoalloxazine
 
 _WORKER = Path(__file__).resolve().parent / "qm_worker.py"
+# Content-addressed cache of UHF results. The isoalloxazine geometry is extracted
+# deterministically from a fixed structure, so (atoms, charge, spin, basis) fully
+# determines the result — cache it so an offline demo (and CI) never pays the ~2 min
+# 6-31G compute twice. Committed entries make the offline candidate-QM path instant.
+_QM_CACHE = Path(__file__).resolve().parent / "qm_cache"
 
 
 @dataclass(frozen=True)
@@ -53,13 +59,53 @@ class CandidateQm:
         )
 
 
-def run_candidate_qm(pdb_id: str, cif_text: str, *, basis: str = "6-31g", timeout: float = 150.0) -> CandidateQm | None:
+def _worker_hash() -> str:
+    try:
+        return hashlib.sha256(_WORKER.read_bytes()).hexdigest()[:12]
+    except Exception:
+        return "noworker"
+
+
+def _cache_key(req: dict) -> str:
+    # include the worker code hash so any change to the QM code invalidates cached
+    # results (the cache can never mask a computation regression).
+    blob = json.dumps({**req, "_worker": _worker_hash()}, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(blob.encode()).hexdigest()[:24]
+
+
+def _cache_load(key: str) -> CandidateQm | None:
+    p = _QM_CACHE / f"{key}.json"
+    if not p.exists():
+        return None
+    try:
+        return CandidateQm(**json.loads(p.read_text()))
+    except Exception:
+        return None
+
+
+def _cache_store(key: str, qm: CandidateQm) -> None:
+    try:
+        _QM_CACHE.mkdir(parents=True, exist_ok=True)
+        (_QM_CACHE / f"{key}.json").write_text(json.dumps(asdict(qm), indent=1))
+    except Exception:
+        pass  # cache is best-effort; a write failure never breaks the run
+
+
+def run_candidate_qm(pdb_id: str, cif_text: str, *, basis: str = "6-31g", timeout: float = 150.0, use_cache: bool = True) -> CandidateQm | None:
     extracted = extract_isoalloxazine(cif_text)
     if extracted is None:
         return None
     atoms, charge, spin, note, ligand, chain = extracted
     n_heavy = sum(1 for a in atoms if a[0] != "H")
     req = {"atoms": atoms, "charge": charge, "spin": spin, "basis": basis, "max_cycle": 200}
+
+    # content-addressed cache: identical geometry+basis+worker → identical result, instantly
+    key = _cache_key({**req, "pdb_id": pdb_id})
+    if use_cache:
+        cached = _cache_load(key)
+        if cached is not None:
+            return cached
+
     env = {
         **os.environ,
         "OMP_NUM_THREADS": "2",
@@ -79,9 +125,11 @@ def run_candidate_qm(pdb_id: str, cif_text: str, *, basis: str = "6-31g", timeou
         out = json.loads(proc.stdout)
     except Exception:
         return None
-    return CandidateQm(
+    qm = CandidateQm(
         pdb_id=pdb_id, ligand=ligand, chain=chain, n_atoms=out["natm"], n_heavy=n_heavy,
         converged=out["converged"], energy_hartree=out["energy"],
         max_abs_spin=out["max_abs_spin"], n_spin_sites=out["n_spin_sites"],
         basis=out["basis"], wall_seconds=out["wall_seconds"], note=note,
     )
+    _cache_store(key, qm)
+    return qm

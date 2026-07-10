@@ -173,11 +173,11 @@ def _build_candidate(
     )
 
 
-def assemble_candidates(plans: list[QueryPlan], *, offline: bool, per_route: int = 6) -> list[CandidateRecord]:
-    up = UniProtProvider(offline=offline)
-    ip = InterProProvider(offline=offline)
-    rc = RcsbProvider(offline=offline)
-    af = AlphaFoldProvider(offline=offline)
+def assemble_candidates(plans: list[QueryPlan], *, offline: bool, per_route: int = 6, record: bool = False) -> list[CandidateRecord]:
+    up = UniProtProvider(offline=offline, record=record)
+    ip = InterProProvider(offline=offline, record=record)
+    rc = RcsbProvider(offline=offline, record=record)
+    af = AlphaFoldProvider(offline=offline, record=record)
 
     out: list[CandidateRecord] = []
     seen: set[str] = set()

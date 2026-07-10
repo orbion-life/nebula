@@ -1,0 +1,440 @@
+{
+ "count": 8,
+ "next": null,
+ "previous": null,
+ "results": [
+  {
+   "metadata": {
+    "accession": "IPR000014",
+    "name": "PAS domain",
+    "source_database": "interpro",
+    "type": "domain",
+    "integrated": null,
+    "member_databases": {
+     "ncbifam": {
+      "TIGR00229": "PAS domain S-box protein"
+     },
+     "pfam": {
+      "PF13188": "PAS domain",
+      "PF13426": "PAS domain"
+     },
+     "cdd": {
+      "cd00130": "PAS"
+     },
+     "profile": {
+      "PS50112": "PAS repeat profile"
+     },
+     "smart": {
+      "SM00091": "PAS domain"
+     }
+    },
+    "go_terms": null
+   },
+   "proteins": [
+    {
+     "accession": "q8lpd9",
+     "protein_length": 749,
+     "source_database": "reviewed",
+     "organism": "3055",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 7,
+         "end": 128,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      },
+      {
+       "fragments": [
+        {
+         "start": 202,
+         "end": 319,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "metadata": {
+    "accession": "IPR000700",
+    "name": "PAS-associated, C-terminal",
+    "source_database": "interpro",
+    "type": "domain",
+    "integrated": null,
+    "member_databases": {
+     "profile": {
+      "PS50113": "PAC domain profile"
+     }
+    },
+    "go_terms": null
+   },
+   "proteins": [
+    {
+     "accession": "q8lpd9",
+     "protein_length": 749,
+     "source_database": "reviewed",
+     "organism": "3055",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 81,
+         "end": 135,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      },
+      {
+       "fragments": [
+        {
+         "start": 274,
+         "end": 328,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "metadata": {
+    "accession": "IPR000719",
+    "name": "Protein kinase domain",
+    "source_database": "interpro",
+    "type": "domain",
+    "integrated": null,
+    "member_databases": {
+     "profile": {
+      "PS50011": "Protein kinase domain profile"
+     },
+     "pfam": {
+      "PF00069": "Protein kinase domain"
+     },
+     "smart": {
+      "SM00220": "Serine/Threonine protein kinases, catalytic domain"
+     }
+    },
+    "go_terms": [
+     {
+      "identifier": "GO:0005524",
+      "name": "ATP binding",
+      "category": {
+       "code": "F",
+       "name": "molecular_function"
+      }
+     },
+     {
+      "identifier": "GO:0006468",
+      "name": "protein phosphorylation",
+      "category": {
+       "code": "P",
+       "name": "biological_process"
+      }
+     }
+    ]
+   },
+   "proteins": [
+    {
+     "accession": "q8lpd9",
+     "protein_length": 749,
+     "source_database": "reviewed",
+     "organism": "3055",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 404,
+         "end": 712,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "metadata": {
+    "accession": "IPR000961",
+    "name": "AGC-kinase, C-terminal",
+    "source_database": "interpro",
+    "type": "domain",
+    "integrated": null,
+    "member_databases": {
+     "profile": {
+      "PS51285": "AGC-kinase C-terminal domain profile"
+     },
+     "smart": {
+      "SM00133": "Extension to Ser/Thr-type protein kinases"
+     }
+    },
+    "go_terms": [
+     {
+      "identifier": "GO:0004674",
+      "name": "protein serine/threonine kinase activity",
+      "category": {
+       "code": "F",
+       "name": "molecular_function"
+      }
+     },
+     {
+      "identifier": "GO:0005524",
+      "name": "ATP binding",
+      "category": {
+       "code": "F",
+       "name": "molecular_function"
+      }
+     },
+     {
+      "identifier": "GO:0006468",
+      "name": "protein phosphorylation",
+      "category": {
+       "code": "P",
+       "name": "biological_process"
+      }
+     }
+    ]
+   },
+   "proteins": [
+    {
+     "accession": "q8lpd9",
+     "protein_length": 749,
+     "source_database": "reviewed",
+     "organism": "3055",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 713,
+         "end": 749,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "metadata": {
+    "accession": "IPR001610",
+    "name": "PAC motif",
+    "source_database": "interpro",
+    "type": "repeat",
+    "integrated": null,
+    "member_databases": {
+     "smart": {
+      "SM00086": "Motif C-terminal to PAS motifs (likely to contribute to PAS structural domain)"
+     }
+    },
+    "go_terms": null
+   },
+   "proteins": [
+    {
+     "accession": "q8lpd9",
+     "protein_length": 749,
+     "source_database": "reviewed",
+     "organism": "3055",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 84,
+         "end": 126,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      },
+      {
+       "fragments": [
+        {
+         "start": 277,
+         "end": 319,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "metadata": {
+    "accession": "IPR008271",
+    "name": "Serine/threonine-protein kinase, active site",
+    "source_database": "interpro",
+    "type": "active_site",
+    "integrated": null,
+    "member_databases": {
+     "prosite": {
+      "PS00108": "Serine/Threonine protein kinases active-site signature"
+     }
+    },
+    "go_terms": [
+     {
+      "identifier": "GO:0004672",
+      "name": "protein kinase activity",
+      "category": {
+       "code": "F",
+       "name": "molecular_function"
+      }
+     },
+     {
+      "identifier": "GO:0006468",
+      "name": "protein phosphorylation",
+      "category": {
+       "code": "P",
+       "name": "biological_process"
+      }
+     }
+    ]
+   },
+   "proteins": [
+    {
+     "accession": "q8lpd9",
+     "protein_length": 749,
+     "source_database": "reviewed",
+     "organism": "3055",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 525,
+         "end": 537,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "metadata": {
+    "accession": "IPR011009",
+    "name": "Protein kinase-like domain superfamily",
+    "source_database": "interpro",
+    "type": "homologous_superfamily",
+    "integrated": null,
+    "member_databases": {
+     "ssf": {
+      "SSF56112": "Protein kinase-like (PK-like)"
+     }
+    },
+    "go_terms": null
+   },
+   "proteins": [
+    {
+     "accession": "q8lpd9",
+     "protein_length": 749,
+     "source_database": "reviewed",
+     "organism": "3055",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 393,
+         "end": 732,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "metadata": {
+    "accession": "IPR035965",
+    "name": "PAS domain superfamily",
+    "source_database": "interpro",
+    "type": "homologous_superfamily",
+    "integrated": null,
+    "member_databases": {
+     "ssf": {
+      "SSF55785": "PYP-like sensor domain (PAS domain)"
+     }
+    },
+    "go_terms": null
+   },
+   "proteins": [
+    {
+     "accession": "q8lpd9",
+     "protein_length": 749,
+     "source_database": "reviewed",
+     "organism": "3055",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 30,
+         "end": 124,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      },
+      {
+       "fragments": [
+        {
+         "start": 215,
+         "end": 319,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

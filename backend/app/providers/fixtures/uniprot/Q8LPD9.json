@@ -1,0 +1,959 @@
+{
+ "entryType": "UniProtKB reviewed (Swiss-Prot)",
+ "primaryAccession": "Q8LPD9",
+ "uniProtkbId": "PHOT_CHLRE",
+ "organism": {
+  "scientificName": "Chlamydomonas reinhardtii",
+  "commonName": "Chlamydomonas smithii",
+  "taxonId": 3055,
+  "lineage": [
+   "Eukaryota",
+   "Viridiplantae",
+   "Chlorophyta",
+   "core chlorophytes",
+   "Chlorophyceae",
+   "CS clade",
+   "Chlamydomonadales",
+   "Chlamydomonadaceae",
+   "Chlamydomonas"
+  ]
+ },
+ "proteinDescription": {
+  "recommendedName": {
+   "fullName": {
+    "evidences": [
+     {
+      "evidenceCode": "ECO:0000305"
+     }
+    ],
+    "value": "Phototropin"
+   },
+   "ecNumbers": [
+    {
+     "evidences": [
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "15695460"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "24285544"
+      }
+     ],
+     "value": "2.7.11.1"
+    }
+   ]
+  },
+  "alternativeNames": [
+   {
+    "fullName": {
+     "evidences": [
+      {
+       "evidenceCode": "ECO:0000305"
+      }
+     ],
+     "value": "Blue light receptor PHOT"
+    }
+   }
+  ]
+ },
+ "comments": [
+  {
+   "texts": [
+    {
+     "evidences": [
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "15695460"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "24285544"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "27626383"
+      }
+     ],
+     "value": "Protein kinase that acts as a blue light photoreceptor (PubMed:15695460, PubMed:24285544). Required for non-photochemical quenching (NPQ), a mechanism that converts and dissipates the harmful excess absorbed light energy into heat and protect the photosynthetic apparatus from photo-oxidative damage (PubMed:27626383). Controls the energy-dependent chlorophyll fluorescence quenching (qE) activity of chlorophyll excited states by inducing the expression of the qE effector protein LHCSR3 in high light intensities (PubMed:27626383)"
+    }
+   ],
+   "commentType": "FUNCTION"
+  },
+  {
+   "commentType": "COFACTOR",
+   "cofactors": [
+    {
+     "name": "FMN",
+     "evidences": [
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "12668455"
+      }
+     ],
+     "cofactorCrossReference": {
+      "database": "ChEBI",
+      "id": "CHEBI:58210"
+     }
+    }
+   ],
+   "note": {
+    "texts": [
+     {
+      "evidences": [
+       {
+        "evidenceCode": "ECO:0000305",
+        "source": "PubMed",
+        "id": "12668455"
+       }
+      ],
+      "value": "Binds 2 FMN per subunit."
+     }
+    ]
+   }
+  },
+  {
+   "commentType": "SUBCELLULAR LOCATION",
+   "subcellularLocations": [
+    {
+     "location": {
+      "evidences": [
+       {
+        "evidenceCode": "ECO:0000269",
+        "source": "PubMed",
+        "id": "12121468"
+       }
+      ],
+      "value": "Membrane",
+      "id": "SL-0162"
+     },
+     "topology": {
+      "evidences": [
+       {
+        "evidenceCode": "ECO:0000305"
+       }
+      ],
+      "value": "Peripheral membrane protein",
+      "id": "SL-9903"
+     }
+    }
+   ]
+  }
+ ],
+ "features": [
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 56,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 61,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:58210"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "12668455"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1N9L"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1N9N"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1N9O"
+    }
+   ],
+   "ligand": {
+    "name": "FMN",
+    "id": "ChEBI:CHEBI:58210"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 74,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 74,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:58210"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "12668455"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1N9N"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1N9O"
+    }
+   ],
+   "ligand": {
+    "name": "FMN",
+    "id": "ChEBI:CHEBI:58210"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 89,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 89,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:58210"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "12668455"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1N9L"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1N9N"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1N9O"
+    }
+   ],
+   "ligand": {
+    "name": "FMN",
+    "id": "ChEBI:CHEBI:58210"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 99,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 99,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:58210"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "12668455"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1N9L"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1N9N"
+    }
+   ],
+   "ligand": {
+    "name": "FMN",
+    "id": "ChEBI:CHEBI:58210"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 120,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 120,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:58210"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "12668455"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1N9L"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1N9N"
+    }
+   ],
+   "ligand": {
+    "name": "FMN",
+    "id": "ChEBI:CHEBI:58210"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 410,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 418,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:30616"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000255",
+     "source": "PROSITE-ProRule",
+     "id": "PRU00159"
+    }
+   ],
+   "ligand": {
+    "name": "ATP",
+    "id": "ChEBI:CHEBI:30616"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 433,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 433,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:30616"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000255",
+     "source": "PROSITE-ProRule",
+     "id": "PRU00159"
+    }
+   ],
+   "ligand": {
+    "name": "ATP",
+    "id": "ChEBI:CHEBI:30616"
+   }
+  }
+ ],
+ "keywords": [
+  {
+   "id": "KW-0002",
+   "category": "Technical term",
+   "name": "3D-structure"
+  },
+  {
+   "id": "KW-0025",
+   "category": "Coding sequence diversity",
+   "name": "Alternative splicing"
+  },
+  {
+   "id": "KW-0067",
+   "category": "Ligand",
+   "name": "ATP-binding"
+  },
+  {
+   "id": "KW-0157",
+   "category": "Ligand",
+   "name": "Chromophore"
+  },
+  {
+   "id": "KW-0285",
+   "category": "Ligand",
+   "name": "Flavoprotein"
+  },
+  {
+   "id": "KW-0288",
+   "category": "Ligand",
+   "name": "FMN"
+  },
+  {
+   "id": "KW-0418",
+   "category": "Molecular function",
+   "name": "Kinase"
+  },
+  {
+   "id": "KW-0472",
+   "category": "Cellular component",
+   "name": "Membrane"
+  },
+  {
+   "id": "KW-0547",
+   "category": "Ligand",
+   "name": "Nucleotide-binding"
+  },
+  {
+   "id": "KW-0600",
+   "category": "Molecular function",
+   "name": "Photoreceptor protein"
+  },
+  {
+   "id": "KW-0675",
+   "category": "Molecular function",
+   "name": "Receptor"
+  },
+  {
+   "id": "KW-1185",
+   "category": "Technical term",
+   "name": "Reference proteome"
+  },
+  {
+   "id": "KW-0716",
+   "category": "Biological process",
+   "name": "Sensory transduction"
+  },
+  {
+   "id": "KW-0723",
+   "category": "Molecular function",
+   "name": "Serine/threonine-protein kinase"
+  },
+  {
+   "id": "KW-0808",
+   "category": "Molecular function",
+   "name": "Transferase"
+  }
+ ],
+ "uniProtKBCrossReferences": [
+  {
+   "database": "PDB",
+   "id": "1N9L",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "1.90 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=17-125"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "1N9N",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.30 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=17-125"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "1N9O",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.80 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=17-125"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QI8",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "1.35 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QI9",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "1.87 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIA",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.50 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIB",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.45 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIF",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.45 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIG",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.50 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIH",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.50 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QII",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.50 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIK",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.55 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIL",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.55 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIM",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.60 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIN",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.70 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIO",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.75 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIP",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.70 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIQ",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.90 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIR",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "3.00 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIS",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.90 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIT",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.90 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIU",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "3.00 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIV",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "3.10 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "8QIW",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "3.05 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=16-133"
+    }
+   ]
+  },
+  {
+   "database": "AlphaFoldDB",
+   "id": "Q8LPD9",
+   "properties": [
+    {
+     "key": "Description",
+     "value": "-"
+    }
+   ]
+  }
+ ],
+ "sequence": {
+  "value": "MAGVPAPASQLTKVLAGLRHTFVVADATLPDCPLVYASEGFYAMTGYGPDEVLGHNCRFLQGEGTDPKEVQKIRDAIKKGEACSVRLLNYRKDGTPFWNLLTVTPIKTPDGRVSKFVGVQVDVTSKTEGKALADNSGVPLLVKYDHRLRDNVARTIVDDVTIAVEKAEGVEPGQASAVAAAAPLGAKGPRGTAPKSFPRVALDLATTVERIQQNFCISDPTLPDCPIVFASDAFLELTGYSREEVLGRNCRFLQGAGTDRGTVDQIRAAIKEGSELTVRILNYTKAGKAFWNMFTLAPMRDQDGHARFFVGVQVDVTAQSTSPDKAPVWNKTPEEEVAKAKMGAEAASLISSALQGMAAPTTANPWAAISGVIMRRKPHKADDKAYQALLQLQERDGKMKLMHFRRVKQLGAGDVGLVDLVQLQGSELKFAMKTLDKFEMQERNKVARVLTESAILAAVDHPFLATLYCTIQTDTHLHFVMEYCDGGELYGLLNSQPKKRLKEEHVRFYASEVLTALQYLHLLGYVYRDLKPENILLHHTGHVLLTDFDLSYSKGSTTPRIEKIGGAGAAGGSAPKSPKKSSSKSGGSSSGSALQLENYLLLAEPSARANSFVGTEEYLAPEVINAAGHGPAVDWWSLGILIFELLYGTTPFRGARRDETFENIIKSPLKFPSKPAVSEECRDLIEKLLVKDVGARLGSRTGANEIKSHPWFKGINWALLRHQQPPYVPRRASKAAGGSSTGGAAFDNY",
+  "length": 749,
+  "molWeight": 81395,
+  "crc64": "6F2E5FE88B85EAFF",
+  "md5": "A41E3DD67DA695134ECE91343A9A010B"
+ },
+ "extraAttributes": {
+  "uniParcId": "UPI00000AA1EF"
+ }
+}

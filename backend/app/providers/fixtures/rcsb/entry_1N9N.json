@@ -1,0 +1,670 @@
+{
+ "audit_author": [
+  {
+   "name": "Fedorov, R.",
+   "pdbx_ordinal": 1
+  },
+  {
+   "name": "Schlichting, I.",
+   "pdbx_ordinal": 2
+  },
+  {
+   "name": "Hartmann, E.",
+   "pdbx_ordinal": 3
+  },
+  {
+   "name": "Domratcheva, T.",
+   "pdbx_ordinal": 4
+  },
+  {
+   "name": "Fuhrmann, M.",
+   "pdbx_ordinal": 5
+  },
+  {
+   "name": "Hegemann, P.",
+   "pdbx_ordinal": 6
+  }
+ ],
+ "cell": {
+  "Z_PDB": 12,
+  "angle_alpha": 90.0,
+  "angle_beta": 90.0,
+  "angle_gamma": 120.0,
+  "length_a": 120.9,
+  "length_b": 120.9,
+  "length_c": 46.0
+ },
+ "citation": [
+  {
+   "country": "US",
+   "id": "primary",
+   "journal_abbrev": "Biophys.J.",
+   "journal_id_ASTM": "BIOJAU",
+   "journal_id_CSD": "0030",
+   "journal_id_ISSN": "0006-3495",
+   "journal_volume": "84",
+   "page_first": "2474",
+   "page_last": "2482",
+   "pdbx_database_id_DOI": "10.1016/S0006-3495(03)75052-8",
+   "pdbx_database_id_PubMed": 12668455,
+   "rcsb_authors": [
+    "Fedorov, R.",
+    "Schlichting, I.",
+    "Hartmann, E.",
+    "Domratcheva, T.",
+    "Fuhrmann, M.",
+    "Hegemann, P."
+   ],
+   "rcsb_is_primary": "Y",
+   "rcsb_journal_abbrev": "Biophys J",
+   "title": "Crystal structures and molecular mechanism of a light-induced signaling switch: The Phot-LOV1 domain from Chlamydomonas reinhardtii.",
+   "year": 2003
+  }
+ ],
+ "database_2": [
+  {
+   "database_code": "1N9N",
+   "database_id": "PDB",
+   "pdbx_DOI": "10.2210/pdb1n9n/pdb",
+   "pdbx_database_accession": "pdb_00001n9n"
+  },
+  {
+   "database_code": "RCSB017691",
+   "database_id": "RCSB"
+  },
+  {
+   "database_code": "D_1000017691",
+   "database_id": "WWPDB"
+  }
+ ],
+ "diffrn": [
+  {
+   "ambient_temp": 100.0,
+   "crystal_id": "1",
+   "id": "1"
+  }
+ ],
+ "diffrn_detector": [
+  {
+   "detector": "CCD",
+   "diffrn_id": "1",
+   "pdbx_collection_date": "2001-11-05T00:00:00.000+00:00",
+   "type": "ADSC QUANTUM 4"
+  }
+ ],
+ "diffrn_radiation": [
+  {
+   "diffrn_id": "1",
+   "monochromator": "channel - cut Si monochromator",
+   "pdbx_diffrn_protocol": "SINGLE WAVELENGTH",
+   "pdbx_monochromatic_or_laue_m_l": "M",
+   "pdbx_scattering_type": "x-ray",
+   "wavelength_id": "1"
+  }
+ ],
+ "diffrn_source": [
+  {
+   "diffrn_id": "1",
+   "pdbx_synchrotron_beamline": "ID29",
+   "pdbx_synchrotron_site": "ESRF",
+   "pdbx_wavelength_list": "0.969",
+   "source": "SYNCHROTRON",
+   "type": "ESRF BEAMLINE ID29"
+  }
+ ],
+ "entry": {
+  "id": "1N9N"
+ },
+ "exptl": [
+  {
+   "crystals_number": 1,
+   "method": "X-RAY DIFFRACTION"
+  }
+ ],
+ "exptl_crystal": [
+  {
+   "density_Matthews": 3.54,
+   "density_percent_sol": 64.99,
+   "id": "1"
+  }
+ ],
+ "exptl_crystal_grow": [
+  {
+   "crystal_id": "1",
+   "method": "VAPOR DIFFUSION, HANGING DROP",
+   "pH": 7.3,
+   "pdbx_details": "HEPES, ammonium sulfate, PEG8000, pH 7.3, VAPOR DIFFUSION, HANGING DROP, temperature 293K",
+   "temp": 293.0
+  }
+ ],
+ "pdbx_audit_revision_category": [
+  {
+   "category": "software",
+   "data_content_type": "Structure model",
+   "ordinal": 1,
+   "revision_ordinal": 4
+  },
+  {
+   "category": "citation",
+   "data_content_type": "Structure model",
+   "ordinal": 2,
+   "revision_ordinal": 5
+  },
+  {
+   "category": "chem_comp_atom",
+   "data_content_type": "Structure model",
+   "ordinal": 3,
+   "revision_ordinal": 6
+  },
+  {
+   "category": "chem_comp_bond",
+   "data_content_type": "Structure model",
+   "ordinal": 4,
+   "revision_ordinal": 6
+  },
+  {
+   "category": "database_2",
+   "data_content_type": "Structure model",
+   "ordinal": 5,
+   "revision_ordinal": 6
+  },
+  {
+   "category": "pdbx_initial_refinement_model",
+   "data_content_type": "Structure model",
+   "ordinal": 6,
+   "revision_ordinal": 6
+  },
+  {
+   "category": "struct_site",
+   "data_content_type": "Structure model",
+   "ordinal": 7,
+   "revision_ordinal": 6
+  }
+ ],
+ "pdbx_audit_revision_details": [
+  {
+   "data_content_type": "Structure model",
+   "ordinal": 1,
+   "provider": "repository",
+   "revision_ordinal": 1,
+   "type": "Initial release"
+  }
+ ],
+ "pdbx_audit_revision_group": [
+  {
+   "data_content_type": "Structure model",
+   "group": "Version format compliance",
+   "ordinal": 1,
+   "revision_ordinal": 2
+  },
+  {
+   "data_content_type": "Structure model",
+   "group": "Version format compliance",
+   "ordinal": 2,
+   "revision_ordinal": 3
+  },
+  {
+   "data_content_type": "Structure model",
+   "group": "Refinement description",
+   "ordinal": 3,
+   "revision_ordinal": 4
+  },
+  {
+   "data_content_type": "Structure model",
+   "group": "Data collection",
+   "ordinal": 4,
+   "revision_ordinal": 5
+  },
+  {
+   "data_content_type": "Structure model",
+   "group": "Database references",
+   "ordinal": 5,
+   "revision_ordinal": 5
+  },
+  {
+   "data_content_type": "Structure model",
+   "group": "Data collection",
+   "ordinal": 6,
+   "revision_ordinal": 6
+  },
+  {
+   "data_content_type": "Structure model",
+   "group": "Database references",
+   "ordinal": 7,
+   "revision_ordinal": 6
+  },
+  {
+   "data_content_type": "Structure model",
+   "group": "Derived calculations",
+   "ordinal": 8,
+   "revision_ordinal": 6
+  },
+  {
+   "data_content_type": "Structure model",
+   "group": "Refinement description",
+   "ordinal": 9,
+   "revision_ordinal": 6
+  }
+ ],
+ "pdbx_audit_revision_history": [
+  {
+   "data_content_type": "Structure model",
+   "major_revision": 1,
+   "minor_revision": 0,
+   "ordinal": 1,
+   "revision_date": "2003-06-17T00:00:00.000+00:00"
+  },
+  {
+   "data_content_type": "Structure model",
+   "major_revision": 1,
+   "minor_revision": 1,
+   "ordinal": 2,
+   "revision_date": "2008-04-28T00:00:00.000+00:00"
+  },
+  {
+   "data_content_type": "Structure model",
+   "major_revision": 1,
+   "minor_revision": 2,
+   "ordinal": 3,
+   "revision_date": "2011-07-13T00:00:00.000+00:00"
+  },
+  {
+   "data_content_type": "Structure model",
+   "major_revision": 1,
+   "minor_revision": 3,
+   "ordinal": 4,
+   "revision_date": "2017-10-11T00:00:00.000+00:00"
+  },
+  {
+   "data_content_type": "Structure model",
+   "major_revision": 1,
+   "minor_revision": 4,
+   "ordinal": 5,
+   "revision_date": "2019-11-06T00:00:00.000+00:00"
+  },
+  {
+   "data_content_type": "Structure model",
+   "major_revision": 1,
+   "minor_revision": 5,
+   "ordinal": 6,
+   "revision_date": "2023-10-25T00:00:00.000+00:00"
+  }
+ ],
+ "pdbx_audit_revision_item": [
+  {
+   "data_content_type": "Structure model",
+   "item": "_citation.journal_abbrev",
+   "ordinal": 1,
+   "revision_ordinal": 5
+  },
+  {
+   "data_content_type": "Structure model",
+   "item": "_citation.pdbx_database_id_DOI",
+   "ordinal": 2,
+   "revision_ordinal": 5
+  },
+  {
+   "data_content_type": "Structure model",
+   "item": "_citation.title",
+   "ordinal": 3,
+   "revision_ordinal": 5
+  },
+  {
+   "data_content_type": "Structure model",
+   "item": "_database_2.pdbx_DOI",
+   "ordinal": 4,
+   "revision_ordinal": 6
+  },
+  {
+   "data_content_type": "Structure model",
+   "item": "_database_2.pdbx_database_accession",
+   "ordinal": 5,
+   "revision_ordinal": 6
+  },
+  {
+   "data_content_type": "Structure model",
+   "item": "_struct_site.pdbx_auth_asym_id",
+   "ordinal": 6,
+   "revision_ordinal": 6
+  },
+  {
+   "data_content_type": "Structure model",
+   "item": "_struct_site.pdbx_auth_comp_id",
+   "ordinal": 7,
+   "revision_ordinal": 6
+  },
+  {
+   "data_content_type": "Structure model",
+   "item": "_struct_site.pdbx_auth_seq_id",
+   "ordinal": 8,
+   "revision_ordinal": 6
+  }
+ ],
+ "pdbx_database_related": [
+  {
+   "content_type": "unspecified",
+   "db_id": "1G28",
+   "db_name": "PDB",
+   "details": "Structure Of A Flavin-Binding Domain, Lov2, From The Chimeric Phytochrome/Phototropin Photoreceptor Phy3"
+  },
+  {
+   "content_type": "unspecified",
+   "db_id": "1JNU",
+   "db_name": "PDB",
+   "details": "Photoexcited Structure Of The Plant Photoreceptor Domain, Phy3 Lov2"
+  },
+  {
+   "content_type": "unspecified",
+   "db_id": "1N9L",
+   "db_name": "PDB",
+   "details": "Crystal structure of the same protein in the dark state."
+  },
+  {
+   "content_type": "unspecified",
+   "db_id": "1N9O",
+   "db_name": "PDB",
+   "details": "Crystal structure of the same protein in illuminated state. Composite data set."
+  }
+ ],
+ "pdbx_database_status": {
+  "deposit_site": "RCSB",
+  "pdb_format_compatible": "Y",
+  "process_site": "PDBJ",
+  "recvd_initial_deposition_date": "2002-11-25T00:00:00.000+00:00",
+  "status_code": "REL",
+  "status_code_sf": "REL"
+ },
+ "pdbx_initial_refinement_model": [
+  {
+   "accession_code": "1G28",
+   "details": "PDB ENTRY 1G28",
+   "id": 1,
+   "source_name": "PDB",
+   "type": "experimental model"
+  }
+ ],
+ "pdbx_vrpt_summary": {
+  "attempted_validation_steps": "molprobity,validation-pack,xtriage,eds,mogul,buster-report,validation_schema,percentiles,writexml,writecif,writepdf",
+  "ligands_for_buster_report": "Y",
+  "report_creation_date": "2026-03-08T11:44:00.000+00:00"
+ },
+ "pdbx_vrpt_summary_diffraction": [
+  {
+   "B_factor_type": "FULL",
+   "CCP4_version": "9.0.010 (Gargrove)",
+   "DCC_R": 0.2095,
+   "DCC_Rfree": 0.2542,
+   "EDS_R": 0.2083,
+   "EDS_res_high": 2.3,
+   "EDS_res_low": 15.0,
+   "Fo_Fc_correlation": 0.927,
+   "I_over_sigma": "4.38(2.30A)",
+   "Padilla_Yeates_L2_mean": 0.313,
+   "Padilla_Yeates_L_mean": 0.482,
+   "Wilson_B_aniso": "[26.353,26.353,16.918,-0.000,0.000,0.000]",
+   "Wilson_B_estimate": 22.704,
+   "acentric_outliers": 0,
+   "bulk_solvent_b": 50.568,
+   "bulk_solvent_k": 0.383,
+   "centric_outliers": 0,
+   "data_anisotropy": 0.407,
+   "data_completeness": 99.25,
+   "density_fitness_version": "1.0.12",
+   "exp_method": "x-ray",
+   "num_miller_indices": 9184,
+   "number_reflns_R_free": 446,
+   "percent_RSRZ_outliers": 4.63,
+   "percent_free_reflections": 4.86,
+   "trans_NCS_details": "The largest off-origin peak in the Patterson function is 3.97% of the height of the origin peak. No significant pseudotranslation is detected."
+  }
+ ],
+ "pdbx_vrpt_summary_geometry": [
+  {
+   "angles_RMSZ": 0.92,
+   "bonds_RMSZ": 0.41,
+   "clashscore": 10.54,
+   "num_H_reduce": 842,
+   "num_angles_RMSZ": 1158,
+   "num_bonds_RMSZ": 853,
+   "percent_ramachandran_outliers": 0.0,
+   "percent_rotamer_outliers": 2.2
+  }
+ ],
+ "rcsb_accession_info": {
+  "deposit_date": "2002-11-25T00:00:00.000+00:00",
+  "has_released_experimental_data": "Y",
+  "initial_release_date": "2003-06-17T00:00:00.000+00:00",
+  "major_revision": 1,
+  "minor_revision": 5,
+  "revision_date": "2023-10-25T00:00:00.000+00:00",
+  "status_code": "REL"
+ },
+ "rcsb_entry_container_identifiers": {
+  "assembly_ids": [
+   "1"
+  ],
+  "entity_ids": [
+   "1",
+   "2",
+   "3"
+  ],
+  "entry_id": "1N9N",
+  "model_ids": [
+   1
+  ],
+  "non_polymer_entity_ids": [
+   "2"
+  ],
+  "polymer_entity_ids": [
+   "1"
+  ],
+  "pubmed_id": 12668455,
+  "rcsb_id": "1N9N"
+ },
+ "rcsb_entry_info": {
+  "assembly_count": 1,
+  "branched_entity_count": 0,
+  "cis_peptide_count": 0,
+  "deposited_atom_count": 979,
+  "deposited_deuterated_water_count": 0,
+  "deposited_hydrogen_atom_count": 0,
+  "deposited_model_count": 1,
+  "deposited_modeled_polymer_monomer_count": 108,
+  "deposited_nonpolymer_entity_instance_count": 1,
+  "deposited_polymer_entity_instance_count": 1,
+  "deposited_polymer_monomer_count": 109,
+  "deposited_solvent_atom_count": 114,
+  "deposited_unmodeled_polymer_monomer_count": 1,
+  "diffrn_radiation_wavelength_maximum": 0.969,
+  "diffrn_radiation_wavelength_minimum": 0.969,
+  "disulfide_bond_count": 0,
+  "entity_count": 3,
+  "experimental_method": "X-ray",
+  "experimental_method_count": 1,
+  "inter_mol_covalent_bond_count": 0,
+  "inter_mol_metalic_bond_count": 0,
+  "molecular_weight": 12.45,
+  "na_polymer_entity_types": "Other",
+  "nonpolymer_entity_count": 1,
+  "nonpolymer_molecular_weight_maximum": 0.46,
+  "nonpolymer_molecular_weight_minimum": 0.46,
+  "polymer_composition": "homomeric protein",
+  "polymer_entity_count": 1,
+  "polymer_entity_count_DNA": 0,
+  "polymer_entity_count_RNA": 0,
+  "polymer_entity_count_nucleic_acid": 0,
+  "polymer_entity_count_nucleic_acid_hybrid": 0,
+  "polymer_entity_count_protein": 1,
+  "polymer_entity_taxonomy_count": 1,
+  "polymer_molecular_weight_maximum": 11.99,
+  "polymer_molecular_weight_minimum": 11.99,
+  "polymer_monomer_count_maximum": 109,
+  "polymer_monomer_count_minimum": 109,
+  "resolution_combined": [
+   2.3
+  ],
+  "selected_polymer_entity_types": "Protein (only)",
+  "software_programs_combined": [
+   "AMORE",
+   "CNS",
+   "PRODC",
+   "XDS"
+  ],
+  "solvent_entity_count": 1,
+  "structure_determination_methodology": "experimental",
+  "structure_determination_methodology_priority": 10,
+  "diffrn_resolution_high": {
+   "provenance_source": "Depositor assigned",
+   "value": 2.3
+  }
+ },
+ "rcsb_primary_citation": {
+  "country": "US",
+  "id": "primary",
+  "journal_abbrev": "Biophys.J.",
+  "journal_id_ASTM": "BIOJAU",
+  "journal_id_CSD": "0030",
+  "journal_id_ISSN": "0006-3495",
+  "journal_volume": "84",
+  "page_first": "2474",
+  "page_last": "2482",
+  "pdbx_database_id_DOI": "10.1016/S0006-3495(03)75052-8",
+  "pdbx_database_id_PubMed": 12668455,
+  "rcsb_ORCID_identifiers": [
+   "?",
+   "?",
+   "?",
+   "?",
+   "?",
+   "?"
+  ],
+  "rcsb_authors": [
+   "Fedorov, R.",
+   "Schlichting, I.",
+   "Hartmann, E.",
+   "Domratcheva, T.",
+   "Fuhrmann, M.",
+   "Hegemann, P."
+  ],
+  "rcsb_journal_abbrev": "Biophys J",
+  "title": "Crystal structures and molecular mechanism of a light-induced signaling switch: The Phot-LOV1 domain from Chlamydomonas reinhardtii.",
+  "year": 2003
+ },
+ "refine": [
+  {
+   "ls_R_factor_R_free": 0.265,
+   "ls_R_factor_R_work": 0.212,
+   "ls_R_factor_all": 0.215,
+   "ls_R_factor_obs": 0.215,
+   "ls_d_res_high": 2.3,
+   "ls_d_res_low": 15.0,
+   "ls_number_reflns_R_free": 446,
+   "ls_number_reflns_all": 9184,
+   "ls_number_reflns_obs": 9184,
+   "pdbx_R_Free_selection_details": "RANDOM",
+   "pdbx_diffrn_id": [
+    "1"
+   ],
+   "pdbx_ls_cross_valid_method": "THROUGHOUT",
+   "pdbx_ls_sigma_F": 0.0,
+   "pdbx_method_to_determine_struct": "MOLECULAR REPLACEMENT",
+   "pdbx_refine_id": "X-RAY DIFFRACTION",
+   "pdbx_starting_model": "PDB ENTRY 1G28",
+   "pdbx_stereochemistry_target_values": "Engh & Huber"
+  }
+ ],
+ "refine_hist": [
+  {
+   "cycle_id": "LAST",
+   "d_res_high": 2.3,
+   "d_res_low": 15.0,
+   "number_atoms_solvent": 114,
+   "number_atoms_total": 979,
+   "pdbx_number_atoms_ligand": 31,
+   "pdbx_number_atoms_nucleic_acid": 0,
+   "pdbx_number_atoms_protein": 834,
+   "pdbx_refine_id": "X-RAY DIFFRACTION"
+  }
+ ],
+ "refine_ls_restr": [
+  {
+   "dev_ideal": 0.008,
+   "pdbx_refine_id": "X-RAY DIFFRACTION",
+   "type": "c_bond_d"
+  },
+  {
+   "dev_ideal": 1.34,
+   "pdbx_refine_id": "X-RAY DIFFRACTION",
+   "type": "c_angle_deg"
+  }
+ ],
+ "reflns": [
+  {
+   "B_iso_Wilson_estimate": 27.3,
+   "d_resolution_high": 2.3,
+   "d_resolution_low": 15.0,
+   "number_all": 9230,
+   "number_obs": 9184,
+   "observed_criterion_sigma_F": 2.0,
+   "observed_criterion_sigma_I": 2.0,
+   "pdbx_Rsym_value": 0.132,
+   "pdbx_diffrn_id": [
+    "1"
+   ],
+   "pdbx_netI_over_sigmaI": 12.6,
+   "pdbx_ordinal": 1,
+   "pdbx_redundancy": 7.6,
+   "percent_possible_obs": 99.5
+  }
+ ],
+ "reflns_shell": [
+  {
+   "d_res_high": 2.3,
+   "d_res_low": 2.4,
+   "meanI_over_sigI_obs": 4.6,
+   "pdbx_Rsym_value": 0.431,
+   "pdbx_ordinal": 1,
+   "percent_possible_all": 99.9
+  }
+ ],
+ "software": [
+  {
+   "classification": "data collection",
+   "name": "ProDC",
+   "pdbx_ordinal": 1
+  },
+  {
+   "classification": "data reduction",
+   "name": "XDS",
+   "pdbx_ordinal": 2
+  },
+  {
+   "classification": "phasing",
+   "name": "AMoRE",
+   "pdbx_ordinal": 3
+  },
+  {
+   "classification": "refinement",
+   "name": "CNS",
+   "pdbx_ordinal": 4,
+   "version": "1.0"
+  },
+  {
+   "classification": "data scaling",
+   "name": "XDS",
+   "pdbx_ordinal": 5
+  }
+ ],
+ "struct": {
+  "title": "Crystal structure of the Phot-LOV1 domain from Chlamydomonas reinhardtii in illuminated state. Data set of a single crystal."
+ },
+ "struct_keywords": {
+  "pdbx_keywords": "ELECTRON TRANSPORT",
+  "text": "phototropin, flavin, Electron Transport"
+ },
+ "symmetry": {
+  "Int_Tables_number": 179,
+  "space_group_name_H_M": "P 65 2 2"
+ },
+ "rcsb_id": "1N9N"
+}

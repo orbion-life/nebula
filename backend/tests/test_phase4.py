@@ -79,7 +79,8 @@ def test_extract_isoalloxazine_from_real_structure() -> None:
 
 def test_candidate_qm_on_real_coordinates_is_candidate_specific() -> None:
     cif = _COORDS.read_text()
-    qm = run_candidate_qm("5DKL", cif, basis="sto-3g", timeout=90.0)
+    # use_cache=False: this test must exercise the real subprocess QM, never a cached result
+    qm = run_candidate_qm("5DKL", cif, basis="sto-3g", timeout=90.0, use_cache=False)
     assert qm is not None
     assert isinstance(qm, CandidateQm)
     assert qm.pdb_id == "5DKL" and qm.ligand == "FMN"
