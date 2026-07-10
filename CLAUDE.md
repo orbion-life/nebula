@@ -69,15 +69,35 @@ RawObjective
 - Generated physics: `src/data/generated/radical_pair_mary.v1.json` (+ its generator).
 - Claude review artifacts: `artifacts/claude/` (dated decisions + verification).
 
+## Live discovery service (primary journey)
+
+The shipped app is a **real public-protein discovery application**: a FastAPI
+service under `backend/` (retrieve → enrich → physics-eligibility gate → simulate
+→ two-lane rank → plan) with a React front end under `src/ui/discover/` that
+drives it over generated OpenAPI contracts (`src/contracts/api.ts`). Normal runs
+return **real UniProt accessions** (not template families), stream stages over
+SSE, are cancellable, and are content-addressed/reproducible by fingerprint. One
+route (flavin radical-pair) runs **candidate-specific quantum chemistry** on the
+protein's real cofactor coordinates (PySCF UHF, subprocess-isolated). The legacy
+in-browser `src/core` pipeline is retained only as the offline vitest smoke
+fixture; it no longer powers the shipped UI. `3Dmol.js` is the shipped structure
+viewer (the Mol* target's stand-in). Outputs are **unvalidated public-protein
+candidate hypotheses** — computation is not validation.
+
 ## Commands
 
 ```bash
 npm install
-npm run dev       # local studio
-npm test          # deterministic + boundary + acceptance suite (vitest)
-npm run build     # tsc --noEmit + vite build
-npm audit --omit=dev   # production dependency audit (expect 0)
-python3 scripts/physics/radical_pair_mary.py   # OPTIONAL: regenerate the artifact
+# --- run the app (two servers) ---
+(cd backend && python3 -m uvicorn app.api.main:app --port 8000)   # discovery API (NEBULA_OFFLINE=1 for fixtures)
+npm run dev             # React app on :5173, proxies /api → :8000
+# --- verify ---
+npm test                # TS: deterministic + boundary + client + acceptance (vitest)
+npm run build           # tsc --noEmit + vite build
+npm audit               # FULL audit must be 0 high/critical (currently 0 total)
+npm run gen:contracts   # regenerate src/contracts/api.ts from the FastAPI OpenAPI
+(cd backend && python3 -m pytest)   # backend: providers, endpoints, physics, discovery
+python3 scripts/physics/radical_pair_mary.py   # OPTIONAL: regenerate the reference artifact
 ```
 
 ## Verification requirements (do not weaken to get a pass)
