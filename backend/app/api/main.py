@@ -20,6 +20,7 @@ from ..contracts.enums import ProviderId, RunStatus
 from ..contracts.objective import ObjectiveSpec, RawObjective
 from ..contracts.run import RunCreated, RunEvent, RunState
 from ..jobs.fingerprint import input_fingerprint, run_id_for
+from ..jobs.orchestrator import orchestrate
 from ..jobs.store import RunStore
 from ..objective.compile import compile_objective
 from ..state.machine import assert_transition, progress_fraction
@@ -49,6 +50,7 @@ app.add_middleware(
 )
 
 STORE = RunStore()
+_BG_TASKS: set = set()
 
 
 def _now() -> datetime:
@@ -145,7 +147,12 @@ async def create_run(body: dict) -> RunCreated:
 
     run = _new_run(objective)
     STORE.put(run)
-    # Phase 2/3 wires the orchestrator here; the run honestly remains `queued`.
+    # Real orchestration runs off the event loop (providers use sync httpx). The
+    # run advances retrieve → enrich → assess-physics in the background; clients
+    # poll GET /api/runs/{id} or the events stream.
+    task = asyncio.create_task(asyncio.to_thread(orchestrate, run.run_id, STORE, offline=OFFLINE))
+    _BG_TASKS.add(task)
+    task.add_done_callback(_BG_TASKS.discard)
     return RunCreated(run_id=run.run_id, status=run.status, input_fingerprint=run.input_fingerprint)
 
 
