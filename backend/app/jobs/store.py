@@ -23,14 +23,17 @@ class RunStore:
             Path(self._path).parent.mkdir(parents=True, exist_ok=True)
         self._mem: dict[str, str] = {}
         if self._path != ":memory:":
-            with self._connect() as con:
-                con.execute(
-                    "CREATE TABLE IF NOT EXISTS runs ("
-                    "run_id TEXT PRIMARY KEY, fingerprint TEXT, status TEXT, json TEXT)"
-                )
+            self._connect().close()  # ensure the schema exists at startup
 
     def _connect(self) -> sqlite3.Connection:
-        return sqlite3.connect(self._path, check_same_thread=False)
+        con = sqlite3.connect(self._path, check_same_thread=False)
+        # create the schema on EVERY connection (cheap + idempotent) so a deleted/rotated
+        # DB file, or a fresh process, can never hit "no such table: runs" at runtime.
+        con.execute(
+            "CREATE TABLE IF NOT EXISTS runs ("
+            "run_id TEXT PRIMARY KEY, fingerprint TEXT, status TEXT, json TEXT)"
+        )
+        return con
 
     def get(self, run_id: str) -> RunState | None:
         with self._lock:

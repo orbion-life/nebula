@@ -139,6 +139,22 @@ def test_offline_run_is_deterministic() -> None:
     assert s1 == s2  # same seed + fixtures + cache → identical ranking
 
 
+def test_run_store_survives_db_deletion(tmp_path) -> None:
+    # a deleted/rotated sqlite file must not cause "no such table: runs" at runtime
+    from app.jobs.store import RunStore
+
+    db = tmp_path / "runs.sqlite"
+    store = RunStore(db)
+    _, run = _completed_offline_store()
+    store.put(run)
+    assert store.get(run.run_id) is not None
+    db.unlink()  # simulate the file being deleted while the process lives
+    # a fresh operation recreates the schema instead of 500-ing
+    assert store.get(run.run_id) is None
+    store.put(run)
+    assert store.get(run.run_id) is not None
+
+
 def test_structure_endpoint_serves_inline_coords_offline() -> None:
     store, run = _completed_offline_store()
     main.STORE = store
