@@ -2,24 +2,35 @@
 
 Advances an immutable run along the state machine, doing REAL work at each stage:
 compile → retrieve (UniProt query plans) → enrich (InterPro/RCSB/AlphaFold) →
-assess physics eligibility. Cancellation is honored between stages. Simulation +
-ranking + planning (→ completed) are added in the next increments; the run
-honestly stops at `assessing_physics` today with real candidates + dossiers.
+assess physics eligibility (incl. bounded candidate-specific QM on real
+isoalloxazine coordinates) → simulate → rank (two-lane Discovery Frontier) →
+plan → completed. Cancellation is honored between stages.
 """
 from __future__ import annotations
 
 from datetime import datetime, timezone
 
 from ..api.fixtures_static import INSTRUMENTS
-from ..contracts.candidate import CandidateDossier, StructuralEvidence
-from ..contracts.enums import RunStatus
+from ..contracts.candidate import CandidateDossier, CandidateRecord, StructuralEvidence
+from ..contracts.enums import PhysicsEligibilityKind, RunStatus
 from ..contracts.run import RunEvent, RunState
 from ..discovery import build_discovery
-from ..physics.eligibility import assess_eligibility
+from ..physics.candidate_specific import run_candidate_qm
+from ..physics.eligibility import assess_eligibility, upgrade_with_candidate_qm
+from ..providers.rcsb import RcsbProvider
 from ..retrieval.assemble import assemble_candidates
 from ..retrieval.plan import plan_queries
 from ..state.machine import assert_transition, progress_fraction
 from .store import RunStore
+
+# flavin comp-ids whose presence in a PDB entry makes it worth pulling coordinates
+_FLAVIN_COMPS = {"FMN", "FAD", "FDA", "6FA", "FADH", "RBF", "FNR"}
+# Bound on candidate-specific QM subprocess calls per run. UHF/6-31G on the ~18-atom
+# isoalloxazine takes ~2 min, so we run it on ONE candidate (the best flavin-bound
+# structure) — real candidate-specific physics without an unbounded run time.
+_MAX_CANDIDATE_QM = 1
+_QM_BASIS = "6-31g"       # physical spin density (sto-3g overshoots via Mulliken)
+_QM_TIMEOUT_S = 200.0     # 6-31G on 18 atoms ≈ 116 s; generous margin before kill
 
 
 def _instrument(instrument_id: str | None) -> dict:
@@ -27,6 +38,20 @@ def _instrument(instrument_id: str | None) -> dict:
         if i["id"] == instrument_id:
             return i
     return INSTRUMENTS[0]  # default: benchtop field fluorimeter
+
+
+def _best_flavin_pdb(cand: CandidateRecord) -> str | None:
+    """The experimental, flavin-bound PDB with the best (lowest) resolution — the
+    only kind of structure that can donate real isoalloxazine coordinates."""
+    best: tuple[float, str] | None = None
+    for e in cand.pdb_entries:
+        comps = {c.upper() for c in (e.nonpolymer_bound_components or [])}
+        if not comps & _FLAVIN_COMPS:
+            continue
+        res = min(e.resolution_combined) if e.resolution_combined else 99.0
+        if best is None or res < best[0]:
+            best = (res, e.rcsb_id)
+    return best[1] if best else None
 
 
 def _advance(run: RunState, to: RunStatus, stage: str, note: str) -> RunState:
@@ -74,21 +99,55 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
 
         # physics eligibility gate + partial dossiers
         run = _advance(run, RunStatus.assessing_physics, "assessing_physics", "computing per-candidate physics eligibility (gate, not prediction)")
+        eligs = {c.candidate_id: assess_eligibility(c) for c in candidates}
+
+        # candidate-specific QM: extract THIS protein's isoalloxazine from its best
+        # flavin-bound experimental structure and run a real subprocess QM. Bounded to
+        # the single best-resolution flavin candidate. Best-effort: any failure (no
+        # structure, offline with no coords fixture, non-convergence, timeout) leaves
+        # the honest generic template in place.
+        targets: list[tuple[float, str, str]] = []  # (resolution, candidate_id, pdb_id)
+        for cand in candidates:
+            if eligs[cand.candidate_id].kind is not PhysicsEligibilityKind.qm_cluster_assumption:
+                continue
+            pdb_id = _best_flavin_pdb(cand)
+            if pdb_id is None:
+                continue
+            res = min((min(e.resolution_combined) for e in cand.pdb_entries
+                       if e.rcsb_id == pdb_id and e.resolution_combined), default=99.0)
+            targets.append((res, cand.candidate_id, pdb_id))
+        targets.sort(key=lambda t: t[0])  # best (lowest) resolution first
+        rcsb = RcsbProvider(offline=offline)
+        for _res, cand_id, pdb_id in targets[:_MAX_CANDIDATE_QM]:
+            now = datetime.now(timezone.utc)
+            run = run.model_copy(update={
+                "updated_at": now,
+                "events": [*run.events, RunEvent(at=now, from_status=RunStatus.assessing_physics, to_status=RunStatus.assessing_physics, stage="assessing_physics", note=f"running candidate-specific {_QM_BASIS.upper()} quantum chemistry on the isoalloxazine core extracted from {pdb_id} (~2 min)", progress=progress_fraction(RunStatus.assessing_physics))],
+            })
+            store.put(run)
+            try:
+                cif_text, _prov = rcsb.coordinates(pdb_id)
+                qm = run_candidate_qm(pdb_id, cif_text, basis=_QM_BASIS, timeout=_QM_TIMEOUT_S)
+            except Exception:
+                qm = None
+            if qm is not None:
+                eligs[cand_id] = upgrade_with_candidate_qm(eligs[cand_id], qm)
+
         dossiers: list[CandidateDossier] = []
         for cand in candidates:
-            elig = assess_eligibility(cand)
             dossiers.append(CandidateDossier(
                 dossier_id=f"dossier_{cand.candidate_id}",
                 candidate=cand,
-                physics_eligibility=elig,
+                physics_eligibility=eligs[cand.candidate_id],
                 structural_evidence=StructuralEvidence(pdb_entries=cand.pdb_entries, alphafold_model=cand.alphafold_model),
                 claim_ceiling=cand.claim_ceiling,
             ))
         computed = sum(1 for d in dossiers if d.physics_eligibility.enters_computed_ranking)
+        candidate_specific = sum(1 for d in dossiers if d.physics_eligibility.qm_cluster_plan and d.physics_eligibility.qm_cluster_plan.candidate_specific)
         run = run.model_copy(update={
             "dossiers": dossiers,
             "updated_at": datetime.now(timezone.utc),
-            "events": [*run.events, RunEvent(at=datetime.now(timezone.utc), from_status=RunStatus.assessing_physics, to_status=RunStatus.assessing_physics, stage="assessing_physics", note=f"{computed}/{len(dossiers)} candidate(s) eligible for computed physics", progress=progress_fraction(RunStatus.assessing_physics))],
+            "events": [*run.events, RunEvent(at=datetime.now(timezone.utc), from_status=RunStatus.assessing_physics, to_status=RunStatus.assessing_physics, stage="assessing_physics", note=f"{computed}/{len(dossiers)} candidate(s) eligible for computed physics; {candidate_specific} with candidate-specific QM on real coordinates", progress=progress_fraction(RunStatus.assessing_physics))],
         })
         store.put(run)
         if _cancelled(store, run_id):

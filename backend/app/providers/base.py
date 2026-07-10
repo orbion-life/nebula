@@ -147,6 +147,43 @@ class ProviderBase:
                 return Fetched(fx, Provenance(mode=RetrievalMode.fixture, http_status=None, **prov_kw))
             raise ProviderUnavailable(self.provider, url, f"live fetch failed and no fixture: {exc}")
 
+    def get_text(self, url: str, *, fixture_key: str, headers: dict | None = None) -> tuple[str, Provenance]:
+        """Fetch a text payload (e.g. an mmCIF coordinate file) with the same
+        live → cache → fixture → unavailable ladder. Fixtures are stored as .cif."""
+        prov_kw = dict(provider=self.provider, endpoint_url=url, retrieved_at=_now())
+        fx = self._fx / f"{fixture_key.replace('/', '_')}.cif"
+
+        if self.offline:
+            if fx.exists():
+                return fx.read_text(), Provenance(mode=RetrievalMode.fixture, http_status=200, **prov_kw)
+            raise ProviderUnavailable(self.provider, url, "offline and no recorded coordinate fixture")
+
+        cache = self._cache / f"{_key(url)}.txt"
+        if cache.exists() and (time.time() - cache.stat().st_mtime) < CACHE_TTL_SECONDS:
+            return cache.read_text(), Provenance(mode=RetrievalMode.cached, http_status=200, **prov_kw)
+        try:
+            h = {"User-Agent": USER_AGENT, **(headers or {})}
+            with httpx.Client(timeout=self.timeout, follow_redirects=True) as client:
+                r = client.get(url, headers=h)
+                r.raise_for_status()
+                text = r.text
+            self._cache.mkdir(parents=True, exist_ok=True)
+            cache.write_text(text)
+            return text, Provenance(mode=RetrievalMode.live, http_status=r.status_code, **prov_kw)
+        except Exception as exc:
+            if fx.exists():
+                return fx.read_text(), Provenance(mode=RetrievalMode.fixture, http_status=None, **prov_kw)
+            raise ProviderUnavailable(self.provider, url, f"coordinate fetch failed and no fixture: {exc}")
+
+    def record_text_fixture(self, url: str, fixture_key: str) -> str:
+        with httpx.Client(timeout=self.timeout, follow_redirects=True) as client:
+            r = client.get(url, headers={"User-Agent": USER_AGENT})
+            r.raise_for_status()
+            text = r.text
+        self._fx.mkdir(parents=True, exist_ok=True)
+        (self._fx / f"{fixture_key.replace('/', '_')}.cif").write_text(text)
+        return text
+
     @retry(
         retry=retry_if_exception_type(_Retryable),
         stop=stop_after_attempt(3),

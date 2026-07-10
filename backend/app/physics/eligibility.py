@@ -49,6 +49,26 @@ def _cofactor_id(candidate: CandidateRecord) -> str | None:
     return candidate.cofactors[0].name if candidate.cofactors else None
 
 
+def upgrade_with_candidate_qm(elig: PhysicsEligibility, qm) -> PhysicsEligibility:
+    """Flip an eligibility to genuinely candidate-specific once a subprocess QM has
+    run on THIS protein's extracted isoalloxazine coordinates (qm: CandidateQm)."""
+    if elig.qm_cluster_plan is None:
+        return elig
+    plan = elig.qm_cluster_plan.model_copy(update={
+        "candidate_specific": True,
+        "heavy_atom_estimate": qm.n_heavy,
+        "est_wall_seconds": qm.wall_seconds,
+        "geometry_source": f"isoalloxazine extracted from {qm.pdb_id} {qm.ligand} chain {qm.chain} (this protein's real coordinates)",
+    })
+    return elig.model_copy(update={
+        "qm_cluster_plan": plan,
+        "assumptions": [*elig.assumptions, qm.provenance()],
+        "reason": elig.reason
+        + f" | CANDIDATE-SPECIFIC: UHF/{qm.basis} on this protein's {qm.ligand} isoalloxazine from {qm.pdb_id} "
+        + f"(converged={qm.converged}, max Mulliken spin {qm.max_abs_spin} over {qm.n_spin_sites} sites, {qm.wall_seconds}s).",
+    })
+
+
 def assess_eligibility(candidate: CandidateRecord) -> PhysicsEligibility:
     rc = candidate.route_class
     has_cofactor = bool(candidate.cofactors)

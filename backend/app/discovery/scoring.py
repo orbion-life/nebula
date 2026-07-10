@@ -97,6 +97,13 @@ def _plausibility(inp: ScoreInputs) -> float:
         p += 0.2
     if inp.capability.has_experimental_structure:
         p += 0.1
+    # candidate-specific QM grounding: a converged calculation on THIS protein's real
+    # isoalloxazine coordinates modestly raises how plausible the route is for it. This is
+    # mechanistic grounding, NOT novelty/uncertainty (which never lift P), and NOT a
+    # performance claim — the computed spin value stays out of P entirely.
+    plan = inp.eligibility.qm_cluster_plan
+    if plan is not None and plan.candidate_specific:
+        p += 0.08
     return _clamp(p)
 
 

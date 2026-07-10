@@ -150,3 +150,9 @@ class RcsbProvider(ProviderBase):
         url = _ENTRY_URL.format(pdb_id=pid)
         fetched = self.get_json(url, fixture_key=f"entry_{pid}")
         return self._parse_entry(fetched.data), fetched.provenance
+
+    def coordinates(self, pdb_id: str) -> tuple[str, Provenance]:
+        """Download the mmCIF coordinate file (for candidate-specific physics)."""
+        pid = pdb_id.strip().upper()
+        url = f"https://files.rcsb.org/download/{pid}.cif"
+        return self.get_text(url, fixture_key=f"coords_{pid}")
