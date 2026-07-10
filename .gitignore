@@ -22,3 +22,8 @@ backend/**/*.sqlite
 backend/**/*.db
 artifacts/runs/
 backend/artifacts/
+
+# Playwright
+test-results/
+playwright-report/
+.playwright/

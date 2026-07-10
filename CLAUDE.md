@@ -93,6 +93,8 @@ npm install
 npm run dev             # React app on :5173, proxies /api → :8000
 # --- verify ---
 npm test                # TS: deterministic + boundary + client + acceptance (vitest)
+npm run e2e             # Playwright E2E: offline run → real accession → non-blank 3Dmol canvas
+                        #   across 390/768/1280/1920 + reduced-motion + keyboard (chrome + swiftshader)
 npm run build           # tsc --noEmit + vite build
 npm audit               # FULL audit must be 0 high/critical (currently 0 total)
 npm run gen:contracts   # regenerate src/contracts/api.ts from the FastAPI OpenAPI
