@@ -1,0 +1,1188 @@
+{
+ "entryType": "UniProtKB reviewed (Swiss-Prot)",
+ "primaryAccession": "Q43125",
+ "uniProtkbId": "CRY1_ARATH",
+ "organism": {
+  "scientificName": "Arabidopsis thaliana",
+  "commonName": "Mouse-ear cress",
+  "taxonId": 3702,
+  "lineage": [
+   "Eukaryota",
+   "Viridiplantae",
+   "Streptophyta",
+   "Embryophyta",
+   "Tracheophyta",
+   "Spermatophyta",
+   "Magnoliopsida",
+   "eudicotyledons",
+   "Gunneridae",
+   "Pentapetalae",
+   "rosids",
+   "malvids",
+   "Brassicales",
+   "Brassicaceae",
+   "Camelineae",
+   "Arabidopsis"
+  ]
+ },
+ "proteinDescription": {
+  "recommendedName": {
+   "fullName": {
+    "evidences": [
+     {
+      "evidenceCode": "ECO:0000303",
+      "source": "PubMed",
+      "id": "8953250"
+     }
+    ],
+    "value": "Cryptochrome-1"
+   },
+   "shortNames": [
+    {
+     "evidences": [
+      {
+       "evidenceCode": "ECO:0000303",
+       "source": "PubMed",
+       "id": "22421133"
+      }
+     ],
+     "value": "AtCry"
+    },
+    {
+     "evidences": [
+      {
+       "evidenceCode": "ECO:0000303",
+       "source": "PubMed",
+       "id": "8953250"
+      }
+     ],
+     "value": "Atcry1"
+    }
+   ]
+  },
+  "alternativeNames": [
+   {
+    "fullName": {
+     "evidences": [
+      {
+       "evidenceCode": "ECO:0000303",
+       "source": "PubMed",
+       "id": "7756321"
+      }
+     ],
+     "value": "Blue light photoreceptor"
+    }
+   },
+   {
+    "fullName": {
+     "evidences": [
+      {
+       "evidenceCode": "ECO:0000303",
+       "source": "PubMed",
+       "id": "12324610"
+      }
+     ],
+     "value": "Protein BLUE LIGHT UNINHIBITED 1"
+    }
+   },
+   {
+    "fullName": {
+     "evidences": [
+      {
+       "evidenceCode": "ECO:0000303",
+       "source": "PubMed",
+       "id": "8232555"
+      }
+     ],
+     "value": "Protein ELONGATED HYPOCOTYL 4"
+    }
+   },
+   {
+    "fullName": {
+     "value": "Protein OUT OF PHASE 2"
+    },
+    "shortNames": [
+     {
+      "value": "OOP2"
+     }
+    ]
+   }
+  ]
+ },
+ "comments": [
+  {
+   "texts": [
+    {
+     "evidences": [
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "12324610"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "12857830"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "16093319"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "16703358"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "17075038"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "18397371"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "19558423"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "20133010"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "20668058"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "21265897"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "21457375"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "21467031"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "21511871"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "21511872"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "21875594"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "22147516"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "22421133"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "22681544"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "22786870"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "22855128"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "23398192"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "23511208"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "24126495"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "25157750"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "25721730"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "25728686"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "26095447"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "26313597"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "26724867"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "30635559"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "7756321"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "8528277"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "9565033"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "9733523"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "9765547"
+      },
+      {
+       "evidenceCode": "ECO:0000303",
+       "source": "PubMed",
+       "id": "21841916"
+      }
+     ],
+     "value": "Photoreceptor that mediates primarily blue light inhibition of hypocotyl elongation and photoperiodic control of floral initiation, and regulates other light responses, including circadian rhythms, tropic growth, stomata opening, guard cell development, root development, bacterial and viral pathogen responses, abiotic stress responses, cell cycles, programmed cell death, apical dominance, fruit and ovule development, seed dormancy, and magnetoreception. Photoexcited cryptochromes interact with signaling partner proteins to alter gene expression at both transcriptional and post-translational levels and, consequently, regulate the corresponding metabolic and developmental programs (PubMed:21841916). Blue-light absorbing flavoprotein that activates reversible flavin photoreduction via an electron transport chain comprising a tryptophan triad (W-324, W-377 and W-400), accompanied by a large conformational change upon photoexcitation, or via an alternative electron transport that involves small metabolites, including NADPH, NADH, and ATP. The half-life of the activated signaling state is about 5 minutes (PubMed:21467031, PubMed:21875594, PubMed:23398192, PubMed:25157750, PubMed:26313597). Also involved in the detection of blue/green ratio in light (shade under leaf canopies) and subsequent adaptations on plant growth and development (PubMed:20668058). In darkness, the dark reoxidation of flavin occurs and leads to inactivated state (PubMed:21467031, PubMed:23398192). Perceives low blue light (LBL) and responds by directly contacting two bHLH transcription factors, PIF4 and PIF5, at chromatin on E-box variant 5'-CA[CT]GTG-3' to promote their activity and stimulate specific gene expression to adapt global physiology (e.g. hypocotyl elongation and hyponastic growth in low blue light) (PubMed:19558423, PubMed:26724867). When activated by high-intensity blue light, catalyzes direct enzymatic conversion of molecular oxygen O(2) to reactive oxygen species (ROS) and hydrogen peroxide H(2)O(2) in vitro. ROS accumulation upon activation by blue light leads to cell death in protoplasts (PubMed:25728686). Seems essential for blue-light-triggered and singlet oxygen-mediated programmed cell death (PCD) (PubMed:17075038). Required for the induction of nuclear genes encoding photoprotective components by GATA24 and GATA28 in extreme light intensities that exceed the electron utilization capacity of the chloroplast (PubMed:22786870). Involved in shortening the circadian clock period, especially at 27 degrees Celsius, in blue light (BL) and required to maintain clock genes expression rhythm (PubMed:23511208). Mediates blue light-induced gene expression and hypocotyl elongation through the inhibition of COP1-mediated degradation of the transcription factors BIT1 and HY5 and via the activation of anion channels at the plasma membrane, probably via auxin signaling (PubMed:12324610, PubMed:16093319, PubMed:18397371, PubMed:21511871, PubMed:21511872, PubMed:25721730, PubMed:8528277, PubMed:9765547). Required for the hypocotyl hook formation in darkness (PubMed:22855128). Involved in blue light-dependent stomatal opening, CHS gene expression, transpiration, inhibition of stem growth and increase of root growth, probably by regulating abscisic acid (ABA) (PubMed:16093319, PubMed:16703358, PubMed:22147516, PubMed:7756321, PubMed:9565033). Prevents lateral roots growth by inhibiting auxin transport (PubMed:20133010). Necessary for shade avoidance syndrome (SAS), characterized by leaf hyponasty and reduced lamina/petiole ratio, when exposed to blue light attenuation (PubMed:21457375). Together with phototropins, involved in phototropism regulation by various blue light fluence; blue light attenuates phototropism in high fluence rates (100 umol.m-2.s-1) but enhances phototropism in low fluence rates (<1.0 umol.m-2.s-1) (PubMed:12857830). Required for blue/UV-A wavelengths-mediated inhibition of explants shoot regeneration in vitro (e.g. new shoot apical meristems regeneration from excised cotyledons) (PubMed:22681544). Modulates anthocyanin accumulation in a PHYA-dependent manner in far-red-light. Acts as a PHYA/PHYB-dependent modulator of chlorophyll accumulation in red light. Contributes to most blue light deetiolation responses (PubMed:8528277, PubMed:9733523). May act as a chemical magnetoreceptor, via magnetically sensitive kinetics and quantum yields of photo-induced flavin / tryptophan radical pairs (PubMed:22421133). The effect of near-null magnetic field on flowering is altered by changes of blue light cycle and intensity in a CRY1/CRY2-dependent manner (PubMed:26095447). Involved in the strigolactone signaling that regulates hypocotyl growth in response to blue light (PubMed:24126495). Modulates temperature-dependent growth and physiology maintenance, especially at warm ambient temperatures (e.g. 27 degrees Celsius) and in white light and low-light conditions, via HFR1-dependent activity; this process requires PTAC12/HMR/PAP5 (transcriptional transactivator) (PubMed:21265897, PubMed:30635559)"
+    }
+   ],
+   "commentType": "FUNCTION"
+  },
+  {
+   "texts": [
+    {
+     "evidences": [
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "20053798"
+      }
+     ],
+     "value": "Implicated in promoting R protein-mediated resistance to Pseudomonas syringae pv. tomato (Pst.) DC3000 under continuous light conditions. Promotes systemic acquired resistance (SAR) and PR gene expression triggered by P.syringae"
+    }
+   ],
+   "commentType": "FUNCTION"
+  },
+  {
+   "commentType": "COFACTOR",
+   "cofactors": [
+    {
+     "name": "FAD",
+     "evidences": [
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "17073458"
+      },
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "7756321"
+      }
+     ],
+     "cofactorCrossReference": {
+      "database": "ChEBI",
+      "id": "CHEBI:57692"
+     }
+    }
+   ],
+   "note": {
+    "texts": [
+     {
+      "evidences": [
+       {
+        "evidenceCode": "ECO:0000269",
+        "source": "PubMed",
+        "id": "17073458"
+       },
+       {
+        "evidenceCode": "ECO:0000269",
+        "source": "PubMed",
+        "id": "7756321"
+       }
+      ],
+      "value": "Binds 1 FAD per subunit."
+     }
+    ]
+   }
+  },
+  {
+   "commentType": "COFACTOR",
+   "cofactors": [
+    {
+     "name": "(6R)-5,10-methylene-5,6,7,8-tetrahydrofolate",
+     "evidences": [
+      {
+       "evidenceCode": "ECO:0000269",
+       "source": "PubMed",
+       "id": "7756321"
+      }
+     ],
+     "cofactorCrossReference": {
+      "database": "ChEBI",
+      "id": "CHEBI:15636"
+     }
+    }
+   ],
+   "note": {
+    "texts": [
+     {
+      "evidences": [
+       {
+        "evidenceCode": "ECO:0000269",
+        "source": "PubMed",
+        "id": "7756321"
+       }
+      ],
+      "value": "Binds 1 5,10-methenyltetrahydrofolate (MTHF) per subunit."
+     }
+    ]
+   }
+  },
+  {
+   "commentType": "SUBCELLULAR LOCATION",
+   "note": {
+    "texts": [
+     {
+      "evidences": [
+       {
+        "evidenceCode": "ECO:0000269",
+        "source": "PubMed",
+        "id": "18003924"
+       },
+       {
+        "evidenceCode": "ECO:0000269",
+        "source": "PubMed",
+        "id": "21511872"
+       },
+       {
+        "evidenceCode": "ECO:0000269",
+        "source": "PubMed",
+        "id": "21765176"
+       }
+      ],
+      "value": "The nuclear pool is involved in hypocotyl and petiole growth inhibition and anthocyanin production, while the cytoplasmic pool is involved in root growth and cotyledon expansion (PubMed:18003924). Present in nuclear bodies (NBs) (PubMed:21511872, PubMed:21765176)"
+     }
+    ]
+   },
+   "subcellularLocations": [
+    {
+     "location": {
+      "evidences": [
+       {
+        "evidenceCode": "ECO:0000269",
+        "source": "PubMed",
+        "id": "18003924"
+       }
+      ],
+      "value": "Cytoplasm",
+      "id": "SL-0086"
+     }
+    },
+    {
+     "location": {
+      "evidences": [
+       {
+        "evidenceCode": "ECO:0000269",
+        "source": "PubMed",
+        "id": "15610358"
+       },
+       {
+        "evidenceCode": "ECO:0000269",
+        "source": "PubMed",
+        "id": "18003924"
+       },
+       {
+        "evidenceCode": "ECO:0000269",
+        "source": "PubMed",
+        "id": "26724867"
+       }
+      ],
+      "value": "Nucleus",
+      "id": "SL-0191"
+     }
+    },
+    {
+     "location": {
+      "evidences": [
+       {
+        "evidenceCode": "ECO:0000269",
+        "source": "PubMed",
+        "id": "21511872"
+       },
+       {
+        "evidenceCode": "ECO:0000269",
+        "source": "PubMed",
+        "id": "21765176"
+       }
+      ],
+      "value": "Nucleus, PML body",
+      "id": "SL-0465"
+     }
+    }
+   ]
+  }
+ ],
+ "features": [
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 235,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 235,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:57692"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "15299148"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3C"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3D"
+    }
+   ],
+   "ligand": {
+    "name": "FAD",
+    "id": "ChEBI:CHEBI:57692"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 238,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 238,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:18420"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "15299148"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3C"
+    }
+   ],
+   "ligand": {
+    "name": "Mg(2+)",
+    "id": "ChEBI:CHEBI:18420",
+    "label": "1"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 239,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 239,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:30616"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "15299148"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3D"
+    }
+   ],
+   "ligand": {
+    "name": "ATP",
+    "id": "ChEBI:CHEBI:30616"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 241,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 241,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:18420"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "15299148"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3C"
+    }
+   ],
+   "ligand": {
+    "name": "Mg(2+)",
+    "id": "ChEBI:CHEBI:18420",
+    "label": "2"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 244,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 244,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:18420"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "15299148"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3C"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3D"
+    }
+   ],
+   "ligand": {
+    "name": "Mg(2+)",
+    "id": "ChEBI:CHEBI:18420",
+    "label": "2"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 246,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 246,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:18420"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "15299148"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3C"
+    }
+   ],
+   "ligand": {
+    "name": "Mg(2+)",
+    "id": "ChEBI:CHEBI:18420",
+    "label": "1"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 246,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 246,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:18420"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "15299148"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3C"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3D"
+    }
+   ],
+   "ligand": {
+    "name": "Mg(2+)",
+    "id": "ChEBI:CHEBI:18420",
+    "label": "2"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 247,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 251,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:57692"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "15299148"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3C"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3D"
+    }
+   ],
+   "ligand": {
+    "name": "FAD",
+    "id": "ChEBI:CHEBI:57692"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 293,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 293,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:57692"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "15299148"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3D"
+    }
+   ],
+   "ligand": {
+    "name": "FAD",
+    "id": "ChEBI:CHEBI:57692"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 358,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 358,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:18420"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "15299148"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3C"
+    }
+   ],
+   "ligand": {
+    "name": "Mg(2+)",
+    "id": "ChEBI:CHEBI:18420",
+    "label": "1"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 359,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 360,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:30616"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "15299148"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3D"
+    }
+   ],
+   "ligand": {
+    "name": "ATP",
+    "id": "ChEBI:CHEBI:30616"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 359,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 359,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:57692"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "15299148"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3C"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3D"
+    }
+   ],
+   "ligand": {
+    "name": "FAD",
+    "id": "ChEBI:CHEBI:57692"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 390,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 392,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:57692"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "15299148"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3C"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3D"
+    }
+   ],
+   "ligand": {
+    "name": "FAD",
+    "id": "ChEBI:CHEBI:57692"
+   }
+  },
+  {
+   "type": "Binding site",
+   "location": {
+    "start": {
+     "value": 409,
+     "modifier": "EXACT"
+    },
+    "end": {
+     "value": 409,
+     "modifier": "EXACT"
+    }
+   },
+   "description": "",
+   "featureCrossReferences": [
+    {
+     "database": "ChEBI",
+     "id": "CHEBI:30616"
+    }
+   ],
+   "evidences": [
+    {
+     "evidenceCode": "ECO:0000269",
+     "source": "PubMed",
+     "id": "15299148"
+    },
+    {
+     "evidenceCode": "ECO:0007744",
+     "source": "PDB",
+     "id": "1U3D"
+    }
+   ],
+   "ligand": {
+    "name": "ATP",
+    "id": "ChEBI:CHEBI:30616"
+   }
+  }
+ ],
+ "keywords": [
+  {
+   "id": "KW-0002",
+   "category": "Technical term",
+   "name": "3D-structure"
+  },
+  {
+   "id": "KW-0053",
+   "category": "Biological process",
+   "name": "Apoptosis"
+  },
+  {
+   "id": "KW-0067",
+   "category": "Ligand",
+   "name": "ATP-binding"
+  },
+  {
+   "id": "KW-0157",
+   "category": "Ligand",
+   "name": "Chromophore"
+  },
+  {
+   "id": "KW-0963",
+   "category": "Cellular component",
+   "name": "Cytoplasm"
+  },
+  {
+   "id": "KW-1015",
+   "category": "PTM",
+   "name": "Disulfide bond"
+  },
+  {
+   "id": "KW-0274",
+   "category": "Ligand",
+   "name": "FAD"
+  },
+  {
+   "id": "KW-0285",
+   "category": "Ligand",
+   "name": "Flavoprotein"
+  },
+  {
+   "id": "KW-0460",
+   "category": "Ligand",
+   "name": "Magnesium"
+  },
+  {
+   "id": "KW-0479",
+   "category": "Ligand",
+   "name": "Metal-binding"
+  },
+  {
+   "id": "KW-0547",
+   "category": "Ligand",
+   "name": "Nucleotide-binding"
+  },
+  {
+   "id": "KW-0539",
+   "category": "Cellular component",
+   "name": "Nucleus"
+  },
+  {
+   "id": "KW-0597",
+   "category": "PTM",
+   "name": "Phosphoprotein"
+  },
+  {
+   "id": "KW-0600",
+   "category": "Molecular function",
+   "name": "Photoreceptor protein"
+  },
+  {
+   "id": "KW-0611",
+   "category": "Biological process",
+   "name": "Plant defense"
+  },
+  {
+   "id": "KW-0675",
+   "category": "Molecular function",
+   "name": "Receptor"
+  },
+  {
+   "id": "KW-1185",
+   "category": "Technical term",
+   "name": "Reference proteome"
+  },
+  {
+   "id": "KW-0716",
+   "category": "Biological process",
+   "name": "Sensory transduction"
+  }
+ ],
+ "uniProtKBCrossReferences": [
+  {
+   "database": "PDB",
+   "id": "1U3C",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.60 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=1-509"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "1U3D",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "2.45 A"
+    },
+    {
+     "key": "Chains",
+     "value": "A=1-509"
+    }
+   ]
+  },
+  {
+   "database": "PDB",
+   "id": "6QTW",
+   "properties": [
+    {
+     "key": "Method",
+     "value": "X-ray"
+    },
+    {
+     "key": "Resolution",
+     "value": "1.39 A"
+    },
+    {
+     "key": "Chains",
+     "value": "B=544-553"
+    }
+   ]
+  },
+  {
+   "database": "AlphaFoldDB",
+   "id": "Q43125",
+   "properties": [
+    {
+     "key": "Description",
+     "value": "-"
+    }
+   ]
+  }
+ ],
+ "sequence": {
+  "value": "MSGSVSGCGSGGCSIVWFRRDLRVEDNPALAAAVRAGPVIALFVWAPEEEGHYHPGRVSRWWLKNSLAQLDSSLRSLGTCLITKRSTDSVASLLDVVKSTGASQIFFNHLYDPLSLVRDHRAKDVLTAQGIAVRSFNADLLYEPWEVTDELGRPFSMFAAFWERCLSMPYDPESPLLPPKKIISGDVSKCVADPLVFEDDSEKGSNALLARAWSPGWSNGDKALTTFINGPLLEYSKNRRKADSATTSFLSPHLHFGEVSVRKVFHLVRIKQVAWANEGNEAGEESVNLFLKSIGLREYSRYISFNHPYSHERPLLGHLKFFPWAVDENYFKAWRQGRTGYPLVDAGMRELWATGWLHDRIRVVVSSFFVKVLQLPWRWGMKYFWDTLLDADLESDALGWQYITGTLPDSREFDRIDNPQFEGYKFDPNGEYVRRWLPELSRLPTDWIHHPWNAPESVLQAAGIELGSNYPLPIVGLDEAKARLHEALSQMWQLEAASRAAIENGSEEGLGDSAEVEEAPIEFPRDITMEETEPTRLNPNRRYEDQMVPSITSSLIRPEEDEESSLNLRNSVGDSRAEVPRNMVNTNQAQQRRAEPASNQVTAMIPEFNIRIVAESTEDSTAESSSSGRRERSGGIVPEWSPGYSEQFPSEENGIGGGSTTSSYLQNHHEILNWRRLSQTG",
+  "length": 681,
+  "molWeight": 76695,
+  "crc64": "372A7E6DDC2AC076",
+  "md5": "C90FA736EDD4197DEFFA6A788D1F4E7A"
+ },
+ "extraAttributes": {
+  "uniParcId": "UPI000009CFFC"
+ }
+}

@@ -1,0 +1,385 @@
+{
+ "count": 9,
+ "next": null,
+ "previous": null,
+ "results": [
+  {
+   "metadata": {
+    "accession": "IPR002081",
+    "name": "Cryptochrome/DNA photolyase class 1",
+    "source_database": "interpro",
+    "type": "family",
+    "integrated": null,
+    "member_databases": {
+     "panther": {
+      "PTHR11455": "CRYPTOCHROME"
+     },
+     "prints": {
+      "PR00147": "DNAPHOTLYASE"
+     }
+    },
+    "go_terms": null
+   },
+   "proteins": [
+    {
+     "accession": "q43125",
+     "protein_length": 681,
+     "source_database": "reviewed",
+     "organism": "3702",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 13,
+         "end": 512,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "metadata": {
+    "accession": "IPR005101",
+    "name": "Cryptochrome/DNA photolyase, FAD-binding domain",
+    "source_database": "interpro",
+    "type": "domain",
+    "integrated": null,
+    "member_databases": {
+     "pfam": {
+      "PF03441": "FAD binding domain of DNA photolyase"
+     }
+    },
+    "go_terms": null
+   },
+   "proteins": [
+    {
+     "accession": "q43125",
+     "protein_length": 681,
+     "source_database": "reviewed",
+     "organism": "3702",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 290,
+         "end": 489,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "metadata": {
+    "accession": "IPR006050",
+    "name": "DNA photolyase, N-terminal",
+    "source_database": "interpro",
+    "type": "domain",
+    "integrated": null,
+    "member_databases": {
+     "profile": {
+      "PS51645": "Photolyase/cryptochrome alpha/beta domain profile"
+     },
+     "pfam": {
+      "PF00875": "DNA photolyase"
+     }
+    },
+    "go_terms": null
+   },
+   "proteins": [
+    {
+     "accession": "q43125",
+     "protein_length": 681,
+     "source_database": "reviewed",
+     "organism": "3702",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 12,
+         "end": 169,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "metadata": {
+    "accession": "IPR014134",
+    "name": "Cryptochrome, plant",
+    "source_database": "interpro",
+    "type": "family",
+    "integrated": null,
+    "member_databases": {
+     "ncbifam": {
+      "TIGR02766": "cryptochrome photoreceptor"
+     }
+    },
+    "go_terms": [
+     {
+      "identifier": "GO:0009882",
+      "name": "blue light photoreceptor activity",
+      "category": {
+       "code": "F",
+       "name": "molecular_function"
+      }
+     },
+     {
+      "identifier": "GO:0009785",
+      "name": "blue light signaling pathway",
+      "category": {
+       "code": "P",
+       "name": "biological_process"
+      }
+     }
+    ]
+   },
+   "proteins": [
+    {
+     "accession": "q43125",
+     "protein_length": 681,
+     "source_database": "reviewed",
+     "organism": "3702",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 13,
+         "end": 489,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "metadata": {
+    "accession": "IPR014729",
+    "name": "Rossmann-like alpha/beta/alpha sandwich fold",
+    "source_database": "interpro",
+    "type": "homologous_superfamily",
+    "integrated": null,
+    "member_databases": {
+     "cathgene3d": {
+      "G3DSA:3.40.50.620": "HUPs"
+     }
+    },
+    "go_terms": null
+   },
+   "proteins": [
+    {
+     "accession": "q43125",
+     "protein_length": 681,
+     "source_database": "reviewed",
+     "organism": "3702",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 15,
+         "end": 213,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "metadata": {
+    "accession": "IPR018394",
+    "name": "Cryptochrome/DNA photolyase class 1, conserved site, C-terminal",
+    "source_database": "interpro",
+    "type": "conserved_site",
+    "integrated": null,
+    "member_databases": {
+     "prosite": {
+      "PS00394": "DNA photolyases class 1 signature 1",
+      "PS00691": "DNA photolyases class 1 signature 2"
+     }
+    },
+    "go_terms": null
+   },
+   "proteins": [
+    {
+     "accession": "q43125",
+     "protein_length": 681,
+     "source_database": "reviewed",
+     "organism": "3702",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 339,
+         "end": 351,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      },
+      {
+       "fragments": [
+        {
+         "start": 359,
+         "end": 378,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "metadata": {
+    "accession": "IPR020978",
+    "name": "Cryptochrome C-terminal",
+    "source_database": "interpro",
+    "type": "domain",
+    "integrated": null,
+    "member_databases": {
+     "pfam": {
+      "PF12546": "Blue/Ultraviolet sensing protein C terminal"
+     }
+    },
+    "go_terms": null
+   },
+   "proteins": [
+    {
+     "accession": "q43125",
+     "protein_length": 681,
+     "source_database": "reviewed",
+     "organism": "3702",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 519,
+         "end": 629,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "metadata": {
+    "accession": "IPR036134",
+    "name": "Cryptochrome/DNA photolyase, FAD-binding domain-like superfamily",
+    "source_database": "interpro",
+    "type": "homologous_superfamily",
+    "integrated": null,
+    "member_databases": {
+     "ssf": {
+      "SSF48173": "Cryptochrome/photolyase FAD-binding domain"
+     }
+    },
+    "go_terms": null
+   },
+   "proteins": [
+    {
+     "accession": "q43125",
+     "protein_length": 681,
+     "source_database": "reviewed",
+     "organism": "3702",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 200,
+         "end": 495,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "metadata": {
+    "accession": "IPR036155",
+    "name": "Cryptochrome/photolyase, N-terminal domain superfamily",
+    "source_database": "interpro",
+    "type": "homologous_superfamily",
+    "integrated": null,
+    "member_databases": {
+     "ssf": {
+      "SSF52425": "Cryptochrome/photolyase, N-terminal domain"
+     }
+    },
+    "go_terms": null
+   },
+   "proteins": [
+    {
+     "accession": "q43125",
+     "protein_length": 681,
+     "source_database": "reviewed",
+     "organism": "3702",
+     "in_alphafold": true,
+     "entry_protein_locations": [
+      {
+       "fragments": [
+        {
+         "start": 14,
+         "end": 183,
+         "dc-status": "CONTINUOUS"
+        }
+       ],
+       "representative": false,
+       "model": null,
+       "score": null
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -21,3 +21,4 @@ backend/.venv/
 backend/**/*.sqlite
 backend/**/*.db
 artifacts/runs/
+backend/artifacts/
