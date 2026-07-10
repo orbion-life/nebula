@@ -45,21 +45,40 @@ def main() -> int:
     print(f"  assembled {len(cands)} candidate(s); uniprot/interpro/rcsb/alphafold fixtures recorded")
 
     rc = RcsbProvider(offline=False, record=True)
+
+    # 1) coords for EVERY candidate's best experimental structure (lowest resolution) — mirrors
+    #    the /structure endpoint's choice — so the 3D viewer renders offline for each candidate.
+    recorded_coords: set[str] = set()
+    for c in cands:
+        best = None
+        for e in c.pdb_entries:
+            res = min(e.resolution_combined) if e.resolution_combined else 99.0
+            if best is None or res < best[0]:
+                best = (res, e.rcsb_id)
+        if best and best[1] not in recorded_coords:
+            try:
+                rc.coordinates(best[1])  # records coords_{pdb}.cif
+                recorded_coords.add(best[1])
+            except Exception as exc:
+                print(f"  (skip coords {best[1]}: {exc})")
+    print(f"  recorded coordinates for {len(recorded_coords)} structure(s): {sorted(recorded_coords)}")
+
+    # 2) warm the candidate-specific QM cache for flavin-bound candidates (bounded like the run)
     warmed = 0
     for c in cands:
         pdb = _best_flavin_pdb(c)
         if not pdb:
             continue
         acc = c.uniprot.primary_accession if c.uniprot else "?"
-        cif, _prov = rc.coordinates(pdb)  # records coords_{pdb}.cif
+        cif, _prov = rc.coordinates(pdb)
         qm = run_candidate_qm(pdb, cif, basis="6-31g", timeout=300)
         if qm is not None:
             warmed += 1
-            print(f"  {acc} → {pdb}: coords recorded, QM cached (converged={qm.converged}, max_spin={qm.max_abs_spin})")
-        if warmed >= 2:  # bound the expensive QM the same way the orchestrator does
+            print(f"  {acc} → {pdb}: QM cached (converged={qm.converged}, max_spin={qm.max_abs_spin})")
+        if warmed >= 2:
             break
 
-    print(f"done. {warmed} candidate-specific QM result(s) cached. Offline demo is reproducible with NEBULA_OFFLINE=1.")
+    print(f"done. {len(recorded_coords)} structure(s), {warmed} QM result(s) cached. Offline reproducible with NEBULA_OFFLINE=1.")
     return 0
 
 

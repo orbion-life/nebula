@@ -131,5 +131,6 @@ def run_candidate_qm(pdb_id: str, cif_text: str, *, basis: str = "6-31g", timeou
         max_abs_spin=out["max_abs_spin"], n_spin_sites=out["n_spin_sites"],
         basis=out["basis"], wall_seconds=out["wall_seconds"], note=note,
     )
-    _cache_store(key, qm)
+    if use_cache:  # a cache-bypassing test computation must not persist (avoids stale/churn entries)
+        _cache_store(key, qm)
     return qm

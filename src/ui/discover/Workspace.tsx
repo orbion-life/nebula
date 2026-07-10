@@ -24,23 +24,21 @@ import {
 } from "../../api/client";
 import { StructureViewer } from "./StructureViewer";
 import { Traces } from "./Traces";
+import {
+  claimLabel,
+  computedSpinParam,
+  dossierMarkdown,
+  isCandidateSpecific,
+  isSpinDynamics,
+} from "./dossierExport";
 
 interface Props {
   run: RunState;
   onReset: () => void;
 }
 
-const SPIN_PARAM = "candidate_isoalloxazine_max_spin_density";
-
 function eligibilityOf(d: CandidateDossier | undefined): PhysicsEligibility | undefined {
   return d?.physics_eligibility;
-}
-function isCandidateSpecific(d: CandidateDossier | undefined): boolean {
-  return Boolean(d?.physics_eligibility?.qm_cluster_plan?.candidate_specific);
-}
-function computedSpin(d: CandidateDossier | undefined): number | null {
-  const a = d?.physics_eligibility?.assumptions?.find((p) => p.name === SPIN_PARAM);
-  return typeof a?.value === "number" ? a.value : null;
 }
 
 export function Workspace({ run, onReset }: Props) {
@@ -80,6 +78,12 @@ export function Workspace({ run, onReset }: Props) {
           </div>
         ) : (
           <>
+            {evidence.length === 0 && frontier.length > 0 && (
+              <div className="ws-exploratory">
+                <strong>Exploratory only — no evidence-grade candidate.</strong> Nothing cleared the evidence lane for
+                this objective. What follows is a frontier (exploratory) hypothesis, not a recommended answer.
+              </div>
+            )}
             <Lane title="evidence lane" hint="candidate-specific physics · ranked P·M·D" kind="evidence"
               ids={evidence} scoreById={scoreById} candById={candById} dossierById={dossierById}
               selected={selected} onSelect={setSelected} />
@@ -143,7 +147,9 @@ function Lane(props: {
                 {kind === "evidence" ? (
                   <><Bar label="P" v={s.P_plausibility} /><Bar label="M" v={s.M_measurability} /><Bar label="D" v={s.D_developability} /></>
                 ) : (
-                  <><Bar label="IG" v={s.IG_information_gain} /><Bar label="N" v={s.N_novelty} /><Bar label="U" v={s.U_uncertainty} /></>
+                  // IG is the only "more = better" growth bar; N and U are neutral position
+                  // markers — high novelty/uncertainty describe exploration value, not quality.
+                  <><Bar label="IG" v={s.IG_information_gain} /><Bar label="N" v={s.N_novelty} neutral /><Bar label="U" v={s.U_uncertainty} neutral /></>
                 )}
               </div>
             )}
@@ -154,11 +160,17 @@ function Lane(props: {
   );
 }
 
-function Bar({ label, v }: { label: string; v: number }) {
+function Bar({ label, v, neutral }: { label: string; v: number; neutral?: boolean }) {
   return (
-    <span className="bar" title={`${label}=${v.toFixed(2)}`}>
+    <span className={`bar ${neutral ? "bar-neutral" : ""}`} title={`${label}=${v.toFixed(2)}${neutral ? " (exploration value, not quality)" : ""}`}>
       <span className="bar-label">{label}</span>
-      <span className="bar-track"><span className="bar-fill" style={{ width: `${Math.round(v * 100)}%` }} /></span>
+      <span className="bar-track">
+        {neutral ? (
+          <span className="bar-mark" style={{ left: `${Math.round(v * 100)}%` }} />
+        ) : (
+          <span className="bar-fill" style={{ width: `${Math.round(v * 100)}%` }} />
+        )}
+      </span>
     </span>
   );
 }
@@ -184,8 +196,9 @@ function CandidateDetail({
   }, [candidateId]);
 
   const acc = candidate.uniprot?.primary_accession;
-  const spin = computedSpin(dossier);
+  const spinParam = computedSpinParam(dossier);
   const cs = isCandidateSpecific(dossier);
+  const spinEligible = isSpinDynamics(dossier);
   const cofactor = candidate.cofactors?.[0]?.name ?? null;
   const elig = eligibilityOf(dossier);
 
@@ -198,7 +211,7 @@ function CandidateDetail({
             {acc && <a href={`https://www.uniprot.org/uniprotkb/${acc}`} target="_blank" rel="noreferrer" className="acc-link">UniProt {acc} ↗</a>}
             <span className="route">{candidate.route_class}</span>
             {score && <span className={`lane-badge ${score.lane}`}>{score.lane} lane</span>}
-            <span className="claim">{candidate.claim_ceiling}</span>
+            <span className="claim">{claimLabel(candidate.claim_ceiling)}</span>
           </div>
         </div>
       </header>
@@ -213,13 +226,17 @@ function CandidateDetail({
             {cs ? "candidate-specific QM on real coordinates" : "generic / template physics"}
           </div>
           {elig && <p className="phys-reason">{elig.reason}</p>}
-          {spin != null && (
+          {spinParam != null && (
             <div className="phys-metric">
-              max Mulliken spin density <strong>{spin.toFixed(3)}</strong>{" "}
+              max Mulliken spin density <strong>{spinParam.value.toFixed(3)}</strong>{" "}
               <span className="phys-note">computed (UHF) · high uncertainty · not a performance claim</span>
             </div>
           )}
-          <Traces candidateSpin={spin} candidateSpecific={cs} candidateLabel={acc ?? candidate.title} />
+          {spinEligible ? (
+            <Traces spin={spinParam} candidateSpecific={cs} candidateLabel={acc ?? candidate.title} />
+          ) : (
+            <p className="phys-nospin">No spin-dynamics reference applies to this route ({candidate.route_class}); it is scored in the exploration lane on measurement value only.</p>
+          )}
         </section>
       </div>
 
@@ -324,24 +341,8 @@ function ExportButtons({ candidate, dossier, run }: { candidate: CandidateRecord
   return (
     <div className="export">
       <button className="btn-ghost" onClick={() => download(`dossier_${acc}.json`, JSON.stringify(dossier ?? candidate, null, 2), "application/json")} disabled={!dossier}>download JSON</button>
-      <button className="btn-ghost" onClick={() => download(`dossier_${acc}.md`, toMarkdown(candidate, dossier, run), "text/markdown")}>download Markdown</button>
+      <button className="btn-ghost" onClick={() => download(`dossier_${acc}.md`, dossierMarkdown(candidate, dossier, run), "text/markdown")}>download Markdown</button>
     </div>
   );
 }
 
-function toMarkdown(candidate: CandidateRecord, dossier: CandidateDossier | undefined, run: RunState): string {
-  const acc = candidate.uniprot?.primary_accession;
-  const L: string[] = [];
-  L.push(`# ${candidate.title}`, "");
-  L.push(`**Status:** ${candidate.status} — unvalidated public-protein candidate hypothesis. Computation is not validation.`);
-  if (acc) L.push(`**UniProt:** [${acc}](https://www.uniprot.org/uniprotkb/${acc})`);
-  L.push(`**Route:** ${candidate.route_class} · **Claim ceiling:** ${candidate.claim_ceiling}`);
-  L.push(`**Run:** ${run.run_id} · seed ${run.seed} · ${run.offline ? "offline fixtures" : "live retrieval"} · fingerprint ${run.input_fingerprint}`, "");
-  const spin = computedSpin(dossier);
-  if (spin != null) L.push(`**Candidate-specific QM:** max Mulliken spin ${spin.toFixed(3)} (${isCandidateSpecific(dossier) ? "real coordinates" : "generic template"})`, "");
-  if (candidate.why_it_might_work?.length) { L.push("## Why it might work"); candidate.why_it_might_work.forEach((x) => L.push(`- ${x}`)); L.push(""); }
-  if (candidate.why_it_might_fail?.length) { L.push("## Why it might fail"); candidate.why_it_might_fail.forEach((x) => L.push(`- ${x}`)); L.push(""); }
-  if (candidate.required_controls?.length) { L.push("## Controls"); candidate.required_controls.forEach((x) => L.push(`- ${x}`)); L.push(""); }
-  if (dossier?.disclaimers?.length) { L.push("## Disclaimers"); dossier.disclaimers.forEach((x) => L.push(`- ${x}`)); }
-  return L.join("\n");
-}

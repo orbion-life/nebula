@@ -19,12 +19,18 @@ const DEMO_NOVICE =
 
 interface Props {
   onRun: (spec: ObjectiveSpec) => void;
+  offline?: boolean;
   disabled?: boolean;
 }
 
+// Curated real accessions with committed offline fixtures — used to seed the demo when
+// the backend is offline (no network retrieval), so the default flow shows real
+// candidates instead of an abstention. Q8LPD9 carries the candidate-specific-QM path.
+const OFFLINE_DEMO_SEEDS = ["Q8LPD9", "Q43125"];
+
 type Instrument = { id: string; label?: string; readout_modes?: string[]; rf_available?: boolean };
 
-export function ObjectivePanel({ onRun, disabled }: Props) {
+export function ObjectivePanel({ onRun, offline, disabled }: Props) {
   const [mode, setMode] = useState<UserMode>("novice");
   const [text, setText] = useState(DEMO_NOVICE);
   const [spec, setSpec] = useState<ObjectiveSpec | null>(null);
@@ -43,6 +49,11 @@ export function ObjectivePanel({ onRun, disabled }: Props) {
     setErr(null);
     try {
       const s = await compileObjective(text, mode);
+      // offline has no live retrieval — seed the curated demo accessions so the default
+      // flow returns real candidates instead of abstaining. Shown + editable in the sheet.
+      if (offline && (!s.seed_accessions || s.seed_accessions.length === 0)) {
+        s.seed_accessions = [...OFFLINE_DEMO_SEEDS];
+      }
       setSpec(s);
     } catch (e) {
       setErr((e as Error).message);
@@ -146,6 +157,13 @@ export function ObjectivePanel({ onRun, disabled }: Props) {
           {(spec.missing_information ?? []).length > 0 && (
             <div className="obj-missing">
               <strong>needs clarification:</strong> {(spec.missing_information ?? []).join(" · ")}
+            </div>
+          )}
+
+          {offline && (spec.seed_accessions ?? []).length > 0 && mode === "novice" && (
+            <div className="obj-seeds">
+              offline mode — seeded with real fixtured accessions:{" "}
+              {(spec.seed_accessions ?? []).map((a) => <span className="chip" key={a}>{a}</span>)}
             </div>
           )}
 

@@ -154,9 +154,11 @@ async def create_run(body: dict) -> RunCreated:
     except Exception as exc:  # surfaced validation error — never bypassed
         raise HTTPException(status_code=422, detail=str(exc))
 
-    # idempotent: identical inputs → same run_id → return the cached run
+    # idempotent: identical inputs → same run_id → return the cached run, EXCEPT when the
+    # cached run ended in failure/cancellation — those are retryable (otherwise one transient
+    # failure would make that exact objective+seed permanently unrunnable).
     existing = STORE.get(run_id_for(input_fingerprint(objective, objective.seed, objective.instrument_id)))
-    if existing is not None:
+    if existing is not None and existing.status not in (RunStatus.failed, RunStatus.cancelled):
         return RunCreated(run_id=existing.run_id, status=existing.status, input_fingerprint=existing.input_fingerprint)
 
     run = _new_run(objective)

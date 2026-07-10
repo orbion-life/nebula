@@ -67,6 +67,7 @@ describe("repository source boundary", () => {
   const allowFiles = [
     "IP_BOUNDARY.md",
     "boundary.test.ts",
+    "exportBoundary.test.ts", // scans the shipped export for "/Users/" — legitimately holds the marker
     ".leak-terms.local.json",
     "commands/audit-submit.md",
     "audit-submit/SKILL.md",

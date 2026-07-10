@@ -74,6 +74,15 @@ export function StructureViewer({ structure, loading, cofactorLabel }: Props) {
         /* viewer already torn down */
       }
       viewerRef.current = null;
+      // explicitly release the WebGL context — 3Dmol.clear() does not, and browsers cap
+      // ~16 live contexts, so clicking through candidates would otherwise blank the viewer.
+      try {
+        const canvas = hostRef.current?.querySelector("canvas") as HTMLCanvasElement | null;
+        const gl = (canvas?.getContext("webgl") ?? canvas?.getContext("webgl2")) as WebGLRenderingContext | null;
+        gl?.getExtension("WEBGL_lose_context")?.loseContext();
+      } catch {
+        /* best-effort */
+      }
       if (hostRef.current) hostRef.current.innerHTML = "";
     };
   }, [structure]);

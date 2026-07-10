@@ -1,19 +1,21 @@
 /**
- * Candidate physics trace — Tufte discipline (raw SVG, no legend, no gridlines).
+ * Candidate physics trace — Tufte small-multiples (raw SVG, no legend, no gridlines).
  *
- * Honesty boundary, drawn into the chart:
- *  - The MARY curve + ±1σ ensemble band is the REFERENCE radical-pair calculation
- *    (a synthetic assumption sweep from the versioned artifact), never a prediction
- *    of this protein's response.
- *  - The candidate contributes its own REAL computed number — the max spin density
- *    from the UHF calculation on its extracted isoalloxazine — shown as an
- *    annotation, not as a performance curve.
- * Direct-labeled, one zero reference line, muted underlay + single accent.
+ * Two panels on SEPARATE scales (never co-plotted — different units, and co-plotting a
+ * scalar spin on the mfe% axis would read as a per-protein response prediction):
+ *  1. REFERENCE MARY curve + ±1σ ensemble band from the versioned RadicalPy artifact — a
+ *     synthetic assumption sweep, NOT a prediction of this protein.
+ *  2. This candidate's OWN computed number — the max Mulliken spin from the UHF calculation
+ *     on its extracted isoalloxazine — drawn as a point with its ±range interval on a
+ *     unitless 0–1 scale, direct-labeled "computed on real coordinates, not a prediction".
+ * Only rendered for spin-dynamics-eligible candidates (the caller gates it).
  */
 import artifact from "../../data/generated/radical_pair_mary.v1.json";
 
+type SpinParam = { value: number; range: [number, number] | null; uncertainty: string | null };
+
 interface Props {
-  candidateSpin?: number | null;
+  spin?: SpinParam | null;
   candidateSpecific?: boolean;
   candidateLabel?: string;
 }
@@ -24,7 +26,7 @@ const M = { top: 26, right: 120, bottom: 40, left: 52 };
 const IW = W - M.left - M.right;
 const IH = H - M.top - M.bottom;
 
-export function Traces({ candidateSpin, candidateSpecific, candidateLabel }: Props) {
+export function Traces({ spin, candidateSpecific, candidateLabel }: Props) {
   const data = artifact.data as {
     B0_mT: number[];
     mfePercent: number[];
@@ -48,46 +50,59 @@ export function Traces({ candidateSpin, candidateSpecific, candidateLabel }: Pro
     .map((_m, i) => `L${x(b0[mean.length - 1 - i]).toFixed(1)},${y(mean[mean.length - 1 - i] - std[mean.length - 1 - i]).toFixed(1)}`)
     .join(" ");
   const band = `${upper} ${lower} Z`;
-
   const lastX = x(b0[b0.length - 1]);
   const lastY = y(mean[mean.length - 1]);
 
   return (
     <figure className="traces">
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="reference radical-pair MARY trace with uncertainty band">
-        {/* zero reference line */}
         <line x1={M.left} x2={M.left + IW} y1={y(0)} y2={y(0)} stroke="#3a4763" strokeWidth={1} />
-        {/* ±1σ ensemble band (muted underlay) */}
         <path d={band} fill="#f6c94522" stroke="none" />
-        {/* mean MARY curve (accent) */}
         <path d={line} fill="none" stroke="#f6c945" strokeWidth={1.8} />
-        {/* direct label at the line end */}
-        <text x={lastX + 8} y={lastY} className="tr-lab" dominantBaseline="middle">
-          reference MARY
-        </text>
-        <text x={lastX + 8} y={lastY + 14} className="tr-sub" dominantBaseline="middle">
-          ±1σ ensemble
-        </text>
-        {/* axes ticks (direct, sparse) */}
+        <text x={lastX + 8} y={lastY} className="tr-lab" dominantBaseline="middle">reference MARY</text>
+        <text x={lastX + 8} y={lastY + 14} className="tr-sub" dominantBaseline="middle">±1σ ensemble</text>
         <text x={M.left} y={H - 12} className="tr-ax">0</text>
         <text x={M.left + IW} y={H - 12} className="tr-ax" textAnchor="end">{bMax} mT</text>
         <text x={M.left - 8} y={y(yMax)} className="tr-ax" textAnchor="end" dominantBaseline="middle">{yMax.toFixed(1)}%</text>
         <text x={M.left - 8} y={y(yMin)} className="tr-ax" textAnchor="end" dominantBaseline="middle">{yMin.toFixed(1)}%</text>
         <text x={M.left + IW / 2} y={H - 4} className="tr-axtitle" textAnchor="middle">static field B₀ (√ scale)</text>
       </svg>
+
+      {spin != null && <SpinPanel spin={spin} candidateSpecific={candidateSpecific} />}
+
       <figcaption className="tr-cap">
         <em>Reference</em> radical-pair spin-dynamics calculation — a synthetic assumption sweep from{" "}
         <code>{artifact.schemaVersion}@{(artifact.contentHash as string).slice(0, 8)}</code>, <strong>not</strong> a prediction of{" "}
-        {candidateLabel ?? "this protein"}.{" "}
-        {candidateSpin != null ? (
-          <>
-            Candidate-specific input: max Mulliken spin <strong>{candidateSpin.toFixed(3)}</strong>{" "}
-            {candidateSpecific ? "(UHF on this protein's real isoalloxazine)" : "(generic template)"}.
-          </>
-        ) : (
-          <>No candidate-specific quantum-chemistry value for this candidate.</>
-        )}
+        {candidateLabel ?? "this protein"}.
       </figcaption>
     </figure>
+  );
+}
+
+// second small-multiple: the candidate's OWN computed spin as a point + ±range interval,
+// on its own unitless 0–1 scale — never on the mfe% axis above.
+const SW = 640;
+const SH = 92;
+const SM = { top: 22, right: 150, bottom: 26, left: 52 };
+const SIW = SW - SM.left - SM.right;
+
+function SpinPanel({ spin, candidateSpecific }: { spin: SpinParam; candidateSpecific?: boolean }) {
+  const lo = spin.range ? Math.max(0, Math.min(spin.range[0], spin.range[1])) : spin.value;
+  const hi = spin.range ? Math.max(spin.range[0], spin.range[1]) : spin.value;
+  const px = (v: number) => SM.left + Math.max(0, Math.min(1, v)) * SIW;
+  const cy = SM.top + 14;
+  return (
+    <svg viewBox={`0 0 ${SW} ${SH}`} role="img" aria-label="candidate computed spin with uncertainty interval" className="tr-spin">
+      <line x1={SM.left} x2={SM.left + SIW} y1={cy} y2={cy} stroke="#3a4763" strokeWidth={1} />
+      {spin.range && <line x1={px(lo)} x2={px(hi)} y1={cy} y2={cy} stroke="#45c8c0" strokeWidth={3} />}
+      <circle cx={px(spin.value)} cy={cy} r={4.5} fill="#45c8c0" />
+      <text x={px(spin.value)} y={cy - 12} className="tr-ax" textAnchor="middle">{spin.value.toFixed(2)}</text>
+      <text x={SM.left} y={SH - 6} className="tr-ax">0</text>
+      <text x={SM.left + SIW} y={SH - 6} className="tr-ax" textAnchor="end">1</text>
+      <text x={SM.left + SIW + 8} y={cy} className="tr-lab" dominantBaseline="middle">computed spin</text>
+      <text x={SM.left + SIW + 8} y={cy + 14} className="tr-sub" dominantBaseline="middle">
+        {candidateSpecific ? "real coords (UHF)" : "template"}, not a prediction
+      </text>
+    </svg>
   );
 }

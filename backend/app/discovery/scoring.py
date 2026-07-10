@@ -39,13 +39,14 @@ def _rp_peak_signature() -> float:
         return 0.02
 
 
+# The ONLY signal amplitude that enters a magnitude-bearing score is the radical-pair
+# signature, and it is derived from the versioned, provenance-tagged RadicalPy artifact
+# (not a hand-typed constant). Proxy routes have NO candidate-specific, provenance-backed
+# amplitude, so they never receive a fabricated ΔF/F — they get a coarse binary
+# observability gate instead (see _measurability). This keeps the repo's "every numeric
+# parameter carries provenance" rule intact for anything that can move the ranking.
 _RP_SIGNATURE = _rp_peak_signature()
-_PROXY_SIGNATURE = {
-    RouteClass.triplet_fp: 0.016,
-    RouteClass.rfp_flavin_photochemical: 0.35,
-    RouteClass.redox_electrochemical: 0.45,
-    RouteClass.material_state: 0.30,
-}
+_PROXY_GATE = 0.5  # observable-in-principle under a compatible instrument (unitless gate, not an SNR)
 _CLAIM_POTENTIAL = {ClaimLevel.partner_ready_dossier: 1.0, ClaimLevel.measurement_triage: 0.8, ClaimLevel.diagnostic_only: 0.55}
 _P_EVIDENCE_FLOOR = 0.5
 _P_FRONTIER_FLOOR = 0.25
@@ -66,11 +67,8 @@ class ScoreInputs:
     novelty: float
 
 
-def _signature(inp: ScoreInputs) -> float:
-    rc = inp.candidate.route_class
-    if inp.eligibility.kind in (PhysicsEligibilityKind.real_spin_dynamics, PhysicsEligibilityKind.qm_cluster_assumption):
-        return _RP_SIGNATURE
-    return _PROXY_SIGNATURE.get(rc, 0.0)
+def _is_spin_dynamics(inp: ScoreInputs) -> bool:
+    return inp.eligibility.kind in (PhysicsEligibilityKind.real_spin_dynamics, PhysicsEligibilityKind.qm_cluster_assumption)
 
 
 def _measurability(inp: ScoreInputs, instrument: dict) -> float:
@@ -78,11 +76,18 @@ def _measurability(inp: ScoreInputs, instrument: dict) -> float:
     needs_rf = rc == RouteClass.triplet_fp
     readout_ok = any(r.value in instrument.get("readout_modes", []) for r in inp.candidate.readout_modes) or inp.capability.optical
     rf_ok = (not needs_rf) or instrument.get("rf_available", False)
-    sig = _signature(inp)
-    noise = instrument.get("min_detectable_delta_f_over_f", 1e-3)
-    if not (readout_ok and rf_ok) or sig <= 0:
+    if not (readout_ok and rf_ok):
         return 0.0
-    snr = sig / noise
+    if not _is_spin_dynamics(inp):
+        # proxy route: no provenance-backed signal amplitude exists, so we assert only
+        # "observable-in-principle under this instrument" — a fabricated ΔF/F must never
+        # set the frontier ranking magnitude. Frontier order then follows information gain.
+        return _PROXY_GATE
+    # radical-pair route: SNR from the artifact-derived signature (provenance-tagged)
+    noise = instrument.get("min_detectable_delta_f_over_f", 1e-3)
+    if _RP_SIGNATURE <= 0:
+        return 0.0
+    snr = _RP_SIGNATURE / noise
     if snr < 1.0:
         return 0.0
     return _clamp(0.5 + 0.5 * (math.log10(snr) / math.log10(30.0)))
@@ -97,13 +102,11 @@ def _plausibility(inp: ScoreInputs) -> float:
         p += 0.2
     if inp.capability.has_experimental_structure:
         p += 0.1
-    # candidate-specific QM grounding: a converged calculation on THIS protein's real
-    # isoalloxazine coordinates modestly raises how plausible the route is for it. This is
-    # mechanistic grounding, NOT novelty/uncertainty (which never lift P), and NOT a
-    # performance claim — the computed spin value stays out of P entirely.
-    plan = inp.eligibility.qm_cluster_plan
-    if plan is not None and plan.candidate_specific:
-        p += 0.08
+    # NOTE: candidate-specific QM does NOT lift plausibility. A converged single-point UHF
+    # on a truncated isoalloxazine proves the route is *parameterizable* for this protein,
+    # not that the protein hosts a functional radical pair — rewarding "a calculation ran"
+    # would cross the "computation is not validation" line. It is surfaced as a badge +
+    # provenance in the UI, and never as a ranking input.
     return _clamp(p)
 
 

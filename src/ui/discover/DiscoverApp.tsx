@@ -126,7 +126,7 @@ export function DiscoverApp() {
 
       {phase === "objective" && (
         <div className="disc-stage disc-objective">
-          <ObjectivePanel onRun={start} />
+          <ObjectivePanel onRun={start} offline={health?.offline ?? false} />
         </div>
       )}
 
@@ -135,6 +135,11 @@ export function DiscoverApp() {
           <RunProgress status={status} stage={stage} events={events} run={run} onCancel={cancel} />
           {status === "completed" && run && (
             <button className="btn-run" onClick={() => setPhase("workspace")}>open results →</button>
+          )}
+          {(status === "failed" || status === "cancelled") && (
+            <div className="disc-error">
+              run {status}. <button className="btn-ghost" onClick={reset}>← new objective</button>
+            </div>
           )}
           {error && <div className="disc-error">error: {error} <button className="btn-ghost" onClick={reset}>reset</button></div>}
         </div>
