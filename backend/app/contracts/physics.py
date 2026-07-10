@@ -30,6 +30,12 @@ class QmClusterPlan(BaseModel):
     charge: int = 0
     est_wall_seconds: float
     tractable_under_60s: bool
+    # HONEST: today the plan is a GENERIC flavin-core template shared by every
+    # flavin protein. It becomes candidate_specific only once the protein's real
+    # coordinates, charge, multiplicity, protonation, donor/acceptor geometry and
+    # environment actually enter the calculation (Phase 4).
+    candidate_specific: bool = False
+    geometry_source: str = "canonical isoalloxazine core (generic template; not extracted from this protein's structure yet)"
     truncation_note: str = (
         "ribityl/phosphate tail truncated to an N10-methyl cap; dangling bonds H-capped "
         "(standard QM-cluster truncation). Assumption-derived; not a whole-protein claim."

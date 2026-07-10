@@ -183,8 +183,46 @@
     },
     "/api/runs/{run_id}/events": {
       "get": {
-        "summary": "Get Events",
-        "operationId": "get_events_api_runs__run_id__events_get",
+        "summary": "Stream Events",
+        "description": "Real Server-Sent Events stream of run progress (not a static JSON list).\n\nReplays events so far, then streams new ones until the run is terminal.",
+        "operationId": "stream_events_api_runs__run_id__events_get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}/events.json": {
+      "get": {
+        "summary": "Get Events Json",
+        "operationId": "get_events_json_api_runs__run_id__events_json_get",
         "parameters": [
           {
             "name": "run_id",
@@ -206,7 +244,7 @@
                   "items": {
                     "$ref": "#/components/schemas/RunEvent"
                   },
-                  "title": "Response Get Events Api Runs  Run Id  Events Get"
+                  "title": "Response Get Events Json Api Runs  Run Id  Events Json Get"
                 }
               }
             }
@@ -869,6 +907,223 @@
         ],
         "title": "CompileRequest"
       },
+      "DiscoveryLane": {
+        "type": "string",
+        "enum": [
+          "evidence",
+          "frontier"
+        ],
+        "title": "DiscoveryLane"
+      },
+      "DiscoveryScore": {
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "title": "Candidate Id"
+          },
+          "P_plausibility": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "P Plausibility"
+          },
+          "M_measurability": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "M Measurability"
+          },
+          "D_developability": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "D Developability"
+          },
+          "N_novelty": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "N Novelty"
+          },
+          "U_uncertainty": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "U Uncertainty"
+          },
+          "IG_information_gain": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Ig Information Gain"
+          },
+          "C_cost": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "C Cost"
+          },
+          "lane": {
+            "$ref": "#/components/schemas/DiscoveryLane"
+          },
+          "exploration": {
+            "$ref": "#/components/schemas/ExplorationReason"
+          },
+          "pareto_rank": {
+            "type": "integer",
+            "title": "Pareto Rank",
+            "description": "1 = on the Pareto frontier for its lane's objectives"
+          },
+          "dominated_by": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Dominated By"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "P_plausibility",
+          "M_measurability",
+          "D_developability",
+          "N_novelty",
+          "U_uncertainty",
+          "IG_information_gain",
+          "C_cost",
+          "lane",
+          "exploration",
+          "pareto_rank",
+          "rationale"
+        ],
+        "title": "DiscoveryScore",
+        "description": "The seven dimensions + lane assignment for one candidate. No magic scalar."
+      },
+      "DiscriminatingExperiment": {
+        "properties": {
+          "what_to_measure": {
+            "type": "string",
+            "title": "What To Measure"
+          },
+          "instrument_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Id"
+          },
+          "expected_signature": {
+            "type": "string",
+            "title": "Expected Signature"
+          },
+          "null_expectation": {
+            "type": "string",
+            "title": "Null Expectation"
+          },
+          "positive_controls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Positive Controls"
+          },
+          "negative_controls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Negative Controls"
+          },
+          "kill_criterion": {
+            "type": "string",
+            "title": "Kill Criterion"
+          },
+          "information_gained": {
+            "type": "string",
+            "title": "Information Gained"
+          },
+          "approx_cost": {
+            "type": "string",
+            "title": "Approx Cost"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "what_to_measure",
+          "expected_signature",
+          "null_expectation",
+          "kill_criterion",
+          "information_gained",
+          "approx_cost"
+        ],
+        "title": "DiscriminatingExperiment",
+        "description": "The cheapest experiment that would confirm/kill a hypothesis."
+      },
+      "ExplorationLevel": {
+        "type": "string",
+        "enum": [
+          "L0_known_family",
+          "L1_cofactor_geometry",
+          "L2_alternative_spin_chemistry",
+          "L3_scaffold_composition",
+          "L4_design_exploration"
+        ],
+        "title": "ExplorationLevel"
+      },
+      "ExplorationReason": {
+        "properties": {
+          "level": {
+            "$ref": "#/components/schemas/ExplorationLevel"
+          },
+          "outside_family_because": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outside Family Because"
+          },
+          "physical_constraints_satisfied": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Physical Constraints Satisfied"
+          },
+          "assumptions_remaining": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions Remaining"
+          },
+          "claim_ceiling": {
+            "$ref": "#/components/schemas/ClaimLevel"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "level",
+          "claim_ceiling"
+        ],
+        "title": "ExplorationReason",
+        "description": "Why a candidate sits at a given relaxation level / lane."
+      },
       "ExpressionHost": {
         "type": "string",
         "enum": [
@@ -1118,6 +1373,69 @@
         "additionalProperties": false,
         "type": "object",
         "title": "FpbaseState"
+      },
+      "FrontierExperiment": {
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "title": "Candidate Id"
+          },
+          "accession": {
+            "type": "string",
+            "title": "Accession"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "outside_family_because": {
+            "type": "string",
+            "title": "Outside Family Because"
+          },
+          "physical_constraints_satisfied": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Physical Constraints Satisfied"
+          },
+          "assumptions_remaining": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions Remaining"
+          },
+          "discriminating_experiment": {
+            "$ref": "#/components/schemas/DiscriminatingExperiment"
+          },
+          "falsifier": {
+            "type": "string",
+            "title": "Falsifier"
+          },
+          "score": {
+            "$ref": "#/components/schemas/DiscoveryScore"
+          },
+          "claim_ceiling": {
+            "$ref": "#/components/schemas/ClaimLevel"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "accession",
+          "title",
+          "outside_family_because",
+          "physical_constraints_satisfied",
+          "assumptions_remaining",
+          "discriminating_experiment",
+          "falsifier",
+          "score",
+          "claim_ceiling"
+        ],
+        "title": "FrontierExperiment",
+        "description": "A frontier-lane result: a plausible, measurable, out-of-family hypothesis."
       },
       "HTTPValidationError": {
         "properties": {
@@ -2341,6 +2659,16 @@
             "type": "boolean",
             "title": "Tractable Under 60S"
           },
+          "candidate_specific": {
+            "type": "boolean",
+            "title": "Candidate Specific",
+            "default": false
+          },
+          "geometry_source": {
+            "type": "string",
+            "title": "Geometry Source",
+            "default": "canonical isoalloxazine core (generic template; not extracted from this protein's structure yet)"
+          },
           "truncation_note": {
             "type": "string",
             "title": "Truncation Note",
@@ -2536,6 +2864,28 @@
             },
             "type": "array",
             "title": "Dossiers"
+          },
+          "discovery_scores": {
+            "items": {
+              "$ref": "#/components/schemas/DiscoveryScore"
+            },
+            "type": "array",
+            "title": "Discovery Scores"
+          },
+          "evidence_shortlist": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Shortlist",
+            "description": "candidate_ids on the evidence lane, ranked"
+          },
+          "frontier_experiments": {
+            "items": {
+              "$ref": "#/components/schemas/FrontierExperiment"
+            },
+            "type": "array",
+            "title": "Frontier Experiments"
           },
           "selected_candidate_id": {
             "anyOf": [

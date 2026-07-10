@@ -10,14 +10,23 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
+from ..api.fixtures_static import INSTRUMENTS
 from ..contracts.candidate import CandidateDossier, StructuralEvidence
 from ..contracts.enums import RunStatus
 from ..contracts.run import RunEvent, RunState
+from ..discovery import build_discovery
 from ..physics.eligibility import assess_eligibility
 from ..retrieval.assemble import assemble_candidates
 from ..retrieval.plan import plan_queries
 from ..state.machine import assert_transition, progress_fraction
 from .store import RunStore
+
+
+def _instrument(instrument_id: str | None) -> dict:
+    for i in INSTRUMENTS:
+        if i["id"] == instrument_id:
+            return i
+    return INSTRUMENTS[0]  # default: benchtop field fluorimeter
 
 
 def _advance(run: RunState, to: RunStatus, stage: str, note: str) -> RunState:
@@ -79,8 +88,38 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
         run = run.model_copy(update={
             "dossiers": dossiers,
             "updated_at": datetime.now(timezone.utc),
-            "events": [*run.events, RunEvent(at=datetime.now(timezone.utc), from_status=RunStatus.assessing_physics, to_status=RunStatus.assessing_physics, stage="assessing_physics", note=f"{computed}/{len(dossiers)} candidate(s) eligible for computed physics; simulation + ranking land in the next increment", progress=progress_fraction(RunStatus.assessing_physics))],
+            "events": [*run.events, RunEvent(at=datetime.now(timezone.utc), from_status=RunStatus.assessing_physics, to_status=RunStatus.assessing_physics, stage="assessing_physics", note=f"{computed}/{len(dossiers)} candidate(s) eligible for computed physics", progress=progress_fraction(RunStatus.assessing_physics))],
         })
+        store.put(run)
+        if _cancelled(store, run_id):
+            return store.get(run_id)
+
+        # simulate (measurability under the instrument) — the artifact-backed signature
+        run = _advance(run, RunStatus.simulating, "simulating", "computing measurability of each candidate under the chosen instrument")
+        store.put(run)
+
+        # rank: two-lane discovery (evidence vs frontier), Pareto + quality-diversity
+        run = _advance(run, RunStatus.ranking, "ranking", "Discovery Frontier: separating evidence and frontier lanes")
+        instrument = _instrument(run.instrument_id)
+        scores, evidence_shortlist, frontier = build_discovery(candidates, dossiers, instrument=instrument, objective=run.objective)
+        run = run.model_copy(update={
+            "discovery_scores": scores,
+            "evidence_shortlist": evidence_shortlist,
+            "frontier_experiments": frontier,
+            "updated_at": datetime.now(timezone.utc),
+        })
+        store.put(run)
+        if _cancelled(store, run_id):
+            return store.get(run_id)
+
+        # plan + complete: pick the decisive next experiment (top evidence, else top frontier)
+        run = _advance(run, RunStatus.planning, "planning", "selecting the decisive next measurement")
+        selected = evidence_shortlist[0] if evidence_shortlist else (frontier[0].candidate_id if frontier else None)
+        run = run.model_copy(update={"selected_candidate_id": selected})
+        run = _advance(
+            run, RunStatus.completed, "completed",
+            f"evidence lane: {len(evidence_shortlist)} candidate(s); frontier lane: {len(frontier)} experiment(s); selected {selected}",
+        )
         store.put(run)
         return run
 

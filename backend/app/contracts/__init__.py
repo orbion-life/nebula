@@ -11,13 +11,23 @@ from .candidate import (
     PublicAnalog,
     StructuralEvidence,
 )
+from .discovery import (
+    DiscoveryScore,
+    DiscriminatingExperiment,
+    ExplorationReason,
+    FrontierExperiment,
+)
 from .enums import (
     ArchitectureKind,
     ClaimLevel,
+    DiscoveryLane,
+    ExplorationLevel,
     ExpressionHost,
+    KnowledgeStateKind,
     MaterialContext,
     ParameterSourceType,
     PhysicsEligibilityKind,
+    PrimitiveKind,
     ProviderId,
     ReadoutMode,
     RetrievalMode,
@@ -25,6 +35,13 @@ from .enums import (
     RunStatus,
     ScaffoldFamily,
     Uncertainty,
+)
+from .mechanism import (
+    CapabilityVector,
+    KnowledgeState,
+    MechanismGraph,
+    MechanismPrimitive,
+    UnknownParameter,
 )
 from .objective import FieldProvenance, ObjectiveSpec, RawObjective
 from .physics import PhysicsEligibility, QmClusterPlan, SpinDynamicsPlan
@@ -46,9 +63,12 @@ from .provenance import Citation, ParameterProvenance, Provenance
 from .run import RunCreated, RunEvent, RunState
 
 __all__ = [
-    "ArchitectureKind", "ClaimLevel", "ExpressionHost", "MaterialContext",
-    "ParameterSourceType", "PhysicsEligibilityKind", "ProviderId", "ReadoutMode",
+    "ArchitectureKind", "ClaimLevel", "DiscoveryLane", "ExplorationLevel",
+    "ExpressionHost", "KnowledgeStateKind", "MaterialContext", "ParameterSourceType",
+    "PhysicsEligibilityKind", "PrimitiveKind", "ProviderId", "ReadoutMode",
     "RetrievalMode", "RouteClass", "RunStatus", "ScaffoldFamily", "Uncertainty",
+    "CapabilityVector", "MechanismGraph", "MechanismPrimitive", "KnowledgeState", "UnknownParameter",
+    "DiscoveryScore", "DiscriminatingExperiment", "ExplorationReason", "FrontierExperiment",
     "RawObjective", "ObjectiveSpec", "FieldProvenance",
     "Citation", "Provenance", "ParameterProvenance",
     "UniProtRecord", "InterProMatch", "PdbEntry", "PdbSearchHit", "PdbCofactor",

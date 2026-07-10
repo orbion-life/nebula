@@ -113,8 +113,30 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Events */
-        get: operations["get_events_api_runs__run_id__events_get"];
+        /**
+         * Stream Events
+         * @description Real Server-Sent Events stream of run progress (not a static JSON list).
+         *
+         *     Replays events so far, then streams new ones until the run is terminal.
+         */
+        get: operations["stream_events_api_runs__run_id__events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/runs/{run_id}/events.json": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Events Json */
+        get: operations["get_events_json_api_runs__run_id__events_json_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -339,6 +361,87 @@ export interface components {
             seed: number;
         };
         /**
+         * DiscoveryLane
+         * @enum {string}
+         */
+        DiscoveryLane: "evidence" | "frontier";
+        /**
+         * DiscoveryScore
+         * @description The seven dimensions + lane assignment for one candidate. No magic scalar.
+         */
+        DiscoveryScore: {
+            /** Candidate Id */
+            candidate_id: string;
+            /** P Plausibility */
+            P_plausibility: number;
+            /** M Measurability */
+            M_measurability: number;
+            /** D Developability */
+            D_developability: number;
+            /** N Novelty */
+            N_novelty: number;
+            /** U Uncertainty */
+            U_uncertainty: number;
+            /** Ig Information Gain */
+            IG_information_gain: number;
+            /** C Cost */
+            C_cost: number;
+            lane: components["schemas"]["DiscoveryLane"];
+            exploration: components["schemas"]["ExplorationReason"];
+            /**
+             * Pareto Rank
+             * @description 1 = on the Pareto frontier for its lane's objectives
+             */
+            pareto_rank: number;
+            /** Dominated By */
+            dominated_by?: string[];
+            /** Rationale */
+            rationale: string;
+        };
+        /**
+         * DiscriminatingExperiment
+         * @description The cheapest experiment that would confirm/kill a hypothesis.
+         */
+        DiscriminatingExperiment: {
+            /** What To Measure */
+            what_to_measure: string;
+            /** Instrument Id */
+            instrument_id?: string | null;
+            /** Expected Signature */
+            expected_signature: string;
+            /** Null Expectation */
+            null_expectation: string;
+            /** Positive Controls */
+            positive_controls?: string[];
+            /** Negative Controls */
+            negative_controls?: string[];
+            /** Kill Criterion */
+            kill_criterion: string;
+            /** Information Gained */
+            information_gained: string;
+            /** Approx Cost */
+            approx_cost: string;
+        };
+        /**
+         * ExplorationLevel
+         * @enum {string}
+         */
+        ExplorationLevel: "L0_known_family" | "L1_cofactor_geometry" | "L2_alternative_spin_chemistry" | "L3_scaffold_composition" | "L4_design_exploration";
+        /**
+         * ExplorationReason
+         * @description Why a candidate sits at a given relaxation level / lane.
+         */
+        ExplorationReason: {
+            level: components["schemas"]["ExplorationLevel"];
+            /** Outside Family Because */
+            outside_family_because?: string | null;
+            /** Physical Constraints Satisfied */
+            physical_constraints_satisfied?: string[];
+            /** Assumptions Remaining */
+            assumptions_remaining?: string[];
+            claim_ceiling: components["schemas"]["ClaimLevel"];
+        };
+        /**
          * ExpressionHost
          * @enum {string}
          */
@@ -404,6 +507,29 @@ export interface components {
             pka?: number | null;
             /** Lifetime */
             lifetime?: number | null;
+        };
+        /**
+         * FrontierExperiment
+         * @description A frontier-lane result: a plausible, measurable, out-of-family hypothesis.
+         */
+        FrontierExperiment: {
+            /** Candidate Id */
+            candidate_id: string;
+            /** Accession */
+            accession: string;
+            /** Title */
+            title: string;
+            /** Outside Family Because */
+            outside_family_because: string;
+            /** Physical Constraints Satisfied */
+            physical_constraints_satisfied: string[];
+            /** Assumptions Remaining */
+            assumptions_remaining: string[];
+            discriminating_experiment: components["schemas"]["DiscriminatingExperiment"];
+            /** Falsifier */
+            falsifier: string;
+            score: components["schemas"]["DiscoveryScore"];
+            claim_ceiling: components["schemas"]["ClaimLevel"];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -833,6 +959,16 @@ export interface components {
             /** Tractable Under 60S */
             tractable_under_60s: boolean;
             /**
+             * Candidate Specific
+             * @default false
+             */
+            candidate_specific: boolean;
+            /**
+             * Geometry Source
+             * @default canonical isoalloxazine core (generic template; not extracted from this protein's structure yet)
+             */
+            geometry_source: string;
+            /**
              * Truncation Note
              * @default ribityl/phosphate tail truncated to an N10-methyl cap; dangling bonds H-capped (standard QM-cluster truncation). Assumption-derived; not a whole-protein claim.
              */
@@ -915,6 +1051,15 @@ export interface components {
             candidates?: components["schemas"]["CandidateRecord"][];
             /** Dossiers */
             dossiers?: components["schemas"]["CandidateDossier"][];
+            /** Discovery Scores */
+            discovery_scores?: components["schemas"]["DiscoveryScore"][];
+            /**
+             * Evidence Shortlist
+             * @description candidate_ids on the evidence lane, ranked
+             */
+            evidence_shortlist?: string[];
+            /** Frontier Experiments */
+            frontier_experiments?: components["schemas"]["FrontierExperiment"][];
             /** Selected Candidate Id */
             selected_candidate_id?: string | null;
             /** Result Ref */
@@ -1205,7 +1350,38 @@ export interface operations {
             };
         };
     };
-    get_events_api_runs__run_id__events_get: {
+    stream_events_api_runs__run_id__events_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_events_json_api_runs__run_id__events_json_get: {
         parameters: {
             query?: never;
             header?: never;

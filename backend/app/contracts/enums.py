@@ -115,6 +115,43 @@ class PhysicsEligibilityKind(str, Enum):
     ineligible = "ineligible"                           # excluded, with reasons
 
 
+class DiscoveryLane(str, Enum):
+    evidence = "evidence"    # known mechanism families + stronger evidence
+    frontier = "frontier"    # plausible, measurable hypotheses outside familiar families
+
+
+class ExplorationLevel(str, Enum):
+    # constraint-relaxation ladder; each level lowers the claim ceiling
+    l0_known_family = "L0_known_family"                    # known family + known cofactor
+    l1_cofactor_geometry = "L1_cofactor_geometry"          # family-independent cofactor/geometry
+    l2_alternative_spin = "L2_alternative_spin_chemistry"  # alt spin-forming chem + compatible transduction
+    l3_scaffold_composition = "L3_scaffold_composition"    # compatible domain/scaffold compositions
+    l4_design = "L4_design_exploration"                    # optional generative design (disabled by default)
+
+
+class PrimitiveKind(str, Enum):
+    energy_input = "energy_input"
+    excitation = "excitation"
+    radical_pair_formation = "radical_pair_formation"
+    triplet_formation = "triplet_formation"
+    metal_open_shell = "metal_open_shell"
+    spin_evolution = "spin_evolution"
+    recombination = "recombination"
+    relaxation = "relaxation"
+    fluorescence_readout = "fluorescence_readout"
+    lifetime_readout = "lifetime_readout"
+    electrochemical_readout = "electrochemical_readout"
+    hybrid_transduction = "hybrid_transduction"
+    biological_transduction = "biological_transduction"
+    material_context = "material_context"
+
+
+class KnowledgeStateKind(str, Enum):
+    known = "known"        # public-anchor supported
+    assumed = "assumed"    # transparent assumption
+    unknown = "unknown"    # explicitly unresolved
+
+
 class RunStatus(str, Enum):
     queued = "queued"
     compiling_objective = "compiling_objective"

@@ -14,9 +14,10 @@ from datetime import datetime, timezone
 import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from ..contracts.enums import ProviderId, RunStatus
+from ..contracts.enums import TERMINAL_STATUSES, ProviderId, RunStatus
 from ..contracts.objective import ObjectiveSpec, RawObjective
 from ..contracts.run import RunCreated, RunEvent, RunState
 from ..jobs.fingerprint import input_fingerprint, run_id_for
@@ -164,8 +165,34 @@ async def get_run(run_id: str) -> RunState:
     return run
 
 
-@app.get("/api/runs/{run_id}/events", response_model=list[RunEvent])
-async def get_events(run_id: str) -> list[RunEvent]:
+@app.get("/api/runs/{run_id}/events")
+async def stream_events(run_id: str) -> StreamingResponse:
+    """Real Server-Sent Events stream of run progress (not a static JSON list).
+
+    Replays events so far, then streams new ones until the run is terminal.
+    """
+    if STORE.get(run_id) is None:
+        raise HTTPException(status_code=404, detail=f"run {run_id} not found")
+
+    async def gen():
+        sent = 0
+        for _ in range(600):  # ~cap; each iteration ~0.25s
+            cur = STORE.get(run_id)
+            if cur is None:
+                break
+            while sent < len(cur.events):
+                yield f"data: {cur.events[sent].model_dump_json()}\n\n"
+                sent += 1
+            if cur.status in TERMINAL_STATUSES:
+                yield f"event: end\ndata: {{\"status\":\"{cur.status.value}\"}}\n\n"
+                return
+            await asyncio.sleep(0.25)
+
+    return StreamingResponse(gen(), media_type="text/event-stream")
+
+
+@app.get("/api/runs/{run_id}/events.json", response_model=list[RunEvent])
+async def get_events_json(run_id: str) -> list[RunEvent]:
     run = STORE.get(run_id)
     if run is None:
         raise HTTPException(status_code=404, detail=f"run {run_id} not found")

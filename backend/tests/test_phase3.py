@@ -80,13 +80,16 @@ def test_offline_run_yields_real_accession_candidate() -> None:
     store.put(run)
     result = orchestrate("run_test1", store, offline=True)
     assert result is not None
-    assert result.status == RunStatus.assessing_physics
+    # the run now completes end-to-end through the two-lane discovery
+    assert result.status == RunStatus.completed
     # a REAL public accession, not a template family
     accs = {c.uniprot.primary_accession for c in result.candidates if c.uniprot}
     assert "Q43125" in accs
     # the cryptochrome/FAD candidate is computed-eligible (flavin present)
     cry = next(d for d in result.dossiers if d.candidate.route_class == RouteClass.cryptochrome_fad_radical_pair)
     assert cry.physics_eligibility.enters_computed_ranking
+    # a known cryptochrome recovers on the EVIDENCE lane (Phase 3.5)
+    assert cry.candidate.candidate_id in result.evidence_shortlist
     assert cry.candidate.status == "public_hypothesis_not_validated"
     assert cry.candidate.private_candidate is False
     # provenance recorded (fixture mode offline)

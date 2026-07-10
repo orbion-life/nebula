@@ -7,6 +7,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from .candidate import CandidateDossier, CandidateRecord
+from .discovery import DiscoveryScore, FrontierExperiment
 from .enums import RunStatus
 from .objective import ObjectiveSpec
 from .provenance import Provenance
@@ -37,6 +38,10 @@ class RunState(BaseModel):
 
     candidates: list[CandidateRecord] = Field(default_factory=list)
     dossiers: list[CandidateDossier] = Field(default_factory=list)
+    # Two strictly-separate discovery lanes (Phase 3.5)
+    discovery_scores: list[DiscoveryScore] = Field(default_factory=list)
+    evidence_shortlist: list[str] = Field(default_factory=list, description="candidate_ids on the evidence lane, ranked")
+    frontier_experiments: list[FrontierExperiment] = Field(default_factory=list)
     selected_candidate_id: str | None = None
     result_ref: str | None = None
 

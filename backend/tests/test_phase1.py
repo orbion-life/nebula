@@ -26,6 +26,9 @@ DEMO = (
 def client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
     monkeypatch.setattr(main, "STORE", RunStore(":memory:"))
     monkeypatch.setattr(main, "OFFLINE", True)
+    # Phase-1 tests exercise the run LIFECYCLE, not orchestration; disable the
+    # background orchestrator so cancel-from-queued is deterministic (no race).
+    monkeypatch.setattr(main, "orchestrate", lambda *a, **k: None)
     return TestClient(main.app)
 
 
@@ -79,10 +82,14 @@ def test_run_lifecycle_and_idempotency(client: TestClient) -> None:
     got = client.get(f"/api/runs/{run_id}")
     assert got.status_code == 200
     assert got.json()["status_note"] == "diagnostic_only_not_validated"
-    assert client.get(f"/api/runs/{run_id}/events").json()[0]["to_status"] == "queued"
+    assert client.get(f"/api/runs/{run_id}/events.json").json()[0]["to_status"] == "queued"
     # cancel
     cancelled = client.post(f"/api/runs/{run_id}/cancel")
     assert cancelled.json()["status"] == "cancelled"
+    # real SSE stream (run is now terminal → returns promptly with an event stream)
+    sse = client.get(f"/api/runs/{run_id}/events")
+    assert "text/event-stream" in sse.headers["content-type"]
+    assert "data:" in sse.text
 
 
 def test_invalid_objective_surfaces_422(client: TestClient) -> None:

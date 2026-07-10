@@ -9,15 +9,35 @@ from __future__ import annotations
 
 import hashlib
 import json
+from pathlib import Path
 
 from ..contracts.objective import ObjectiveSpec
 
-CONFIG_VERSION = "phase2-1"
+CONFIG_VERSION = "phase3.5"
+
+
+def _artifact_hash() -> str:
+    p = Path(__file__).resolve().parents[3] / "src" / "data" / "generated" / "radical_pair_mary.v1.json"
+    try:
+        return json.loads(p.read_text())["contentHash"][:16]
+    except Exception:
+        return "noartifact"
+
+
+# Model / provider / config versions folded into the immutable run identity, so a
+# provider-API bump or a physics-artifact change yields a different run_id.
+def component_versions() -> dict[str, str]:
+    return {
+        "config": CONFIG_VERSION,
+        "radical_pair_artifact": _artifact_hash(),
+        "esm2_model": "esm2_t6_8M_UR50D",
+        "provider_apis": "uniprot=2026_02;interpro;rcsb-v1/v2;alphafold-v4;fpbase",
+    }
 
 
 def input_fingerprint(objective: ObjectiveSpec, seed: int, instrument_id: str | None) -> str:
     payload = {
-        "config": CONFIG_VERSION,
+        "versions": component_versions(),
         "schema": objective.schema_version,
         "seed": seed,
         "instrument_id": instrument_id,

@@ -108,19 +108,33 @@ def _build_candidate(
     except ProviderUnavailable:
         degradations.append("InterPro domains unavailable (offline or no fixture)")
 
-    # structure: experimental PDB preferred, else AlphaFold
+    # structure: pick the BEST cofactor-bound experimental PDB (not just the first
+    # xref), else AlphaFold. "Best" = has the required cofactor bound, then best
+    # (lowest) resolution.
     pdb_entries = []
     alphafold_model = None
     has_experimental = False
     if rec.pdb_xrefs:
-        pdb_id = rec.pdb_xrefs[0].id
-        try:
-            entry, ep = rc.entry(pdb_id)
-            pdb_entries = [entry]
-            provenance.append(ep)
+        req = (plan.required_cofactor_name or "").upper()
+        best = None
+        best_key: tuple[int, float] | None = None
+        for xref in rec.pdb_xrefs[:4]:  # bound cost
+            try:
+                entry, ep = rc.entry(xref.id)
+                provenance.append(ep)
+            except ProviderUnavailable:
+                degradations.append(f"RCSB entry {xref.id} unavailable")
+                continue
+            has_cof = 1 if any(req and req in (c or "").upper() for c in entry.nonpolymer_bound_components) else 0
+            res = entry.resolution_combined[0] if entry.resolution_combined else 99.0
+            key = (has_cof, -res)  # prefer cofactor-bound, then lower resolution
+            if best_key is None or key > best_key:
+                best_key, best = key, entry
+        if best is not None:
+            pdb_entries = [best]
             has_experimental = True
-        except ProviderUnavailable:
-            degradations.append(f"RCSB entry {pdb_id} unavailable")
+            if req and not any(req in (c or "").upper() for c in best.nonpolymer_bound_components):
+                degradations.append(f"selected PDB {best.rcsb_id} does not resolve bound {req}; geometry is approximate")
     if not has_experimental and rec.alphafold_id:
         try:
             model, mp = af.model_for(rec.primary_accession)

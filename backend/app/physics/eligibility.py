@@ -70,10 +70,11 @@ def assess_eligibility(candidate: CandidateRecord) -> PhysicsEligibility:
             qm_cluster_plan=QmClusterPlan(
                 core="isoalloxazine", heavy_atom_estimate=16, basis="6-31G", method="UHF",
                 spin=1, charge=0, est_wall_seconds=8.0, tractable_under_60s=True,
+                candidate_specific=False,  # generic template until Phase 4 extracts this protein's geometry
             ),
             spin_dynamics_plan=SpinDynamicsPlan(artifact_ref=_artifact_ref()),
             offline_budget_seconds=30,
-            reason="flavin cofactor present; isoalloxazine core is truncatable to a ~16-heavy-atom QM cluster (UHF/6-31G, ~8 s). Assumption-derived; the model-flavin spin-dynamics artifact is a calibration reference only.",
+            reason="flavin cofactor present; a GENERIC isoalloxazine QM-cluster template applies (UHF/6-31G, ~8 s) — this is NOT yet candidate-specific (every flavin protein gets the same plan until its real coordinates/charge/geometry enter the calc in Phase 4). The model-flavin spin-dynamics artifact is a calibration reference only.",
         )
 
     if rc in _PROXY_ROUTES:
