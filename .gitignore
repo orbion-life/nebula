@@ -12,3 +12,12 @@ coverage
 # Python bytecode
 __pycache__/
 *.pyc
+
+# Phase 2 Python backend + run artifacts
+backend/.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+backend/**/*.sqlite
+backend/**/*.db
+artifacts/runs/

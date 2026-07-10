@@ -1,0 +1,2914 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Nebula Discover API",
+    "description": "Public-protein discovery: retrieve \u2192 enrich \u2192 gate \u2192 simulate \u2192 rank. Outputs are unvalidated public-protein candidate hypotheses, never validated sensors.",
+    "version": "2.0.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/routes": {
+      "get": {
+        "summary": "Routes",
+        "operationId": "routes_api_routes_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Routes Api Routes Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/instruments": {
+      "get": {
+        "summary": "Instruments",
+        "operationId": "instruments_api_instruments_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Instruments Api Instruments Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/objectives/compile": {
+      "post": {
+        "summary": "Compile Endpoint",
+        "operationId": "compile_endpoint_api_objectives_compile_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectiveSpec"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs": {
+      "post": {
+        "summary": "Create Run",
+        "operationId": "create_run_api_runs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Body"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}": {
+      "get": {
+        "summary": "Get Run",
+        "operationId": "get_run_api_runs__run_id__get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunState"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}/events": {
+      "get": {
+        "summary": "Get Events",
+        "operationId": "get_events_api_runs__run_id__events_get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RunEvent"
+                  },
+                  "title": "Response Get Events Api Runs  Run Id  Events Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs/{run_id}/cancel": {
+      "post": {
+        "summary": "Cancel Run",
+        "operationId": "cancel_run_api_runs__run_id__cancel_post",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunState"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AlphaFoldModel": {
+        "properties": {
+          "entry_id": {
+            "type": "string",
+            "title": "Entry Id"
+          },
+          "uniprot_accession": {
+            "type": "string",
+            "title": "Uniprot Accession"
+          },
+          "uniprot_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uniprot Id"
+          },
+          "uniprot_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uniprot Description"
+          },
+          "organism_scientific_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organism Scientific Name"
+          },
+          "tax_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Id"
+          },
+          "sequence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sequence"
+          },
+          "global_metric_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Global Metric Value"
+          },
+          "fraction_plddt_very_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fraction Plddt Very Low"
+          },
+          "fraction_plddt_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fraction Plddt Low"
+          },
+          "fraction_plddt_confident": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fraction Plddt Confident"
+          },
+          "fraction_plddt_very_high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fraction Plddt Very High"
+          },
+          "latest_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Version"
+          },
+          "model_created_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Created Date"
+          },
+          "cif_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cif Url"
+          },
+          "pdb_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pdb Url"
+          },
+          "bcif_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bcif Url"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "entry_id",
+          "uniprot_accession"
+        ],
+        "title": "AlphaFoldModel"
+      },
+      "ArchitectureKind": {
+        "type": "string",
+        "enum": [
+          "single_scaffold",
+          "fusion_reporter",
+          "co_encapsulated_pair",
+          "surface_immobilized",
+          "electrode_coupled",
+          "material_composite"
+        ],
+        "title": "ArchitectureKind"
+      },
+      "BindingSite": {
+        "properties": {
+          "start": {
+            "type": "integer",
+            "title": "Start"
+          },
+          "end": {
+            "type": "integer",
+            "title": "End"
+          },
+          "ligand_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ligand Name"
+          },
+          "ligand_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ligand Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "title": "BindingSite"
+      },
+      "CandidateDossier": {
+        "properties": {
+          "dossier_id": {
+            "type": "string",
+            "title": "Dossier Id"
+          },
+          "candidate": {
+            "$ref": "#/components/schemas/CandidateRecord"
+          },
+          "physics_eligibility": {
+            "$ref": "#/components/schemas/PhysicsEligibility"
+          },
+          "structural_evidence": {
+            "$ref": "#/components/schemas/StructuralEvidence"
+          },
+          "evidence_citations": {
+            "items": {
+              "$ref": "#/components/schemas/Citation"
+            },
+            "type": "array",
+            "title": "Evidence Citations"
+          },
+          "claim_ceiling": {
+            "$ref": "#/components/schemas/ClaimLevel",
+            "default": "diagnostic_only"
+          },
+          "disclaimers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Disclaimers"
+          },
+          "status": {
+            "type": "string",
+            "const": "public_hypothesis_not_validated",
+            "title": "Status",
+            "default": "public_hypothesis_not_validated"
+          },
+          "private_candidate": {
+            "type": "boolean",
+            "const": false,
+            "title": "Private Candidate",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "dossier_id",
+          "candidate",
+          "physics_eligibility",
+          "structural_evidence"
+        ],
+        "title": "CandidateDossier"
+      },
+      "CandidateRecord": {
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "title": "Candidate Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "type": "string",
+            "const": "public_hypothesis_not_validated",
+            "title": "Status",
+            "default": "public_hypothesis_not_validated"
+          },
+          "private_candidate": {
+            "type": "boolean",
+            "const": false,
+            "title": "Private Candidate",
+            "default": false
+          },
+          "scaffold_family": {
+            "$ref": "#/components/schemas/ScaffoldFamily"
+          },
+          "architecture_kind": {
+            "$ref": "#/components/schemas/ArchitectureKind"
+          },
+          "uniprot": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UniProtRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "interpro_matches": {
+            "items": {
+              "$ref": "#/components/schemas/InterProMatch"
+            },
+            "type": "array",
+            "title": "Interpro Matches"
+          },
+          "pdb_entries": {
+            "items": {
+              "$ref": "#/components/schemas/PdbEntry"
+            },
+            "type": "array",
+            "title": "Pdb Entries"
+          },
+          "alphafold_model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AlphaFoldModel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fpbase": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FpbaseProtein"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cofactors": {
+            "items": {
+              "$ref": "#/components/schemas/CofactorRef"
+            },
+            "type": "array",
+            "title": "Cofactors"
+          },
+          "readout_modes": {
+            "items": {
+              "$ref": "#/components/schemas/ReadoutMode"
+            },
+            "type": "array",
+            "title": "Readout Modes"
+          },
+          "mechanism_route_id": {
+            "type": "string",
+            "title": "Mechanism Route Id"
+          },
+          "route_class": {
+            "$ref": "#/components/schemas/RouteClass"
+          },
+          "why_it_might_work": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Why It Might Work"
+          },
+          "why_it_might_fail": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Why It Might Fail"
+          },
+          "required_controls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Controls"
+          },
+          "confounders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Confounders"
+          },
+          "evidence_card_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Card Ids"
+          },
+          "analogs": {
+            "items": {
+              "$ref": "#/components/schemas/PublicAnalog"
+            },
+            "type": "array",
+            "title": "Analogs"
+          },
+          "material_fit": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Material Fit"
+          },
+          "expression_context": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Expression Context"
+          },
+          "claim_ceiling": {
+            "$ref": "#/components/schemas/ClaimLevel",
+            "default": "diagnostic_only"
+          },
+          "generated_by": {
+            "type": "string",
+            "title": "Generated By",
+            "description": "e.g. 'generated from UniProt Q43125 via cryptochrome_FAD_radical_pair'"
+          },
+          "allowed_next_step": {
+            "type": "string",
+            "enum": [
+              "measurement_planning",
+              "internal_developability_triage",
+              "discard"
+            ],
+            "title": "Allowed Next Step",
+            "default": "measurement_planning"
+          },
+          "provenance": {
+            "items": {
+              "$ref": "#/components/schemas/Provenance"
+            },
+            "type": "array",
+            "title": "Provenance"
+          },
+          "degradations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Degradations",
+            "description": "explicit unavailable/degraded states \u2014 never imputed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "title",
+          "scaffold_family",
+          "architecture_kind",
+          "mechanism_route_id",
+          "route_class",
+          "generated_by"
+        ],
+        "title": "CandidateRecord"
+      },
+      "Citation": {
+        "properties": {
+          "authors": {
+            "type": "string",
+            "title": "Authors"
+          },
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "venue": {
+            "type": "string",
+            "title": "Venue"
+          },
+          "doi": {
+            "type": "string",
+            "title": "Doi"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "authors",
+          "year",
+          "title",
+          "venue",
+          "doi"
+        ],
+        "title": "Citation"
+      },
+      "ClaimLevel": {
+        "type": "string",
+        "enum": [
+          "diagnostic_only",
+          "measurement_triage",
+          "partner_ready_dossier"
+        ],
+        "title": "ClaimLevel"
+      },
+      "CofactorRef": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "chebi_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chebi Id"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "CofactorRef"
+      },
+      "CompileRequest": {
+        "properties": {
+          "objective_text": {
+            "type": "string",
+            "title": "Objective Text"
+          },
+          "user_mode": {
+            "type": "string",
+            "title": "User Mode",
+            "default": "novice"
+          },
+          "instrument_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Id"
+          },
+          "seed": {
+            "type": "integer",
+            "title": "Seed",
+            "default": 1337
+          }
+        },
+        "type": "object",
+        "required": [
+          "objective_text"
+        ],
+        "title": "CompileRequest"
+      },
+      "ExpressionHost": {
+        "type": "string",
+        "enum": [
+          "bacteria",
+          "yeast",
+          "mammalian",
+          "cell_free",
+          "unknown"
+        ],
+        "title": "ExpressionHost"
+      },
+      "FieldProvenance": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "verbatim",
+              "inferred",
+              "defaulted"
+            ],
+            "title": "Source"
+          },
+          "by": {
+            "type": "string",
+            "enum": [
+              "llm",
+              "rule"
+            ],
+            "title": "By"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "field",
+          "source",
+          "by"
+        ],
+        "title": "FieldProvenance",
+        "description": "How each compiled field was obtained \u2014 honesty scales beyond a flat list."
+      },
+      "FpbaseProtein": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "uuid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uuid"
+          },
+          "seq": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seq"
+          },
+          "agg": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agg"
+          },
+          "switch_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Switch Type"
+          },
+          "uniprot": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uniprot"
+          },
+          "pdb": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Pdb"
+          },
+          "doi": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doi"
+          },
+          "states": {
+            "items": {
+              "$ref": "#/components/schemas/FpbaseState"
+            },
+            "type": "array",
+            "title": "States"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "slug"
+        ],
+        "title": "FpbaseProtein"
+      },
+      "FpbaseState": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "ex_max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ex Max"
+          },
+          "em_max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Em Max"
+          },
+          "qy": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qy"
+          },
+          "ext_coeff": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ext Coeff"
+          },
+          "brightness": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brightness"
+          },
+          "pka": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pka"
+          },
+          "lifetime": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lifetime"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "FpbaseState"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Health": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "offline": {
+            "type": "boolean",
+            "title": "Offline"
+          },
+          "providers": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "type": "object",
+            "title": "Providers"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "offline",
+          "providers",
+          "version"
+        ],
+        "title": "Health"
+      },
+      "InterProFragment": {
+        "properties": {
+          "start": {
+            "type": "integer",
+            "title": "Start"
+          },
+          "end": {
+            "type": "integer",
+            "title": "End"
+          },
+          "dc_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dc Status"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "title": "InterProFragment"
+      },
+      "InterProLocation": {
+        "properties": {
+          "fragments": {
+            "items": {
+              "$ref": "#/components/schemas/InterProFragment"
+            },
+            "type": "array",
+            "title": "Fragments"
+          },
+          "representative": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Representative"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "InterProLocation"
+      },
+      "InterProMatch": {
+        "properties": {
+          "interpro_accession": {
+            "type": "string",
+            "title": "Interpro Accession"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "entry_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entry Type"
+          },
+          "source_database": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Database"
+          },
+          "go_terms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Go Terms"
+          },
+          "locations": {
+            "items": {
+              "$ref": "#/components/schemas/InterProLocation"
+            },
+            "type": "array",
+            "title": "Locations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "interpro_accession"
+        ],
+        "title": "InterProMatch"
+      },
+      "Keyword": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "Keyword"
+      },
+      "MaterialContext": {
+        "type": "string",
+        "enum": [
+          "hydrogel",
+          "film",
+          "chip",
+          "cell",
+          "solution",
+          "wearable",
+          "unknown"
+        ],
+        "title": "MaterialContext"
+      },
+      "ObjectiveSpec": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "2.0.0"
+          },
+          "objective_id": {
+            "type": "string",
+            "title": "Objective Id"
+          },
+          "objective_text": {
+            "type": "string",
+            "title": "Objective Text"
+          },
+          "user_mode": {
+            "type": "string",
+            "enum": [
+              "novice",
+              "expert"
+            ],
+            "title": "User Mode",
+            "default": "novice"
+          },
+          "application_domain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Application Domain"
+          },
+          "intended_function": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intended Function"
+          },
+          "sensed_quantity_or_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sensed Quantity Or State"
+          },
+          "desired_modalities": {
+            "items": {
+              "$ref": "#/components/schemas/ReadoutMode"
+            },
+            "type": "array",
+            "title": "Desired Modalities"
+          },
+          "acceptable_readouts": {
+            "items": {
+              "$ref": "#/components/schemas/ReadoutMode"
+            },
+            "type": "array",
+            "title": "Acceptable Readouts"
+          },
+          "material_context": {
+            "$ref": "#/components/schemas/MaterialContext",
+            "default": "unknown"
+          },
+          "immobilization_or_integration": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Immobilization Or Integration"
+          },
+          "expression_host": {
+            "$ref": "#/components/schemas/ExpressionHost",
+            "default": "unknown"
+          },
+          "allowed_cofactors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Allowed Cofactors"
+          },
+          "excluded_cofactors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Excluded Cofactors"
+          },
+          "excitation_allowed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Excitation Allowed",
+            "description": "excitation labels, e.g. blue-light/green-light/red-light/UV"
+          },
+          "excitation_ranges_nm": {
+            "items": {
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array",
+              "maxItems": 2,
+              "minItems": 2
+            },
+            "type": "array",
+            "title": "Excitation Ranges Nm"
+          },
+          "static_field_range_mT": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 2,
+                "minItems": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Static Field Range Mt"
+          },
+          "rf_frequency_range_MHz": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 2,
+                "minItems": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rf Frequency Range Mhz"
+          },
+          "temperature_range_C": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 2,
+                "minItems": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature Range C"
+          },
+          "pH_range": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 2,
+                "minItems": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ph Range"
+          },
+          "oxygen_condition": {
+            "type": "string",
+            "enum": [
+              "aerobic",
+              "anaerobic",
+              "controlled",
+              "unknown"
+            ],
+            "title": "Oxygen Condition",
+            "default": "unknown"
+          },
+          "response_direction": {
+            "type": "string",
+            "enum": [
+              "increase",
+              "decrease",
+              "either",
+              "unknown"
+            ],
+            "title": "Response Direction",
+            "default": "unknown"
+          },
+          "minimum_effect_size": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minimum Effect Size",
+            "description": "required |\u0394F/F| or dynamic range"
+          },
+          "maximum_response_time_s": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maximum Response Time S"
+          },
+          "assay_geometry": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assay Geometry"
+          },
+          "available_instrumentation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Available Instrumentation"
+          },
+          "instrument_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Id"
+          },
+          "optimization_objectives": {
+            "items": {
+              "prefixItems": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array",
+              "maxItems": 2,
+              "minItems": 2
+            },
+            "type": "array",
+            "title": "Optimization Objectives",
+            "description": "(component_name, weight) pairs"
+          },
+          "hard_constraints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Hard Constraints"
+          },
+          "soft_preferences": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Soft Preferences"
+          },
+          "seed_query": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed Query",
+            "description": "explicit UniProt Lucene query for expert mode"
+          },
+          "seed_accessions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Seed Accessions"
+          },
+          "target_scaffold_families": {
+            "items": {
+              "$ref": "#/components/schemas/ScaffoldFamily"
+            },
+            "type": "array",
+            "title": "Target Scaffold Families"
+          },
+          "include_unreviewed": {
+            "type": "boolean",
+            "title": "Include Unreviewed",
+            "default": false
+          },
+          "manufacturing_constraints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Manufacturing Constraints"
+          },
+          "safety_constraints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Safety Constraints"
+          },
+          "constraints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Constraints"
+          },
+          "unknowns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unknowns"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          },
+          "missing_information": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Information"
+          },
+          "forbidden_assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Forbidden Assumptions"
+          },
+          "field_provenance": {
+            "items": {
+              "$ref": "#/components/schemas/FieldProvenance"
+            },
+            "type": "array",
+            "title": "Field Provenance"
+          },
+          "confidential_sequence_provided": {
+            "type": "boolean",
+            "const": false,
+            "title": "Confidential Sequence Provided",
+            "default": false
+          },
+          "seed": {
+            "type": "integer",
+            "title": "Seed",
+            "default": 1337
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "objective_id",
+          "objective_text"
+        ],
+        "title": "ObjectiveSpec",
+        "description": "Structured, editable objective. Superset of the TS `ObjectiveInput`."
+      },
+      "ParameterProvenance": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Value"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "range": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Range"
+          },
+          "uncertainty": {
+            "$ref": "#/components/schemas/Uncertainty"
+          },
+          "source_type": {
+            "$ref": "#/components/schemas/ParameterSourceType"
+          },
+          "citation_or_assumption": {
+            "type": "string",
+            "title": "Citation Or Assumption"
+          },
+          "applicability_limits": {
+            "type": "string",
+            "title": "Applicability Limits"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "value",
+          "unit",
+          "range",
+          "uncertainty",
+          "source_type",
+          "citation_or_assumption",
+          "applicability_limits"
+        ],
+        "title": "ParameterProvenance",
+        "description": "Full provenance for one numeric (or database-descriptor) parameter."
+      },
+      "ParameterSourceType": {
+        "type": "string",
+        "enum": [
+          "database",
+          "literature",
+          "assumption",
+          "instrument",
+          "user_constraint",
+          "computed"
+        ],
+        "title": "ParameterSourceType"
+      },
+      "PdbCofactor": {
+        "properties": {
+          "comp_id": {
+            "type": "string",
+            "title": "Comp Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "formula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formula"
+          },
+          "formula_weight_da": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formula Weight Da"
+          },
+          "auth_asym_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Auth Asym Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "comp_id"
+        ],
+        "title": "PdbCofactor"
+      },
+      "PdbEntry": {
+        "properties": {
+          "rcsb_id": {
+            "type": "string",
+            "title": "Rcsb Id"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "experimental_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Experimental Method"
+          },
+          "resolution_combined": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Resolution Combined"
+          },
+          "nonpolymer_bound_components": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Nonpolymer Bound Components"
+          },
+          "polymer_entity_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Polymer Entity Count"
+          },
+          "nonpolymer_entity_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nonpolymer Entity Count"
+          },
+          "cofactors": {
+            "items": {
+              "$ref": "#/components/schemas/PdbCofactor"
+            },
+            "type": "array",
+            "title": "Cofactors"
+          },
+          "coordinates_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coordinates Url"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "rcsb_id"
+        ],
+        "title": "PdbEntry"
+      },
+      "PdbXref": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Method"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution"
+          },
+          "chains": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chains"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "PdbXref"
+      },
+      "PhysicsEligibility": {
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "title": "Candidate Id"
+          },
+          "route_class": {
+            "$ref": "#/components/schemas/RouteClass"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/PhysicsEligibilityKind"
+          },
+          "has_required_cofactor": {
+            "type": "boolean",
+            "title": "Has Required Cofactor"
+          },
+          "cofactor_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cofactor Id"
+          },
+          "spin_dynamics_plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SpinDynamicsPlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "qm_cluster_plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QmClusterPlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "offline_budget_seconds": {
+            "type": "integer",
+            "title": "Offline Budget Seconds",
+            "default": 0
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "label": {
+            "type": "string",
+            "const": "assumption_derived_not_whole_protein_spin_response",
+            "title": "Label",
+            "default": "assumption_derived_not_whole_protein_spin_response"
+          },
+          "assumptions": {
+            "items": {
+              "$ref": "#/components/schemas/ParameterProvenance"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "route_class",
+          "kind",
+          "has_required_cofactor",
+          "reason"
+        ],
+        "title": "PhysicsEligibility"
+      },
+      "PhysicsEligibilityKind": {
+        "type": "string",
+        "enum": [
+          "real_spin_dynamics",
+          "qm_cluster_assumption",
+          "analytic_proxy_only",
+          "ineligible"
+        ],
+        "title": "PhysicsEligibilityKind"
+      },
+      "Provenance": {
+        "properties": {
+          "provider": {
+            "$ref": "#/components/schemas/ProviderId"
+          },
+          "endpoint_url": {
+            "type": "string",
+            "title": "Endpoint Url",
+            "description": "the exact URL fetched (or the fixture path)"
+          },
+          "http_status": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Http Status"
+          },
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Retrieved At"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/RetrievalMode"
+          },
+          "source_release": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Release",
+            "description": "e.g. UniProt x-uniprot-release '2026_02'; None where the provider exposes no version"
+          },
+          "cache_control": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Control"
+          },
+          "etag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Etag"
+          },
+          "license_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License Note"
+          },
+          "citation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Citation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "disclaimer": {
+            "type": "string",
+            "title": "Disclaimer",
+            "default": "public reference retrieval, not sensor validation"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "provider",
+          "endpoint_url",
+          "retrieved_at",
+          "mode"
+        ],
+        "title": "Provenance",
+        "description": "Retrieval-time provenance for one provider call."
+      },
+      "ProviderId": {
+        "type": "string",
+        "enum": [
+          "uniprot",
+          "interpro",
+          "rcsb",
+          "alphafold",
+          "fpbase"
+        ],
+        "title": "ProviderId"
+      },
+      "PublicAnalog": {
+        "properties": {
+          "accession_or_id": {
+            "type": "string",
+            "title": "Accession Or Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "family": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Family"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "mmseqs2",
+              "esm2_embedding",
+              "keyword"
+            ],
+            "title": "Method",
+            "default": "keyword"
+          },
+          "similarity": {
+            "type": "number",
+            "title": "Similarity"
+          },
+          "public_ref": {
+            "type": "string",
+            "title": "Public Ref"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "accession_or_id",
+          "name",
+          "similarity",
+          "public_ref"
+        ],
+        "title": "PublicAnalog",
+        "description": "Retrieval-only public analog \u2014 analog != prediction (never spin response)."
+      },
+      "QmClusterPlan": {
+        "properties": {
+          "core": {
+            "type": "string",
+            "title": "Core",
+            "default": "isoalloxazine"
+          },
+          "heavy_atom_estimate": {
+            "type": "integer",
+            "title": "Heavy Atom Estimate"
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "sto-3g",
+              "6-31G",
+              "6-31G*"
+            ],
+            "title": "Basis",
+            "default": "6-31G"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "UHF",
+              "ROHF"
+            ],
+            "title": "Method",
+            "default": "UHF"
+          },
+          "spin": {
+            "type": "integer",
+            "title": "Spin",
+            "default": 1
+          },
+          "charge": {
+            "type": "integer",
+            "title": "Charge",
+            "default": 0
+          },
+          "est_wall_seconds": {
+            "type": "number",
+            "title": "Est Wall Seconds"
+          },
+          "tractable_under_60s": {
+            "type": "boolean",
+            "title": "Tractable Under 60S"
+          },
+          "truncation_note": {
+            "type": "string",
+            "title": "Truncation Note",
+            "default": "ribityl/phosphate tail truncated to an N10-methyl cap; dangling bonds H-capped (standard QM-cluster truncation). Assumption-derived; not a whole-protein claim."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "heavy_atom_estimate",
+          "est_wall_seconds",
+          "tractable_under_60s"
+        ],
+        "title": "QmClusterPlan",
+        "description": "A PySCF open-shell single-point plan on a truncated public cofactor cluster.\n\nBudget envelope is MEASURED, not guessed (recon): ~14 heavy atoms = 30 s at\n6-31G*, 8 s at 6-31G, 1.6 s at sto-3g. Full flavin is intractable \u2192 truncate."
+      },
+      "ReadoutMode": {
+        "type": "string",
+        "enum": [
+          "fluorescence",
+          "lifetime",
+          "RF_magnetic",
+          "ODMR_like",
+          "redox_electrochemical",
+          "material_state"
+        ],
+        "title": "ReadoutMode"
+      },
+      "RetrievalMode": {
+        "type": "string",
+        "enum": [
+          "live",
+          "cached",
+          "fixture",
+          "unavailable"
+        ],
+        "title": "RetrievalMode"
+      },
+      "RouteClass": {
+        "type": "string",
+        "enum": [
+          "LOV_flavin_radical_pair",
+          "cryptochrome_FAD_radical_pair",
+          "triplet_FP",
+          "RFP_flavin_photochemical",
+          "redox_electrochemical",
+          "material_state",
+          "metal_cofactor_confounder",
+          "unsupported"
+        ],
+        "title": "RouteClass"
+      },
+      "RunCreated": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RunStatus"
+          },
+          "input_fingerprint": {
+            "type": "string",
+            "title": "Input Fingerprint"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "run_id",
+          "status",
+          "input_fingerprint"
+        ],
+        "title": "RunCreated",
+        "description": "Response to POST /api/runs."
+      },
+      "RunEvent": {
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "At"
+          },
+          "from_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RunStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "to_status": {
+            "$ref": "#/components/schemas/RunStatus"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "progress": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Progress"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "at",
+          "to_status",
+          "stage"
+        ],
+        "title": "RunEvent"
+      },
+      "RunState": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "input_fingerprint": {
+            "type": "string",
+            "title": "Input Fingerprint"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RunStatus",
+            "default": "queued"
+          },
+          "seed": {
+            "type": "integer",
+            "title": "Seed",
+            "default": 1337
+          },
+          "objective": {
+            "$ref": "#/components/schemas/ObjectiveSpec"
+          },
+          "instrument_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Id"
+          },
+          "current_stage": {
+            "type": "string",
+            "title": "Current Stage",
+            "default": "queued"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateRecord"
+            },
+            "type": "array",
+            "title": "Candidates"
+          },
+          "dossiers": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateDossier"
+            },
+            "type": "array",
+            "title": "Dossiers"
+          },
+          "selected_candidate_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Candidate Id"
+          },
+          "result_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Ref"
+          },
+          "provider_calls": {
+            "items": {
+              "$ref": "#/components/schemas/Provenance"
+            },
+            "type": "array",
+            "title": "Provider Calls"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/RunEvent"
+            },
+            "type": "array",
+            "title": "Events"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "offline": {
+            "type": "boolean",
+            "title": "Offline",
+            "default": true
+          },
+          "status_note": {
+            "type": "string",
+            "const": "diagnostic_only_not_validated",
+            "title": "Status Note",
+            "default": "diagnostic_only_not_validated"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "run_id",
+          "input_fingerprint",
+          "objective",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "RunState"
+      },
+      "RunStatus": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "compiling_objective",
+          "retrieving_evidence",
+          "assessing_physics",
+          "simulating",
+          "ranking",
+          "planning",
+          "completed",
+          "failed",
+          "cancelled"
+        ],
+        "title": "RunStatus"
+      },
+      "ScaffoldFamily": {
+        "type": "string",
+        "enum": [
+          "LOV_flavin",
+          "cryptochrome_FAD",
+          "fluorescent_protein",
+          "RFP_plus_flavin",
+          "metal_cofactor",
+          "redox_flavoprotein",
+          "material_composite",
+          "unsupported"
+        ],
+        "title": "ScaffoldFamily"
+      },
+      "SpinDynamicsPlan": {
+        "properties": {
+          "artifact_ref": {
+            "type": "string",
+            "title": "Artifact Ref"
+          },
+          "hamiltonian_terms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Hamiltonian Terms"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": "spin dynamics of a model flavin-based radical pair; a calibration reference, not a candidate-specific prediction"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "artifact_ref"
+        ],
+        "title": "SpinDynamicsPlan",
+        "description": "References the offline RadicalPy artifact; no per-protein spin claim."
+      },
+      "StructuralEvidence": {
+        "properties": {
+          "pdb_entries": {
+            "items": {
+              "$ref": "#/components/schemas/PdbEntry"
+            },
+            "type": "array",
+            "title": "Pdb Entries"
+          },
+          "alphafold_model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AlphaFoldModel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": "PDB = experimental; AlphaFold = computational prediction (pLDDT confidence)"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "StructuralEvidence"
+      },
+      "Uncertainty": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "title": "Uncertainty"
+      },
+      "UniProtRecord": {
+        "properties": {
+          "primary_accession": {
+            "type": "string",
+            "title": "Primary Accession"
+          },
+          "uniprotkb_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uniprotkb Id"
+          },
+          "entry_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entry Type"
+          },
+          "reviewed": {
+            "type": "boolean",
+            "title": "Reviewed",
+            "default": false
+          },
+          "protein_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Protein Name"
+          },
+          "organism_scientific_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organism Scientific Name"
+          },
+          "organism_common_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organism Common Name"
+          },
+          "organism_tax_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organism Tax Id"
+          },
+          "sequence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sequence"
+          },
+          "sequence_length": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sequence Length"
+          },
+          "mol_weight_da": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mol Weight Da"
+          },
+          "functions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Functions"
+          },
+          "cofactors": {
+            "items": {
+              "$ref": "#/components/schemas/CofactorRef"
+            },
+            "type": "array",
+            "title": "Cofactors"
+          },
+          "subcellular_locations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Subcellular Locations"
+          },
+          "keywords": {
+            "items": {
+              "$ref": "#/components/schemas/Keyword"
+            },
+            "type": "array",
+            "title": "Keywords"
+          },
+          "binding_sites": {
+            "items": {
+              "$ref": "#/components/schemas/BindingSite"
+            },
+            "type": "array",
+            "title": "Binding Sites"
+          },
+          "pdb_xrefs": {
+            "items": {
+              "$ref": "#/components/schemas/PdbXref"
+            },
+            "type": "array",
+            "title": "Pdb Xrefs"
+          },
+          "alphafold_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alphafold Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "primary_accession"
+        ],
+        "title": "UniProtRecord"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

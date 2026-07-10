@@ -1,0 +1,21 @@
+# Nebula Discover — local orchestration (Phase 2).
+# The discovery API is the heavy service; the UI is a static Vite build or dev server.
+# Physics (PySCF) and retrieval (torch/ESM) run as ISOLATED subprocesses inside the
+# API container to avoid the macOS/Linux OpenMP conflict (see artifacts/claude recon).
+services:
+  discovery-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: nebula-discovery-api:phase2
+    ports:
+      - "8000:8000"
+    environment:
+      - NEBULA_OFFLINE=${NEBULA_OFFLINE:-0}
+    volumes:
+      - ./backend:/app
+      - discovery-artifacts:/app/artifacts
+    command: uvicorn app.api.main:app --host 0.0.0.0 --port 8000
+
+volumes:
+  discovery-artifacts:

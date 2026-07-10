@@ -1,0 +1,32 @@
+[project]
+name = "nebula-discovery-api"
+version = "2.0.0"
+description = "Nebula Discover — public-protein discovery API (retrieve → enrich → gate → simulate → rank)."
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "pydantic>=2.7",
+  "httpx>=0.27",
+  "tenacity>=8.2",
+  "uvicorn[standard]>=0.30",
+  "biopython>=1.83",
+  "gemmi>=0.6",
+  "numpy>=1.26",
+  "scipy>=1.11",
+  "radicalpy>=1.0.9",
+]
+
+[project.optional-dependencies]
+# heavy / isolated (run in subprocesses; NOT imported in the API process)
+physics = ["pyscf>=2.6"]
+retrieval = ["torch>=2.2", "fair-esm>=2.0", "scikit-learn>=1.4"]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "respx>=0.21"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+asyncio_mode = "auto"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
