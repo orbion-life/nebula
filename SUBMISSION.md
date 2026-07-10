@@ -28,7 +28,7 @@ See [`CLAUDE_TRANSPARENCY.md`](./CLAUDE_TRANSPARENCY.md) for the full agent→ar
 
 - **Script:** [`DEMO_SCRIPT.md`](./DEMO_SCRIPT.md)
 - **Run locally:** `npm install && npm run dev`
-- **Seed:** `1337` (demo) · `4242` (stress-test objective)
+- **Flow:** four screens — Ask · Explain · Simulate · Measure next (demo objective pre-loaded; a stress-test objective is loadable on Ask). Deterministic seed `1337`.
 
 ## Verify before submit
 
@@ -60,4 +60,4 @@ Deterministic, offline, fully tested.
 working method; deterministic code owns schemas, simulator, firewall, and swarm;
 Claude parses objectives and authors rationale under structured constraints.
 
-**Try it:** Clone repo → `npm test` → `npm run dev` → paste demo objective → Run Discover.
+**Try it:** Clone repo → `npm test` → `npm run dev` → walk Ask → Explain → Simulate → Measure next; on Simulate, switch the instrument (or toggle the fast-relaxation counterfactual) and watch the ranking move.
