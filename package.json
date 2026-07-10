@@ -16,14 +16,19 @@
     "e2e": "playwright test"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
     "@visx/axis": "^4.0.0",
     "@visx/group": "^4.0.0",
     "@visx/scale": "^4.0.0",
     "@visx/shape": "^4.0.0",
     "3dmol": "^2.5.5",
     "fuse.js": "^7.4.2",
+    "gsap": "^3.15.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "three": "^0.169.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -32,6 +37,7 @@
     "@types/pngjs": "^6.0.5",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@types/three": "^0.169.0",
     "@vitejs/plugin-react": "^5.2.0",
     "openapi-typescript": "^7.13.0",
     "pngjs": "^7.0.0",

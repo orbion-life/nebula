@@ -36,6 +36,12 @@ function nonBackgroundFraction(buf: Buffer): number {
 test("offline discovery run returns a real accession with candidate-specific QM and a rendered structure", async ({ page }) => {
   await runToWorkspace(page);
 
+  // the candidate universe (R3F) mounts and produces a sized WebGL canvas
+  const universe = page.locator(".universe canvas").first();
+  await expect(universe).toBeVisible({ timeout: 20_000 });
+  const ubox = await universe.boundingBox();
+  expect(ubox && ubox.width > 200 && ubox.height > 100, "universe canvas should be rendered and sized").toBeTruthy();
+
   // a REAL UniProt accession appears on the evidence lane (not "Protein B" / a family)
   const acc = page.locator(".cand-acc").first();
   await expect(acc).toHaveText(/^[A-Z][A-Z0-9]{5,9}$/); // UniProt accession shape

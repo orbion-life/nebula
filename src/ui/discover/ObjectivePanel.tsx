@@ -11,7 +11,9 @@
  * always shown before the run — so novices understand every field and experts can
  * change every assumption.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 import { compileObjective, getInstruments, type ObjectiveSpec, type UserMode } from "../../api/client";
 
 const DEMO_NOVICE =
@@ -37,12 +39,24 @@ export function ObjectivePanel({ onRun, offline, disabled }: Props) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
+  const sheetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     getInstruments()
       .then((r) => setInstruments((r.instruments as Instrument[]) ?? []))
       .catch(() => setInstruments([]));
   }, []);
+
+  // On compile, the extracted constraints resolve into place — purposeful motion that
+  // shows the parse (gsap.from leaves elements visible if interrupted; skipped under
+  // prefers-reduced-motion so all content and state remain without animation).
+  useGSAP(() => {
+    if (!spec || !sheetRef.current) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    gsap.from(sheetRef.current.querySelectorAll(".obj-field, .obj-sheet-head, .obj-run"), {
+      opacity: 0, y: 8, duration: 0.4, stagger: 0.05, ease: "power2.out",
+    });
+  }, { dependencies: [spec?.objective_id], scope: sheetRef });
 
   const compile = async () => {
     setBusy(true);
@@ -99,7 +113,7 @@ export function ObjectivePanel({ onRun, offline, disabled }: Props) {
       </div>
 
       {spec && (
-        <div className="obj-sheet">
+        <div className="obj-sheet" ref={sheetRef}>
           <div className="obj-sheet-head">
             <span>compiled objective — editable before the run</span>
             <code>{spec.objective_id}</code>

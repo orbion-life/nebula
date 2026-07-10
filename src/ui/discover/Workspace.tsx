@@ -24,6 +24,7 @@ import {
 } from "../../api/client";
 import { StructureViewer } from "./StructureViewer";
 import { Traces } from "./Traces";
+import { UniverseHero } from "./universe/UniverseHero";
 import {
   claimLabel,
   computedSpinParam,
@@ -95,6 +96,9 @@ export function Workspace({ run, onReset }: Props) {
       </aside>
 
       <main className="ws-main">
+        {!abstained && (
+          <UniverseHero run={run} selectedId={selected} onSelect={setSelected} />
+        )}
         {selected && candById.get(selected) ? (
           <CandidateDetail
             candidateId={selected}

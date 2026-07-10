@@ -1,0 +1,142 @@
+/**
+ * The candidate universe (React Three Fiber) — a DATA-DRIVEN spatial overview, not
+ * decoration. Each node is a real retrieved protein; its lane (evidence/frontier/
+ * excluded) sets which column it flies to, its rank sets height, and its score sets
+ * size. On mount the nodes reorganize from a loose cloud into the lane columns — a
+ * literal picture of what the ranking just did. Clicking a node selects it (syncs the
+ * rail); the selected node lifts toward the camera and shows its accession.
+ *
+ * Performance/a11y: device-pixel-ratio capped, auto-rotate only when motion is allowed,
+ * frame loop paused when the tab is hidden, GL disposed on unmount (R3F). If WebGL is
+ * unavailable the parent renders a DOM fallback instead of this module.
+ */
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { OrbitControls, Text } from "@react-three/drei";
+import { useMemo, useRef, useState } from "react";
+import * as THREE from "three";
+
+export interface UNode {
+  id: string;
+  accession: string;
+  lane: "evidence" | "frontier" | "excluded";
+  rank: number; // 0 = best in lane
+  score: number; // 0..1 (drives size)
+  candidateSpecific: boolean;
+}
+
+interface Props {
+  nodes: UNode[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+  reducedMotion: boolean;
+}
+
+const COLORS = {
+  evidence: "#45c8c0",
+  frontier: "#c79be8",
+  excluded: "#54617a",
+  selected: "#f6c945",
+};
+
+function targetPositions(nodes: UNode[]): Map<string, [number, number, number]> {
+  const m = new Map<string, [number, number, number]>();
+  const lanes: Record<UNode["lane"], UNode[]> = { evidence: [], frontier: [], excluded: [] };
+  for (const n of nodes) lanes[n.lane].push(n);
+  (Object.keys(lanes) as UNode["lane"][]).forEach((k) => lanes[k].sort((a, b) => a.rank - b.rank));
+  const column = (arr: UNode[], x: number, z: number) => {
+    const mid = (arr.length - 1) / 2;
+    arr.forEach((n, i) => m.set(n.id, [x, (mid - i) * 1.5, z]));
+  };
+  column(lanes.evidence, -3.6, 0);
+  column(lanes.frontier, 3.6, 0);
+  // excluded: a faint arc behind the two lanes
+  lanes.excluded.forEach((n, i) => {
+    const a = (i / Math.max(1, lanes.excluded.length - 1) - 0.5) * Math.PI * 0.8;
+    m.set(n.id, [Math.sin(a) * 2.2, Math.cos(a) * 1.6 - 0.5, -4]);
+  });
+  return m;
+}
+
+function Node({ node, target, selected, onSelect, reducedMotion }: {
+  node: UNode; target: [number, number, number]; selected: boolean;
+  onSelect: (id: string) => void; reducedMotion: boolean;
+}) {
+  const ref = useRef<THREE.Group>(null);
+  const [hovered, setHovered] = useState(false);
+  const tvec = useMemo(() => new THREE.Vector3(...target), [target[0], target[1], target[2]]);
+  // selected node lifts toward the camera
+  const goal = useMemo(() => tvec.clone().add(new THREE.Vector3(0, 0, selected ? 2.2 : 0)), [tvec, selected]);
+
+  useFrame(() => {
+    const g = ref.current;
+    if (!g) return;
+    if (reducedMotion) g.position.copy(goal);
+    else g.position.lerp(goal, 0.09);
+  });
+
+  const color = selected ? COLORS.selected : COLORS[node.lane];
+  const size = 0.16 + node.score * 0.26 + (selected ? 0.1 : 0);
+  return (
+    <group
+      ref={ref}
+      onClick={(e) => { e.stopPropagation(); onSelect(node.id); }}
+      onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
+      onPointerOut={() => setHovered(false)}
+    >
+      <mesh>
+        <sphereGeometry args={[size, 24, 24]} />
+        <meshStandardMaterial
+          color={color}
+          emissive={color}
+          emissiveIntensity={selected ? 0.9 : hovered ? 0.55 : 0.2}
+          roughness={0.35}
+          metalness={0.1}
+        />
+      </mesh>
+      {node.candidateSpecific && (
+        <mesh>
+          <ringGeometry args={[size + 0.08, size + 0.13, 32]} />
+          <meshBasicMaterial color={COLORS.selected} side={THREE.DoubleSide} transparent opacity={0.8} />
+        </mesh>
+      )}
+      {(selected || hovered) && (
+        <Text position={[0, size + 0.32, 0]} fontSize={0.34} color="#e8edf5" anchorX="center" anchorY="bottom" outlineWidth={0.01} outlineColor="#0a0e16">
+          {node.accession}
+        </Text>
+      )}
+    </group>
+  );
+}
+
+function Scene({ nodes, selectedId, onSelect, reducedMotion }: Props) {
+  const targets = useMemo(() => targetPositions(nodes), [nodes]);
+  const { gl } = useThree();
+  // pause rendering when the tab is hidden (perf)
+  useFrame(() => { if (document.hidden) gl.setAnimationLoop(null); });
+  return (
+    <>
+      <ambientLight intensity={0.6} />
+      <pointLight position={[6, 8, 8]} intensity={80} />
+      <pointLight position={[-8, -4, 4]} intensity={30} color="#45c8c0" />
+      {nodes.map((n) => (
+        <Node key={n.id} node={n} target={targets.get(n.id) ?? [0, 0, 0]} selected={n.id === selectedId} onSelect={onSelect} reducedMotion={reducedMotion} />
+      ))}
+      {/* faint lane axis references */}
+      <gridHelper args={[16, 16, "#1e2a3d", "#141d2c"]} position={[0, -4.5, 0]} rotation={[0, 0, 0]} />
+      <OrbitControls enablePan={false} enableZoom autoRotate={!reducedMotion} autoRotateSpeed={0.5} minDistance={6} maxDistance={20} />
+    </>
+  );
+}
+
+export default function CandidateUniverse(props: Props) {
+  return (
+    <Canvas
+      dpr={[1, 1.5]}
+      camera={{ position: [0, 0.5, 12], fov: 45 }}
+      gl={{ antialias: true, powerPreference: "high-performance" }}
+      style={{ background: "transparent" }}
+    >
+      <Scene {...props} />
+    </Canvas>
+  );
+}
