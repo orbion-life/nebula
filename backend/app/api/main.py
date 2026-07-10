@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
+from ..contracts.candidate import CandidateDossier, CandidateRecord
 from ..contracts.enums import TERMINAL_STATUSES, ProviderId, RunStatus
 from ..contracts.objective import ObjectiveSpec, RawObjective
 from ..contracts.run import RunCreated, RunEvent, RunState
@@ -24,6 +25,7 @@ from ..jobs.fingerprint import input_fingerprint, run_id_for
 from ..jobs.orchestrator import orchestrate
 from ..jobs.store import RunStore
 from ..objective.compile import compile_objective
+from ..providers.rcsb import RcsbProvider
 from ..state.machine import assert_transition, progress_fraction
 from .fixtures_static import INSTRUMENTS, ROUTES
 
@@ -70,6 +72,17 @@ class CompileRequest(BaseModel):
     user_mode: str = "novice"
     instrument_id: str | None = None
     seed: int = 1337
+
+
+class StructureResponse(BaseModel):
+    source: str  # "experimental_pdb" | "alphafold_prediction"
+    format: str  # "mmcif"
+    pdb_id: str | None = None
+    provider_url: str
+    method: str | None = None
+    resolution: float | None = None
+    mean_plddt: float | None = None
+    inline_cif: str | None = None  # populated for offline; else load provider_url client-side
 
 
 @app.get("/api/health", response_model=Health)
@@ -217,3 +230,54 @@ async def cancel_run(run_id: str) -> RunState:
     })
     STORE.put(run)
     return run
+
+
+def _find_dossier(candidate_id: str) -> CandidateDossier:
+    for run in STORE.all_runs():
+        for d in run.dossiers:
+            if d.candidate.candidate_id == candidate_id:
+                return d
+    raise HTTPException(status_code=404, detail=f"candidate {candidate_id} not found in any run")
+
+
+@app.get("/api/candidates/{candidate_id}", response_model=CandidateRecord)
+async def get_candidate(candidate_id: str) -> CandidateRecord:
+    return _find_dossier(candidate_id).candidate
+
+
+@app.get("/api/candidates/{candidate_id}/dossier", response_model=CandidateDossier)
+async def get_dossier(candidate_id: str) -> CandidateDossier:
+    return _find_dossier(candidate_id)
+
+
+@app.get("/api/candidates/{candidate_id}/structure", response_model=StructureResponse)
+async def get_structure(candidate_id: str) -> StructureResponse:
+    """A structure source for Mol*. Prefers the experimental cofactor-bound PDB,
+    falls back to the AlphaFold model. `inline_cif` is populated (from cache/fixture
+    or a best-effort fetch) so the viewer works offline; otherwise the client loads
+    `provider_url` directly (RCSB/AlphaFold both allow browser CORS)."""
+    ev = _find_dossier(candidate_id).structural_evidence
+    best_pdb = None
+    for e in ev.pdb_entries:
+        if best_pdb is None or (e.resolution_combined and (not best_pdb.resolution_combined or min(e.resolution_combined) < min(best_pdb.resolution_combined))):
+            best_pdb = e
+    if best_pdb is not None and best_pdb.coordinates_url:
+        inline = None
+        try:
+            inline, _prov = RcsbProvider(offline=OFFLINE).coordinates(best_pdb.rcsb_id)
+        except Exception:
+            inline = None
+        return StructureResponse(
+            source="experimental_pdb", format="mmcif", pdb_id=best_pdb.rcsb_id,
+            provider_url=best_pdb.coordinates_url, method=best_pdb.experimental_method,
+            resolution=min(best_pdb.resolution_combined) if best_pdb.resolution_combined else None,
+            inline_cif=inline,
+        )
+    af = ev.alphafold_model
+    if af is not None and af.cif_url:
+        return StructureResponse(
+            source="alphafold_prediction", format="mmcif", pdb_id=None,
+            provider_url=af.cif_url, method="AlphaFold2 (predicted)",
+            mean_plddt=af.global_metric_value, inline_cif=None,
+        )
+    raise HTTPException(status_code=404, detail=f"no structure available for candidate {candidate_id}")

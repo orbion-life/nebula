@@ -300,6 +300,124 @@
           }
         }
       }
+    },
+    "/api/candidates/{candidate_id}": {
+      "get": {
+        "summary": "Get Candidate",
+        "operationId": "get_candidate_api_candidates__candidate_id__get",
+        "parameters": [
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Candidate Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/candidates/{candidate_id}/dossier": {
+      "get": {
+        "summary": "Get Dossier",
+        "operationId": "get_dossier_api_candidates__candidate_id__dossier_get",
+        "parameters": [
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Candidate Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateDossier"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/candidates/{candidate_id}/structure": {
+      "get": {
+        "summary": "Get Structure",
+        "description": "A structure source for Mol*. Prefers the experimental cofactor-bound PDB,\nfalls back to the AlphaFold model. `inline_cif` is populated (from cache/fixture\nor a best-effort fetch) so the viewer works offline; otherwise the client loads\n`provider_url` directly (RCSB/AlphaFold both allow browser CORS).",
+        "operationId": "get_structure_api_candidates__candidate_id__structure_get",
+        "parameters": [
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Candidate Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StructureResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3038,6 +3156,84 @@
         "additionalProperties": false,
         "type": "object",
         "title": "StructuralEvidence"
+      },
+      "StructureResponse": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "format": {
+            "type": "string",
+            "title": "Format"
+          },
+          "pdb_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pdb Id"
+          },
+          "provider_url": {
+            "type": "string",
+            "title": "Provider Url"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Method"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution"
+          },
+          "mean_plddt": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean Plddt"
+          },
+          "inline_cif": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inline Cif"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "format",
+          "provider_url"
+        ],
+        "title": "StructureResponse"
       },
       "Uncertainty": {
         "type": "string",

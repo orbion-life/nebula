@@ -57,3 +57,15 @@ class RunStore:
 
     def exists(self, run_id: str) -> bool:
         return self.get(run_id) is not None
+
+    def all_runs(self) -> list[RunState]:
+        """Every persisted run, newest-first — backs candidate lookup by id."""
+        with self._lock:
+            if self._path == ":memory:":
+                raws = list(self._mem.values())
+            else:
+                with self._connect() as con:
+                    raws = [r[0] for r in con.execute("SELECT json FROM runs").fetchall()]
+        runs = [RunState.model_validate_json(r) for r in raws]
+        runs.sort(key=lambda r: r.created_at, reverse=True)
+        return runs
