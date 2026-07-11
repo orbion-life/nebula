@@ -59,7 +59,7 @@ export function Workspace({ run, onReset, onPlayStory }: Props) {
 
   return (
     <div className="ws">
-      <aside className="ws-rail">
+      <aside className="ws-rail" data-lenis-prevent>
         <div className="ws-obj">
           <div className="ws-obj-head">objective</div>
           <p>{run.objective.objective_text}</p>
@@ -99,7 +99,7 @@ export function Workspace({ run, onReset, onPlayStory }: Props) {
         )}
       </aside>
 
-      <main className="ws-main">
+      <main className="ws-main" data-lenis-prevent>
         {!abstained && (
           <UniverseHero run={run} selectedId={selected} onSelect={setSelected} />
         )}

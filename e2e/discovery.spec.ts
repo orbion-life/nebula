@@ -11,8 +11,14 @@ import { PNG } from "pngjs";
 
 const BG = { r: 7, g: 12, b: 24 }; // --d-bg / 3Dmol background 0x070c18 (navy+gold palette)
 
-async function runToWorkspace(page: import("@playwright/test").Page) {
+/** Load the app and wait out the entry preloader overlay (it blocks clicks until gone). */
+async function boot(page: import("@playwright/test").Page) {
   await page.goto("/");
+  await page.waitForSelector(".preloader", { state: "detached", timeout: 15_000 });
+}
+
+async function runToWorkspace(page: import("@playwright/test").Page) {
+  await boot(page);
   await expect(page.locator(".disc-brand")).toContainText("Nebula Discover");
   // offline health badge → compile auto-seeds the curated fixtured accessions
   await page.locator("button.btn-primary").click();
@@ -78,8 +84,15 @@ test("completes with prefers-reduced-motion (no motion-only meaning)", async ({ 
   await ctx.close();
 });
 
+test("ambient audio is muted by default", async ({ page }) => {
+  await boot(page);
+  const toggle = page.locator(".audio-toggle");
+  await expect(toggle).toBeVisible();
+  await expect(toggle).toHaveAttribute("aria-pressed", "false"); // no autoplay; opt-in only
+});
+
 test("objective is keyboard-operable", async ({ page }) => {
-  await page.goto("/");
+  await boot(page);
   const compile = page.locator("button.btn-primary");
   await compile.focus();
   await expect(compile).toBeFocused(); // visible focus target
@@ -111,7 +124,7 @@ test("zero horizontal overflow at every target viewport", async ({ page }) => {
     { width: 1920, height: 1080 },
   ]) {
     await page.setViewportSize(vp);
-    await page.goto("/");
+    await boot(page);
     await expect(page.locator(".obj-panel")).toBeVisible();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow, `horizontal overflow at ${vp.width}px`).toBeLessThanOrEqual(1);

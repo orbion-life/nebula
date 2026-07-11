@@ -22,6 +22,9 @@ import { ObjectivePanel } from "./ObjectivePanel";
 import { RunProgress } from "./RunProgress";
 import { Workspace } from "./Workspace";
 import { UniverseHero } from "./universe/UniverseHero";
+import { SmoothScroll } from "./scroll/SmoothScroll";
+import { Preloader } from "./Preloader";
+import { AmbientAudio } from "./audio/AmbientAudio";
 
 // opt-in cinematic replay — lazy so its gsap/ScrollTrigger code stays out of the initial bundle
 const NarrativeReplay = lazy(() => import("./narrative/NarrativeReplay").then((m) => ({ default: m.NarrativeReplay })));
@@ -38,6 +41,7 @@ export function DiscoverApp() {
   const [run, setRun] = useState<RunState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cinematic, setCinematic] = useState(false); // scroll-narrative replay of the workspace run
+  const [booted, setBooted] = useState(false); // dismissed once the entry preloader completes
   const cleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -123,7 +127,9 @@ export function DiscoverApp() {
   }, []);
 
   return (
-    <div className="discover">
+    <SmoothScroll>
+      {!booted && <Preloader onDone={() => setBooted(true)} />}
+      <div className="discover">
       <header className="disc-top">
         <div className="disc-brand">
           <span className="disc-mark" aria-hidden>◊</span>
@@ -131,6 +137,7 @@ export function DiscoverApp() {
           <span className="disc-tag">public-protein counterfactual discovery</span>
         </div>
         <div className="disc-health">
+          <AmbientAudio />
           {health ? (
             <span className={`hz ${health.offline ? "offline" : "live"}`}>
               {health.offline ? "offline · fixtures" : "live · public APIs"}
@@ -181,6 +188,7 @@ export function DiscoverApp() {
         Outputs are <strong>unvalidated public-protein candidate hypotheses</strong>. Computation is not validation; no
         working sensor is claimed. Physics traces are synthetic assumption sweeps unless marked candidate-specific.
       </footer>
-    </div>
+      </div>
+    </SmoothScroll>
   );
 }
