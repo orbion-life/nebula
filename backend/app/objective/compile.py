@@ -43,6 +43,8 @@ _EXCITATION_RULES: list[tuple[str, re.Pattern[str]]] = [
 ]
 # sensed quantity/state — what to SENSE (distinct from how to read it out)
 _SENSED_RULES: list[tuple[str, re.Pattern[str]]] = [
+    # ODMR / optical-spin first so "optically detected magnetic resonance" is not swallowed by the magnetic rule
+    ("optical spin contrast", re.compile(r"\bodmr|optically[- ]detected|triplet[- ]?state|spin resonance|spin contrast\b", re.I)),
     ("magnetic field", re.compile(r"\bmagnetic|magneto|b[- ]?field\b", re.I)),
     ("radio-frequency field", re.compile(r"\brf|radio[- ]?frequenc\b", re.I)),
     ("redox potential", re.compile(r"\bredox|oxidation|reduction|potential\b", re.I)),
@@ -61,6 +63,7 @@ _SUPPORTED_SENSES = {
     "radio-frequency field",
     "redox potential",
     "light history",
+    "optical spin contrast",
 }
 
 _DECISION_ACTIVE_FIELDS = [

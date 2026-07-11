@@ -32,7 +32,7 @@ const PRODUCTS: Product[] = [
 ];
 
 interface SenseTarget {
-  value: "magnetic field" | "radio-frequency field" | "redox potential" | "light history";
+  value: "magnetic field" | "radio-frequency field" | "redox potential" | "light history" | "optical spin contrast";
   label: string;
 }
 
@@ -45,6 +45,8 @@ export function readoutsForSense(value: SenseTarget["value"]): NonNullable<Objec
       return ["redox_electrochemical", "fluorescence"];
     case "light history":
       return ["fluorescence", "lifetime"];
+    case "optical spin contrast":
+      return ["ODMR_like", "fluorescence"];
   }
 }
 const SENSES: SenseTarget[] = [
@@ -52,6 +54,7 @@ const SENSES: SenseTarget[] = [
   { value: "radio-frequency field", label: "radio frequency field" },
   { value: "redox potential", label: "redox potential" },
   { value: "light history", label: "light history" },
+  { value: "optical spin contrast", label: "optical spin contrast" },
 ];
 
 const TEMPS: { id: string; label: string; range: [number, number] }[] = [

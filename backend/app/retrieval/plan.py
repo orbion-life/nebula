@@ -78,6 +78,11 @@ def _routes_for_objective(objective: ObjectiveSpec) -> list[RouteClass]:
         return [RouteClass.redox_electrochemical]
     if sensed == "light history":
         return [RouteClass.rfp_flavin_photochemical]
+    if sensed == "optical spin contrast":
+        # triplet-FP optical spin (ODMR-like) route only: a frontier proxy route with no
+        # candidate-specific quantum chemistry. Kept single-route so the radical-pair compute
+        # never leaks in to imply this optical-spin interpretation is validated.
+        return [RouteClass.triplet_fp]
     if objective.objective_support == "unsupported":
         return []
     return _routes_for_readouts(objective.desired_modalities or objective.acceptable_readouts)

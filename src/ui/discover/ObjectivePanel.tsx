@@ -32,7 +32,7 @@ interface Props {
 // (NEBULA_OFFLINE=1, no network), these committed-fixture accessions seed the run so the
 // E2E suite is deterministic. In production (online) this never fires.
 const OFFLINE_TEST_SEEDS = ["Q8LPD9", "Q43125", "P28861"];
-const SUPPORTED_SENSES = ["magnetic field", "radio-frequency field", "redox potential", "light history"] as const;
+const SUPPORTED_SENSES = ["magnetic field", "radio-frequency field", "redox potential", "light history", "optical spin contrast"] as const;
 
 export function ObjectivePanel({ onRun, offline, disabled }: Props) {
   const [mode, setMode] = useState<UserMode>("novice");

@@ -112,7 +112,7 @@ def _experiment(candidate: CandidateRecord, observable: ReadoutMode, instrument_
 def _instrument_for(sensed: str, inp: ScoreInputs) -> str:
     """Sensed-target-aware suggested instrument: a static-field MFE reads on a field fluorimeter,
     an RF sweep (RYDMR) needs an RF-capable confocal; otherwise pick the best-measurability rig."""
-    if sensed == "radio-frequency field":
+    if sensed in {"radio-frequency field", "optical spin contrast"}:
         return "odmr_confocal"
     if sensed == "magnetic field":
         return "benchtop_field_fluorimeter"

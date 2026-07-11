@@ -116,6 +116,23 @@ def test_unsupported_sensing_target_is_explicit(client: TestClient) -> None:
     assert "Supported sensing targets" in r.json()["detail"]
 
 
+def test_optical_spin_contrast_routes_to_triplet_fp(client: TestClient) -> None:
+    # the ODMR / optical-spin sense maps to the triplet-FP optical-spin route only (a frontier
+    # proxy route with no candidate-specific quantum chemistry), and the API gate accepts it.
+    from app.contracts.enums import RouteClass
+    from app.contracts.objective import ObjectiveSpec
+    from app.retrieval.plan import _routes_for_objective
+
+    obj = ObjectiveSpec(
+        objective_id="odmr",
+        objective_text="optical spin contrast sensing objective",
+        sensed_quantity_or_state="optical spin contrast",
+    )
+    assert _routes_for_objective(obj) == [RouteClass.triplet_fp]
+    r = client.post("/api/runs", json={"objective_text": "A GFP chip read out by optically detected magnetic resonance"})
+    assert r.status_code != 422, r.json()
+
+
 def test_seed_count_is_bounded(client: TestClient) -> None:
     spec = client.post("/api/objectives/compile", json={"objective_text": DEMO}).json()
     spec["seed_accessions"] = [f"P{i:05d}" for i in range(26)]
