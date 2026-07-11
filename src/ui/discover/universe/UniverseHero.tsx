@@ -51,11 +51,17 @@ interface Props {
   selectedId: string | null;
   onSelect: (id: string) => void;
   settled?: boolean; // default true (workspace); pass false during a live run
+  fieldProgress?: number; // quantum-field intensity (real run fraction in Act II)
 }
 
-export function UniverseHero({ run, selectedId, onSelect, settled = true }: Props) {
+function isSmallViewport(): boolean {
+  return typeof window !== "undefined" && window.matchMedia?.("(max-width: 700px)").matches === true;
+}
+
+export function UniverseHero({ run, selectedId, onSelect, settled = true, fieldProgress = 0.45 }: Props) {
   const nodes = useMemo(() => buildNodes(run, settled), [run, settled]);
   const reduced = prefersReducedMotion();
+  const effects = !reduced && !isSmallViewport(); // bloom off for reduced-motion/mobile (+ software-GL, gated in Effects)
   if (nodes.length === 0) return null;
 
   const fallback = <DomFallback nodes={nodes} selectedId={selectedId} onSelect={onSelect} />;
@@ -74,7 +80,7 @@ export function UniverseHero({ run, selectedId, onSelect, settled = true }: Prop
       </div>
       <WebGLBoundary fallback={fallback}>
         <Suspense fallback={<div className="universe-loading">assembling candidate universe…</div>}>
-          <CandidateUniverse nodes={nodes} selectedId={selectedId} onSelect={onSelect} reducedMotion={reduced} />
+          <CandidateUniverse nodes={nodes} selectedId={selectedId} onSelect={onSelect} reducedMotion={reduced} fieldProgress={fieldProgress} effects={effects} />
         </Suspense>
       </WebGLBoundary>
     </div>

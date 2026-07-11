@@ -28,7 +28,7 @@ export function ActSearch({ status, stage, events, run, error, onCancel, onReset
     <section className="act act-search">
       {run && cands > 0 && (
         <div className="act-search-bg" aria-hidden>
-          <UniverseHero run={run} settled={status === "completed"} selectedId={null} onSelect={() => {}} />
+          <UniverseHero run={run} settled={status === "completed"} selectedId={null} onSelect={() => {}} fieldProgress={progress} />
         </div>
       )}
       <div className="act-inner act-search-inner">

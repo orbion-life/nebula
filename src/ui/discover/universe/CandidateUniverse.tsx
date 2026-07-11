@@ -15,6 +15,8 @@ import { OrbitControls, Text } from "@react-three/drei";
 import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { PALETTE } from "../render/palette";
+import { QuantumField } from "../render/QuantumField";
+import { Effects } from "../render/effects";
 
 export interface UNode {
   id: string;
@@ -30,6 +32,8 @@ interface Props {
   selectedId: string | null;
   onSelect: (id: string) => void;
   reducedMotion: boolean;
+  fieldProgress?: number; // drives the quantum-field intensity (real run fraction in Act II)
+  effects?: boolean; // enable bloom postprocessing (off for reduced-motion/mobile/software-GL)
 }
 
 const COLORS = {
@@ -126,7 +130,7 @@ function Node({ node, target, selected, onSelect, reducedMotion }: {
   );
 }
 
-function Scene({ nodes, selectedId, onSelect, reducedMotion }: Props) {
+function Scene({ nodes, selectedId, onSelect, reducedMotion, fieldProgress = 0.45, effects = false }: Props) {
   const targets = useMemo(() => targetPositions(nodes), [nodes]);
   const { gl } = useThree();
   // pause rendering when the tab is hidden (perf)
@@ -136,12 +140,14 @@ function Scene({ nodes, selectedId, onSelect, reducedMotion }: Props) {
       <ambientLight intensity={0.6} />
       <pointLight position={[6, 8, 8]} intensity={80} />
       <pointLight position={[-8, -4, 4]} intensity={30} color={PALETTE.steel} />
+      <QuantumField progress={fieldProgress} />
       {nodes.map((n) => (
         <Node key={n.id} node={n} target={targets.get(n.id) ?? [0, 0, 0]} selected={n.id === selectedId} onSelect={onSelect} reducedMotion={reducedMotion} />
       ))}
       {/* faint lane axis references */}
       <gridHelper args={[16, 16, PALETTE.line2, PALETTE.line]} position={[0, -4.5, 0]} rotation={[0, 0, 0]} />
       <OrbitControls enablePan={false} enableZoom autoRotate={!reducedMotion} autoRotateSpeed={0.5} minDistance={6} maxDistance={20} />
+      <Effects enabled={effects} />
     </>
   );
 }
