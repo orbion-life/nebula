@@ -151,6 +151,16 @@ def _objective_alignment(inp: ScoreInputs, desired: set[ReadoutMode]) -> float:
     return _clamp(overlap / len(desired))
 
 
+def best_instrument(inp: ScoreInputs, instruments: list[dict]) -> dict:
+    """The registry instrument that makes THIS candidate most measurable — the app's
+    proposed measurement, chosen per candidate (never a user input). Tie-break toward the
+    more sensitive rig (lower min-detectable ΔF/F)."""
+    return max(
+        instruments,
+        key=lambda ins: (_measurability(inp, ins), -ins.get("min_detectable_delta_f_over_f", 1.0)),
+    )
+
+
 def score_one(inp: ScoreInputs, instrument: dict, desired: set[ReadoutMode]) -> DiscoveryScore:
     P = _plausibility(inp)
     M = _measurability(inp, instrument)

@@ -72,7 +72,7 @@ export function Traces({ spin, candidateSpecific, candidateLabel }: Props) {
       {spin != null && <SpinPanel spin={spin} candidateSpecific={candidateSpecific} />}
 
       <figcaption className="tr-cap">
-        <em>Reference</em> radical-pair spin-dynamics calculation — a synthetic assumption sweep from{" "}
+        <em>Reference</em> radical pair spin dynamics calculation. A synthetic assumption sweep from{" "}
         <code>{artifact.schemaVersion}@{(artifact.contentHash as string).slice(0, 8)}</code>, <strong>not</strong> a prediction of{" "}
         {candidateLabel ?? "this protein"}.
       </figcaption>

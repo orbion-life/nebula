@@ -47,6 +47,9 @@ class DiscoveryScore(BaseModel):
     pareto_rank: int = Field(description="1 = on the Pareto frontier for its lane's objectives")
     dominated_by: list[str] = Field(default_factory=list)
     rationale: str
+    # measurement is an OUTPUT: the best-matching registry instrument for THIS candidate,
+    # chosen by the app (never a user input). Set for every scored candidate, both lanes.
+    suggested_instrument_id: str | None = None
 
 
 class DiscriminatingExperiment(BaseModel):

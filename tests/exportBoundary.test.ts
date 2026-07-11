@@ -64,8 +64,8 @@ describe("shipped dossier export boundary", () => {
     expect(md).toMatch(/NOT a performance or spin-response prediction/);
   });
 
-  it("humanizes the claim ceiling — never the raw partner_ready_dossier token", () => {
+  it("humanizes the claim ceiling, never the raw partner_ready_dossier token", () => {
     expect(md).not.toContain("partner_ready_dossier");
-    expect(md).toContain("measurement-collaborator handoff");
+    expect(md).toContain("measurement collaborator handoff");
   });
 });

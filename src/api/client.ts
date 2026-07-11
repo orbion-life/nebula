@@ -47,10 +47,6 @@ export async function getHealth(): Promise<Health> {
   return json<Health>(await fetch("/api/health"));
 }
 
-export async function getInstruments(): Promise<{ instruments: Array<Record<string, unknown>> }> {
-  return json(await fetch("/api/instruments"));
-}
-
 export async function compileObjective(
   objective_text: string,
   user_mode: UserMode,

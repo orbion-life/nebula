@@ -1102,6 +1102,17 @@
           "rationale": {
             "type": "string",
             "title": "Rationale"
+          },
+          "suggested_instrument_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Instrument Id"
           }
         },
         "additionalProperties": false,
@@ -1554,6 +1565,46 @@
         ],
         "title": "FrontierExperiment",
         "description": "A frontier-lane result: a plausible, measurable, out-of-family hypothesis."
+      },
+      "GenerativePreview": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "invented_for": {
+            "type": "string",
+            "title": "Invented For"
+          },
+          "generator": {
+            "type": "string",
+            "title": "Generator",
+            "default": "deterministic-preview"
+          },
+          "found_in_nature": {
+            "type": "boolean",
+            "const": false,
+            "title": "Found In Nature",
+            "default": false
+          },
+          "sequence_provided": {
+            "type": "boolean",
+            "const": false,
+            "title": "Sequence Provided",
+            "default": false
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "invented_for",
+          "note"
+        ],
+        "title": "GenerativePreview"
       },
       "HTTPValidationError": {
         "properties": {
@@ -3004,6 +3055,13 @@
             },
             "type": "array",
             "title": "Frontier Experiments"
+          },
+          "generative_frontier": {
+            "items": {
+              "$ref": "#/components/schemas/GenerativePreview"
+            },
+            "type": "array",
+            "title": "Generative Frontier"
           },
           "selected_candidate_id": {
             "anyOf": [

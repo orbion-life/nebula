@@ -99,12 +99,10 @@ def compile_objective(raw: RawObjective) -> ObjectiveSpec:
         missing.append("material context not specified")
     if host is ExpressionHost.unknown:
         missing.append("expression host not specified (assume bacterial-first)")
-    if not excitation:
-        missing.append("excitation wavelength not specified")
     if sensed is None:
         missing.append("the quantity to SENSE was not stated (only the readout modality)")
-    if not re.search(r"\b(mT|tesla|MHz|noise|limit of detection|LoD|sensitivity|effect size)\b", text, re.I):
-        missing.append("no sensitivity target / limit-of-detection stated")
+    # Measurement is an OUTPUT the app proposes, not user input: excitation wavelength and
+    # sensitivity/limit-of-detection are no longer treated as "missing user info".
 
     return ObjectiveSpec(
         schema_version=OBJECTIVE_SCHEMA_VERSION,

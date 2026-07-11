@@ -16,6 +16,8 @@ export function Preloader({ onDone }: { onDone: () => void }) {
   const [pct, setPct] = useState(0);
   const [gone, setGone] = useState(false);
   const doneRef = useRef(false);
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
 
   useEffect(() => {
     let ready = false;
@@ -40,7 +42,7 @@ export function Preloader({ onDone }: { onDone: () => void }) {
         doneRef.current = true;
         window.setTimeout(() => {
           setGone(true);
-          window.setTimeout(onDone, 520);
+          window.setTimeout(() => onDoneRef.current(), 520);
         }, 220);
         return;
       }
@@ -51,7 +53,9 @@ export function Preloader({ onDone }: { onDone: () => void }) {
       cancelAnimationFrame(raf);
       window.clearTimeout(cap);
     };
-  }, [onDone]);
+    // run once: onDone is captured via ref so the entry animation never restarts on parent re-render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className={`preloader ${gone ? "gone" : ""}`} role="status" aria-label={`loading ${pct}%`}>

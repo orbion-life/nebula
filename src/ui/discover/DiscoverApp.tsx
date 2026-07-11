@@ -19,12 +19,12 @@ import {
   type RunState,
 } from "../../api/client";
 import { SmoothScroll } from "./scroll/SmoothScroll";
+import { WorldCanvas } from "./world/WorldCanvas";
 import { Preloader } from "./Preloader";
 import { AmbientAudio } from "./audio/AmbientAudio";
 import { CinematicShell } from "./cinematic/CinematicShell";
 
 type Phase = "objective" | "running" | "workspace";
-type View = "cinematic" | "workspace";
 
 export function DiscoverApp() {
   const [phase, setPhase] = useState<Phase>("objective");
@@ -35,7 +35,6 @@ export function DiscoverApp() {
   const [events, setEvents] = useState<RunEvent[]>([]);
   const [run, setRun] = useState<RunState | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [view, setView] = useState<View>("cinematic"); // workspace phase: Act III (default) vs calm workspace
   const [booted, setBooted] = useState(false); // dismissed once the entry preloader completes
   const cleanupRef = useRef<(() => void) | null>(null);
 
@@ -118,27 +117,23 @@ export function DiscoverApp() {
     setRunId(null);
     setEvents([]);
     setError(null);
-    setView("cinematic");
   }, []);
 
   return (
     <SmoothScroll>
       {!booted && <Preloader onDone={() => setBooted(true)} />}
       <div className="discover">
+      <WorldCanvas />
+      <div className="disc-content">
       <header className="disc-top">
         <div className="disc-brand">
           <span className="disc-mark" aria-hidden>◊</span>
           <span className="disc-name">Nebula Discover</span>
-          <span className="disc-tag">public-protein counterfactual discovery</span>
+          <span className="disc-tag">chart the protein universe</span>
         </div>
         <div className="disc-health">
           {phase === "workspace" && (
-            <button
-              className="view-toggle btn-ghost"
-              onClick={() => setView((v) => (v === "cinematic" ? "workspace" : "cinematic"))}
-            >
-              {view === "cinematic" ? "workspace ⇄" : "⇄ story"}
-            </button>
+            <button className="disc-reset btn-ghost" onClick={reset}>new objective ↺</button>
           )}
           <AmbientAudio />
           {health ? (
@@ -153,7 +148,6 @@ export function DiscoverApp() {
 
       <CinematicShell
         phase={phase}
-        view={view}
         status={status}
         stage={stage}
         events={events}
@@ -163,13 +157,12 @@ export function DiscoverApp() {
         onRun={start}
         onCancel={cancel}
         onReset={reset}
-        setView={setView}
       />
 
       <footer className="disc-foot">
-        Outputs are <strong>unvalidated public-protein candidate hypotheses</strong>. Computation is not validation; no
-        working sensor is claimed. Physics traces are synthetic assumption sweeps unless marked candidate-specific.
+        A candidate is a discovery to prove at the bench, not a proven sensor.
       </footer>
+      </div>
       </div>
     </SmoothScroll>
   );

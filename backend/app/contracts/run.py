@@ -7,6 +7,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from .candidate import CandidateDossier, CandidateRecord
+from .design import GenerativePreview
 from .discovery import DiscoveryScore, FrontierExperiment
 from .enums import RunStatus
 from .objective import ObjectiveSpec
@@ -42,6 +43,9 @@ class RunState(BaseModel):
     discovery_scores: list[DiscoveryScore] = Field(default_factory=list)
     evidence_shortlist: list[str] = Field(default_factory=list, description="candidate_ids on the evidence lane, ranked")
     frontier_experiments: list[FrontierExperiment] = Field(default_factory=list)
+    # "the unmade": de novo generative-frontier previews (invented, not retrieved; never validated,
+    # never orderable). Deterministic placeholders until a real design adapter is wired in.
+    generative_frontier: list[GenerativePreview] = Field(default_factory=list)
     selected_candidate_id: str | None = None
     result_ref: str | None = None
 

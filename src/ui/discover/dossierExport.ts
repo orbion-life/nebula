@@ -13,7 +13,7 @@ export const SPIN_PARAM = "candidate_isoalloxazine_max_spin_density";
 export const CLAIM_LABELS: Record<string, string> = {
   diagnostic_only: "ceiling: diagnostic only",
   measurement_triage: "ceiling: measurement triage",
-  partner_ready_dossier: "ceiling: measurement-collaborator handoff",
+  partner_ready_dossier: "ceiling: measurement collaborator handoff",
 };
 export function claimLabel(c: string | undefined): string {
   return CLAIM_LABELS[c ?? ""] ?? `ceiling: ${c ?? "unknown"}`;

@@ -19,10 +19,12 @@ from ..contracts.objective import ObjectiveSpec
 from .capability import extract_capability
 from .ladder import assign_exploration
 from .mechanism import compose_graph
+from ..api.fixtures_static import INSTRUMENTS
 from .scoring import (
     EVIDENCE_OBJS,
     FRONTIER_OBJS,
     ScoreInputs,
+    best_instrument,
     pareto_rank,
     quality_diversity_order,
     score_one,
@@ -85,6 +87,8 @@ def build_discovery(
         reason, novelty = assign_exploration(cand.route_class, cap, graph)
         inp = ScoreInputs(candidate=cand, capability=cap, graph=graph, eligibility=elig, reason=reason, novelty=novelty)
         score, lane = score_one(inp, instrument, desired)
+        # measurement as OUTPUT: attach the best-matching instrument for THIS candidate (both lanes)
+        score = score.model_copy(update={"suggested_instrument_id": best_instrument(inp, INSTRUMENTS)["id"]})
         primitive_of[cand.candidate_id] = _SPIN_PRIMITIVE.get(cand.route_class, PrimitiveKind.metal_open_shell if cap.has_metal_open_shell else PrimitiveKind.spin_evolution)
         scored.append((inp, score, lane))
 
@@ -100,9 +104,13 @@ def build_discovery(
 
     cand_by_id = {c.candidate_id: c for c in candidates}
     graph_obs = {inp.candidate.candidate_id: inp.graph.observable for inp, _, _ in scored}
+    inp_by_id = {inp.candidate.candidate_id: inp for inp, _, _ in scored}
     frontier_experiments: list[FrontierExperiment] = []
     for s in frontier:
         cand = cand_by_id[s.candidate_id]
+        # measurement is an OUTPUT the app proposes: pick the best-matching instrument from the
+        # registry for THIS candidate (an explicit expert override still wins if one was set).
+        suggested_instrument = instrument_id or best_instrument(inp_by_id[s.candidate_id], INSTRUMENTS)["id"]
         frontier_experiments.append(FrontierExperiment(
             candidate_id=s.candidate_id,
             accession=cand.uniprot.primary_accession if cand.uniprot else s.candidate_id,
@@ -110,8 +118,8 @@ def build_discovery(
             outside_family_because=s.exploration.outside_family_because or "outside the canonical family arrangement",
             physical_constraints_satisfied=s.exploration.physical_constraints_satisfied,
             assumptions_remaining=s.exploration.assumptions_remaining,
-            discriminating_experiment=_experiment(cand, graph_obs.get(s.candidate_id, ReadoutMode.fluorescence), instrument_id),
-            falsifier="flat, control-surviving readout across the field/RF/stimulus sweep falsifies the proposed mechanism for this scaffold.",
+            discriminating_experiment=_experiment(cand, graph_obs.get(s.candidate_id, ReadoutMode.fluorescence), suggested_instrument),
+            falsifier="flat, control surviving readout across the field/RF/stimulus sweep falsifies the proposed mechanism for this scaffold.",
             score=s,
             claim_ceiling=s.exploration.claim_ceiling,
         ))

@@ -19,18 +19,17 @@ import { getStructure, type RunState, type StructureResponse } from "../../../ap
 import { StructureViewer } from "../StructureViewer";
 import { Traces } from "../Traces";
 import { UniverseHero } from "../universe/UniverseHero";
-import { claimLabel, computedSpinParam, isCandidateSpecific, isSpinDynamics } from "../dossierExport";
+import { claimLabel, computedSpinParam, dossierMarkdown, isCandidateSpecific, isSpinDynamics } from "../dossierExport";
 
 interface Props {
   run: RunState;
-  onEnterWorkspace: () => void;
 }
 
 function reducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
 }
 
-export function NarrativeReplay({ run, onEnterWorkspace }: Props) {
+export function NarrativeReplay({ run }: Props) {
   const scope = useRef<HTMLDivElement>(null);
   const reduced = reducedMotion();
 
@@ -81,13 +80,24 @@ export function NarrativeReplay({ run, onEnterWorkspace }: Props) {
   const cs = isCandidateSpecific(dossier);
   const abstained = (run.evidence_shortlist?.length ?? 0) === 0 && (run.frontier_experiments?.length ?? 0) === 0;
 
+  const downloadHandoff = () => {
+    if (!candidate) return;
+    const md = dossierMarkdown(candidate, dossier, run);
+    const blob = new Blob([md], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `nebula-handoff-${acc ?? topId ?? "candidate"}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="narr" ref={scope}>
       <div className="narr-progress" aria-hidden><div className="narr-progress-fill" /></div>
-      <button className="narr-skip btn-ghost" onClick={onEnterWorkspace}>skip to workspace →</button>
 
       <Chapter n="01" kicker="objective">
-        <h1 className="narr-h">What should the protein report — and how would we measure it?</h1>
+        <h1 className="narr-h">You brought the goal. We went looking.</h1>
         <p className="narr-obj">{run.objective.objective_text}</p>
         <div className="narr-chips">
           {run.objective.sensed_quantity_or_state && <span className="chip">sense: {run.objective.sensed_quantity_or_state}</span>}
@@ -97,7 +107,7 @@ export function NarrativeReplay({ run, onEnterWorkspace }: Props) {
 
       <Chapter n="02" kicker="search the protein universe">
         <h2 className="narr-h">{(run.candidates ?? []).length} real public proteins retrieved.</h2>
-        <p className="narr-sub">Live from UniProt · InterPro · RCSB · AlphaFold — real accessions, not template families.</p>
+        <p className="narr-sub">Live from UniProt · InterPro · RCSB · AlphaFold. Real accessions, not template families.</p>
         <div className="narr-acc-grid">
           {(run.candidates ?? []).map((c) => (
             <span key={c.candidate_id} className="narr-acc">{c.uniprot?.primary_accession ?? c.candidate_id.slice(0, 8)}</span>
@@ -106,7 +116,7 @@ export function NarrativeReplay({ run, onEnterWorkspace }: Props) {
       </Chapter>
 
       <Chapter n="03" kicker="mechanism routes">
-        <h2 className="narr-h">Each candidate is mapped to a spin-linked mechanism route.</h2>
+        <h2 className="narr-h">Each candidate is mapped to a spin linked mechanism route.</h2>
         <div className="narr-routes">
           {routeMix.map(([route, n]) => (
             <div className="narr-route" key={route}>
@@ -119,30 +129,30 @@ export function NarrativeReplay({ run, onEnterWorkspace }: Props) {
       </Chapter>
 
       <Chapter n="04" kicker="structure gate">
-        <h2 className="narr-h">{acc ? `${acc} — real structure, cofactor in focus` : "structure"}</h2>
+        <h2 className="narr-h">{acc ? `${acc} · real structure, cofactor in focus` : "structure"}</h2>
         <div className="narr-struct"><StructureViewer structure={structure} loading={!structure} cofactorLabel={candidate?.cofactors?.[0]?.name ?? null} /></div>
       </Chapter>
 
       <Chapter n="05" kicker="compute">
-        <h2 className="narr-h">Physics — computed, not assumed.</h2>
+        <h2 className="narr-h">Physics, computed, not assumed.</h2>
         {dossier && isSpinDynamics(dossier) ? (
           <>
             <p className="narr-sub">
               {cs
-                ? `Candidate-specific UHF on this protein's real isoalloxazine — max Mulliken spin ${spin ? spin.value.toFixed(3) : "—"} (high uncertainty; not a performance claim).`
-                : "Generic isoalloxazine template — not yet candidate-specific."}
+                ? `Candidate specific UHF on this protein's real isoalloxazine. Max Mulliken spin ${spin ? spin.value.toFixed(3) : "not available"} (high uncertainty, not a performance claim).`
+                : "Generic isoalloxazine template, not yet candidate specific."}
             </p>
             <div className="narr-trace"><Traces spin={spin} candidateSpecific={cs} candidateLabel={acc ?? candidate?.title} /></div>
           </>
         ) : (
-          <p className="narr-sub">No spin-dynamics reference applies to this route; it is scored on measurement value only.</p>
+          <p className="narr-sub">No spin dynamics reference applies to this route. It is scored on measurement value only.</p>
         )}
       </Chapter>
 
-      <Chapter n="06" kicker="rank — evidence vs frontier">
-        <h2 className="narr-h">Two strictly-separate lanes. Frontier never outranks evidence.</h2>
+      <Chapter n="06" kicker="rank · evidence vs frontier">
+        <h2 className="narr-h">Two strictly separate lanes. Frontier never outranks evidence.</h2>
         {abstained ? (
-          <p className="narr-sub">Evidence-backed abstention — no public protein was eligible under this objective. The honest answer, not a manufactured winner.</p>
+          <p className="narr-sub">Evidence backed abstention. No public protein was eligible under this objective. The honest answer, not a manufactured winner.</p>
         ) : (
           <div className="narr-universe"><UniverseHero run={run} selectedId={topId} onSelect={() => {}} /></div>
         )}
@@ -153,18 +163,41 @@ export function NarrativeReplay({ run, onEnterWorkspace }: Props) {
         {candidate ? (
           <>
             <h2 className="narr-h">Test {acc} next.</h2>
-            <p className="narr-plan-line"><strong>Instrument:</strong> {frontier?.discriminating_experiment?.instrument_id ?? run.instrument_id ?? "benchtop field fluorimeter"}</p>
+            <p className="narr-plan-line"><strong>Suggested instrument:</strong> {(score?.suggested_instrument_id ?? frontier?.discriminating_experiment?.instrument_id ?? run.instrument_id ?? "benchtop_field_fluorimeter").replace(/_/g, " ")}</p>
             <p className="narr-plan-line"><strong>{claimLabel(candidate.claim_ceiling)}</strong></p>
             <p className="narr-plan-line narr-fals">
               <strong>Falsification:</strong>{" "}
-              {frontier?.falsifier ?? `if the mechanism-specific control shows the same signal change as the construct, the ${candidate.route_class} hypothesis for ${acc} is rejected.`}
+              {frontier?.falsifier ?? `if the mechanism specific control shows the same signal change as the construct, the ${candidate.route_class} hypothesis for ${acc} is rejected.`}
             </p>
-            <p className="narr-disclaimer">Unvalidated public-protein candidate hypothesis. Computation is not validation; no working sensor is claimed.</p>
           </>
         ) : (
-          <h2 className="narr-h">No candidate to measure — broaden the objective.</h2>
+          <h2 className="narr-h">No candidate to measure yet. Broaden the objective.</h2>
         )}
-        <button className="btn-run" onClick={onEnterWorkspace}>open the workspace →</button>
+        {candidate && (
+          <button className="btn-run" onClick={downloadHandoff}>download the handoff ↓</button>
+        )}
+      </Chapter>
+
+      <Chapter n="08" kicker="the unmade">
+        <h2 className="narr-h">Beyond the charted, the unmade.</h2>
+        <p className="narr-sub">
+          The databases are the charted stars. Most of protein space is dark: sequences evolution never
+          sampled, folds no one catalogued, the ones that do not exist yet. The frontier is to invent them.
+        </p>
+        <div className="narr-unmade">
+          {(run.generative_frontier ?? []).map((g) => (
+            <div className="unmade-card" key={g.label}>
+              <span className="unmade-name">{g.label}</span>
+              <span className="unmade-for">invented for {g.invented_for}</span>
+              <span className="unmade-badge">de novo · {g.generator === "deterministic-preview" ? "generative preview" : g.generator}</span>
+            </div>
+          ))}
+        </div>
+        <p className="narr-unmade-note">
+          Generative preview. A de novo design pipeline (RFdiffusion, ProteinMPNN, LigandMPNN) would invent
+          these and run them through the same physics gate and the same guardrail. It is not wired in this
+          build, and nothing here is a real or orderable sequence.
+        </p>
       </Chapter>
     </div>
   );

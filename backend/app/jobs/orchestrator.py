@@ -14,6 +14,7 @@ from ..api.fixtures_static import INSTRUMENTS
 from ..contracts.candidate import CandidateDossier, CandidateRecord, StructuralEvidence
 from ..contracts.enums import PhysicsEligibilityKind, RunStatus
 from ..contracts.run import RunEvent, RunState
+from ..design import generate_previews
 from ..discovery import build_discovery
 from ..physics.candidate_specific import run_candidate_qm
 from ..physics.eligibility import assess_eligibility, upgrade_with_candidate_qm
@@ -184,6 +185,8 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
             "discovery_scores": scores,
             "evidence_shortlist": evidence_shortlist,
             "frontier_experiments": frontier,
+            # "the unmade": deterministic de novo previews (invented, labelled, never validated)
+            "generative_frontier": generate_previews(run.objective),
             "updated_at": datetime.now(timezone.utc),
         })
         store.put(run)

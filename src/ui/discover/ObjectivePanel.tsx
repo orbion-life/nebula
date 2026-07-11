@@ -11,13 +11,15 @@
  * always shown before the run — so novices understand every field and experts can
  * change every assumption.
  */
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import { compileObjective, getInstruments, type ObjectiveSpec, type UserMode } from "../../api/client";
+import { compileObjective, type ObjectiveSpec, type UserMode } from "../../api/client";
 
+// State only WHAT the protein should sense + the environment it must work in — never how
+// to measure it (the app proposes the measurement).
 const DEMO_NOVICE =
-  "We are developing a transparent hydrogel patch and want a protein component that can report weak magnetic-field exposure through an optical signal at room temperature. We can measure fluorescence intensity and lifetime, but we do not have RF hardware. It should tolerate oxygen and remain useful after immobilization.";
+  "We are developing a transparent hydrogel patch and want a protein component that reports exposure to a weak magnetic field. It should work at room temperature, tolerate oxygen, and stay useful after immobilization.";
 
 interface Props {
   onRun: (spec: ObjectiveSpec) => void;
@@ -31,22 +33,13 @@ interface Props {
 // E2E suite is deterministic. In production (online) this never fires.
 const OFFLINE_TEST_SEEDS = ["Q8LPD9", "Q43125"];
 
-type Instrument = { id: string; label?: string; readout_modes?: string[]; rf_available?: boolean };
-
 export function ObjectivePanel({ onRun, offline, disabled }: Props) {
   const [mode, setMode] = useState<UserMode>("novice");
   const [text, setText] = useState(DEMO_NOVICE);
   const [spec, setSpec] = useState<ObjectiveSpec | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const [instruments, setInstruments] = useState<Instrument[]>([]);
   const sheetRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    getInstruments()
-      .then((r) => setInstruments((r.instruments as Instrument[]) ?? []))
-      .catch(() => setInstruments([]));
-  }, []);
 
   // On compile, the extracted constraints resolve into place — purposeful motion that
   // shows the parse (gsap.from leaves elements visible if interrupted; skipped under
@@ -96,7 +89,7 @@ export function ObjectivePanel({ onRun, offline, disabled }: Props) {
       </div>
 
       <label className="obj-label" htmlFor="obj-text">
-        {mode === "novice" ? "In plain language, what should the protein report — and how will you measure it?" : "Objective (free text seeds the structured fields below)"}
+        {mode === "novice" ? "In plain language, what should it sense, and where must it work?" : "Objective (free text seeds the structured fields below)"}
       </label>
       <textarea
         id="obj-text"
@@ -108,7 +101,7 @@ export function ObjectivePanel({ onRun, offline, disabled }: Props) {
       />
       <div className="obj-actions">
         <button className="btn-primary" onClick={compile} disabled={busy || disabled}>
-          {busy ? "compiling…" : spec ? "re-compile objective" : "compile objective"}
+          {busy ? "compiling…" : spec ? "compile again" : "compile objective"}
         </button>
         {err && <span className="obj-err">{err}</span>}
       </div>
@@ -116,24 +109,13 @@ export function ObjectivePanel({ onRun, offline, disabled }: Props) {
       {spec && (
         <div className="obj-sheet" ref={sheetRef}>
           <div className="obj-sheet-head">
-            <span>compiled objective — editable before the run</span>
+            <span>compiled objective, editable before the run</span>
             <code>{spec.objective_id}</code>
           </div>
 
           <div className="obj-grid">
             <Field label="sensed quantity / state">
               <input value={spec.sensed_quantity_or_state ?? ""} placeholder="(not stated)" onChange={(e) => patch({ sensed_quantity_or_state: e.target.value || null })} />
-            </Field>
-            <Field label="desired modalities">
-              <span className="chips">{(spec.desired_modalities ?? []).map((m) => <span className="chip" key={m}>{m}</span>)}</span>
-            </Field>
-            <Field label="instrument">
-              <select value={spec.instrument_id ?? ""} onChange={(e) => patch({ instrument_id: e.target.value || null })}>
-                <option value="">(default: benchtop field fluorimeter)</option>
-                {instruments.map((i) => (
-                  <option key={i.id} value={i.id}>{i.label ?? i.id}{i.rf_available ? " · RF" : ""}</option>
-                ))}
-              </select>
             </Field>
             <Field label="oxygen">
               <select value={spec.oxygen_condition} onChange={(e) => patch({ oxygen_condition: e.target.value as ObjectiveSpec["oxygen_condition"] })}>
@@ -145,12 +127,6 @@ export function ObjectivePanel({ onRun, offline, disabled }: Props) {
               <>
                 <Field label="temperature °C (min,max)">
                   <RangeInput value={spec.temperature_range_C} onChange={(v) => patch({ temperature_range_C: v })} />
-                </Field>
-                <Field label="static field mT (min,max)">
-                  <RangeInput value={spec.static_field_range_mT} onChange={(v) => patch({ static_field_range_mT: v })} />
-                </Field>
-                <Field label="RF MHz (min,max)">
-                  <RangeInput value={spec.rf_frequency_range_MHz} onChange={(v) => patch({ rf_frequency_range_MHz: v })} />
                 </Field>
                 <Field label="seed accessions (offline demo / expert seed)">
                   <input
@@ -177,7 +153,7 @@ export function ObjectivePanel({ onRun, offline, disabled }: Props) {
 
           {offline && (spec.seed_accessions ?? []).length > 0 && mode === "novice" && (
             <div className="obj-seeds">
-              offline mode — seeded with real fixtured accessions:{" "}
+              offline mode. seeded with real fixtured accessions:{" "}
               {(spec.seed_accessions ?? []).map((a) => <span className="chip" key={a}>{a}</span>)}
             </div>
           )}
@@ -186,7 +162,7 @@ export function ObjectivePanel({ onRun, offline, disabled }: Props) {
             <button className="btn-run" onClick={() => spec && onRun(spec)} disabled={disabled}>
               run discovery →
             </button>
-            <span className="obj-hint">retrieves real public proteins · simulates · ranks. outputs are unvalidated candidate hypotheses.</span>
+            <span className="obj-hint">Charts real public proteins, simulates the physics, ranks the one worth proving.</span>
           </div>
         </div>
       )}

@@ -454,6 +454,8 @@ export interface components {
             dominated_by?: string[];
             /** Rationale */
             rationale: string;
+            /** Suggested Instrument Id */
+            suggested_instrument_id?: string | null;
         };
         /**
          * DiscriminatingExperiment
@@ -587,6 +589,32 @@ export interface components {
             falsifier: string;
             score: components["schemas"]["DiscoveryScore"];
             claim_ceiling: components["schemas"]["ClaimLevel"];
+        };
+        /** GenerativePreview */
+        GenerativePreview: {
+            /** Label */
+            label: string;
+            /** Invented For */
+            invented_for: string;
+            /**
+             * Generator
+             * @default deterministic-preview
+             */
+            generator: string;
+            /**
+             * Found In Nature
+             * @default false
+             * @constant
+             */
+            found_in_nature: false;
+            /**
+             * Sequence Provided
+             * @default false
+             * @constant
+             */
+            sequence_provided: false;
+            /** Note */
+            note: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -1117,6 +1145,8 @@ export interface components {
             evidence_shortlist?: string[];
             /** Frontier Experiments */
             frontier_experiments?: components["schemas"]["FrontierExperiment"][];
+            /** Generative Frontier */
+            generative_frontier?: components["schemas"]["GenerativePreview"][];
             /** Selected Candidate Id */
             selected_candidate_id?: string | null;
             /** Result Ref */

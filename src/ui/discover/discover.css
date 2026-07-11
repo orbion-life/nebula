@@ -5,30 +5,49 @@
  * Scoped under .discover so it never fights the light studio fixture.
  */
 :root {
-  /* Navy + gold. Mirrors src/ui/discover/render/palette.ts (WebGL/canvas side).
-     Token NAMES are unchanged so no class churn — only values shift. */
+  /* Navy + PLATINUM. Mirrors src/ui/discover/render/palette.ts (WebGL/canvas side).
+     Token NAMES are unchanged so no class churn; only values shift (now platinum, not gold). */
   --d-bg: #070c18;      /* deep navy */
   --d-bg2: #0a1122;
   --d-panel: #0e1830;
   --d-panel2: #0b1324;
   --d-line: #1b2a45;
   --d-line2: #2a3d5c;
-  --d-ink: #ece6d8;     /* warm off-white */
+  --d-ink: #eef1f6;     /* cool off-white */
   --d-mut: #a9b3c4;
   /* meets WCAG AA 4.5:1 on the deep-navy bg for the small 10-11px labels */
   --d-faint: #8b93a6;
-  --d-amber: #d9b45a;   /* GOLD — primary accent (was neon amber) */
-  --d-gold-bright: #eccd82;
-  --d-bronze: #9a6f3a;
-  --d-teal: #7f9bc0;    /* cool steel secondary — links, accession mono (was teal) */
-  --d-evi: #d9b45a;     /* evidence lane = gold family */
+  --d-amber: #c6ccd6;   /* PLATINUM primary accent (token name kept from the gold era) */
+  --d-gold-bright: #e9edf3;  /* bright platinum highlight */
+  --d-bronze: #8792a6;  /* muted steel secondary (was warm bronze) */
+  --d-teal: #7f9bc0;    /* cool steel secondary: links, accession mono */
+  --d-evi: #c6ccd6;     /* evidence lane = platinum family */
   --d-fro: #a78bd0;     /* frontier lane = cool violet (distinct + colourblind-safe) */
   --d-red: #ef8a7a;
-  --d-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  /* Exquisite bespoke type: Cormorant Garamond (display, high-contrast serif) over
+     Hanken Grotesk (refined humanist sans). Loaded in index.html. */
+  --d-display: "Cormorant Garamond", "Hoefler Text", Georgia, "Times New Roman", serif;
+  --d-sans: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   --d-mono: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
 }
 
 body:has(.discover) { background: var(--d-bg); }
+
+/* Persistent 3D backdrop: fixed behind all content, never captures the wheel/trackpad.
+   The canvas sits at z-index 0 (above any non-positioned opaque background) and the content
+   rides above it in a positioned wrapper. */
+.discover { position: relative; }
+.world-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.world-canvas canvas { display: block; width: 100% !important; height: 100% !important; }
+.disc-content { position: relative; z-index: 1; }
+
+/* Display type: the exquisite serif carries every hero/scene heading. */
+.discover h1, .act-h, .narr-h {
+  font-family: var(--d-display);
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  text-shadow: 0 2px 26px rgba(7, 12, 24, 0.78);
+}
 
 /* ---- entry preloader (signature circular 0→100 counter) ---- */
 .preloader { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column;
@@ -91,7 +110,7 @@ body:has(.discover) { background: var(--d-bg); }
 .disc-foot strong { color: var(--d-mut); }
 .disc-error { margin: 14px 22px; color: var(--d-red); }
 .disc-loading { padding: 80px; text-align: center; color: var(--d-faint); font-size: 13px; }
-.view-toggle { font-size: 11px; padding: 4px 11px; }
+.disc-reset { font-size: 11px; padding: 4px 11px; }
 
 /* ---- cinematic Acts ---- */
 .act { width: 100%; }
@@ -127,11 +146,67 @@ body:has(.discover) { background: var(--d-bg); }
   font-family: var(--d-sans); cursor: pointer; border-radius: 8px; font-size: 13px;
   transition: background 0.15s, border-color 0.15s, transform 0.1s;
 }
-.btn-primary { background: var(--d-teal); color: #04201e; border: none; padding: 9px 16px; font-weight: 600; }
-.btn-primary:hover { background: #5ad8d0; }
+.btn-primary { background: transparent; color: var(--d-amber); border: 1px solid var(--d-amber); padding: 9px 18px; font-weight: 500; }
+.btn-primary:hover { background: rgba(198, 204, 214, 0.10); }
 .btn-primary:disabled { opacity: 0.5; cursor: default; }
-.btn-run { background: var(--d-amber); color: #241c02; border: none; padding: 11px 22px; font-weight: 700; letter-spacing: 0.01em; }
-.btn-run:hover { background: #ffd75e; transform: translateY(-1px); }
+.btn-run { background: var(--d-amber); color: #0a1120; border: none; padding: 11px 22px; font-weight: 600; letter-spacing: 0.01em; }
+.btn-run:hover { background: var(--d-gold-bright); transform: translateY(-1px); }
+
+/* ---- Mission Bench (gamified objective) ---- */
+.mb { display: flex; flex-direction: column; gap: 22px; max-width: 980px; }
+.mb-eyebrow { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--d-mut);
+  text-shadow: 0 1px 10px rgba(7, 12, 24, 0.85); }
+.mb-blueprints { display: flex; flex-direction: column; gap: 10px; }
+.mb-bp-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.mb-bp { background: var(--d-panel); border: 1px solid var(--d-line2); color: var(--d-mut);
+  border-radius: 999px; padding: 7px 16px; font-family: var(--d-sans); font-size: 13px; cursor: pointer;
+  transition: border-color .2s, color .2s; }
+.mb-bp:hover { border-color: var(--d-amber); color: var(--d-ink); }
+.mb-grid { display: grid; grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr); gap: 20px; }
+.mb-build { display: flex; flex-direction: column; gap: 12px; background: rgba(14, 24, 48, 0.5);
+  border: 1px solid var(--d-line); border-radius: 16px; padding: 16px; }
+.mb-preview { height: 108px; border: 1px dashed var(--d-line2); border-radius: 12px; padding: 12px;
+  background: rgba(7, 12, 24, 0.45); display: grid; place-items: center; }
+.mb-forms { display: flex; flex-wrap: wrap; gap: 8px; }
+.mb-form { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; background: var(--d-panel);
+  border: 1px solid var(--d-line2); border-radius: 10px; padding: 7px 12px; cursor: pointer; color: var(--d-mut);
+  font-family: var(--d-sans); transition: border-color .2s, color .2s, background .2s; }
+.mb-form.on { border-color: var(--d-amber); color: var(--d-ink); background: rgba(198, 204, 214, 0.08); }
+.mb-form-label { font-size: 13px; }
+.mb-form-sub { font-size: 10px; letter-spacing: 0.06em; color: var(--d-faint); }
+.mb-socket { display: flex; align-items: center; gap: 12px; margin-top: 4px; border-top: 1px solid var(--d-line);
+  padding-top: 12px; }
+.mb-socket-ring { width: 34px; height: 34px; border-radius: 50%; flex: none; border: 1px dashed var(--d-bronze);
+  box-shadow: inset 0 0 14px rgba(135, 146, 166, 0.22); }
+.mb-socket-text { font-size: 12px; color: var(--d-faint); line-height: 1.45; }
+.mb-job { display: flex; flex-direction: column; gap: 14px; }
+.mb-block { display: flex; flex-direction: column; gap: 8px; }
+.mb-chips, .mb-gauge-row { display: flex; flex-wrap: wrap; gap: 7px; }
+.mb-gauges { display: flex; flex-direction: column; gap: 8px; }
+.mb-chip { background: var(--d-panel); border: 1px solid var(--d-line2); color: var(--d-mut); border-radius: 999px;
+  padding: 6px 13px; font-family: var(--d-sans); font-size: 13px; cursor: pointer;
+  transition: border-color .2s, color .2s, background .2s; }
+.mb-chip.on { border-color: var(--d-amber); color: #0a1120; background: var(--d-amber); }
+.mb-measure { display: flex; flex-direction: column; gap: 4px; border: 1px dashed var(--d-bronze); border-radius: 12px;
+  padding: 11px 14px; }
+.mb-measure-text { font-size: 14px; color: var(--d-gold-bright); }
+.mb-reads { font-size: 14px; color: var(--d-mut); background: rgba(14, 24, 48, 0.55); border: 1px solid var(--d-line2);
+  border-radius: 10px; padding: 11px 15px; }
+.mb-reads-label { color: var(--d-faint); }
+.mb-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.mb-type { background: none; border: none; color: var(--d-teal); font-family: var(--d-sans); font-size: 13px;
+  text-decoration: underline; cursor: pointer; }
+@media (max-width: 760px) { .mb-grid { grid-template-columns: 1fr; } }
+
+/* ---- the unmade: generative frontier preview (violet) ---- */
+.narr-unmade { display: flex; gap: 12px; flex-wrap: wrap; margin: 10px 0 16px; }
+.unmade-card { display: flex; flex-direction: column; gap: 4px; min-width: 200px; flex: 1;
+  background: rgba(167, 139, 208, 0.07); border: 1px solid var(--d-fro); border-radius: 12px; padding: 12px 14px; }
+.unmade-name { font-size: 15px; color: var(--d-ink); }
+.unmade-for { font-size: 12px; color: var(--d-mut); }
+.unmade-badge { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--d-fro);
+  border: 1px solid var(--d-fro); border-radius: 999px; padding: 2px 9px; align-self: flex-start; margin-top: 4px; }
+.narr-unmade-note { font-size: 12.5px; color: var(--d-faint); max-width: 62ch; line-height: 1.55; }
 .btn-ghost { background: transparent; color: var(--d-mut); border: 1px solid var(--d-line2); padding: 7px 13px; }
 .btn-ghost:hover { border-color: var(--d-teal); color: var(--d-ink); }
 .btn-ghost:disabled { opacity: 0.4; cursor: default; }
