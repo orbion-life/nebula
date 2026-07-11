@@ -114,7 +114,10 @@ def _matches_route(rec: UniProtRecord, plan: QueryPlan, interpro_matches: list, 
             "fmn" in (c.name or "").lower() for c in rec.cofactors
         )
     if plan.route_class == RouteClass.triplet_fp:
-        return any(k in blob for k in ("fluorescent protein", "gfp", "rfp", "chromophore"))
+        # fluorescent-protein family only. "chromophore" alone is too broad: flavoproteins
+        # (LOV, cryptochrome) carry a flavin chromophore and would be falsely admitted to the
+        # triplet optical-spin route. Require an explicit fluorescent-protein term instead.
+        return any(k in blob for k in ("fluorescent protein", "gfp", "yfp", "cfp", "gfp-like"))
     if plan.route_class == RouteClass.rfp_flavin_photochemical:
         return has_cofactor and any(k in blob for k in ("phototropin", "lov domain", "photoreceptor", "blue light"))
     if plan.route_class == RouteClass.redox_electrochemical:
