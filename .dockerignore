@@ -1,0 +1,17 @@
+node_modules
+dist
+.git
+.github
+backend/artifacts
+backend/openapi.json
+**/__pycache__
+**/*.pyc
+.venv
+venv
+test-results
+playwright-report
+.playwright
+artifacts/claude
+*.log
+.DS_Store
+.leak-terms.local.json

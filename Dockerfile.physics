@@ -1,0 +1,28 @@
+# syntax=docker/dockerfile:1
+# OPTIONAL image variant WITH PySCF, for live candidate-specific quantum chemistry on
+# arbitrary (uncached) accessions. Larger image + a novel flavin structure pays the
+# one-time ~150s UHF cost. Most deployments should use the default Dockerfile (the
+# committed QM cache covers the demo, and novel accessions degrade honestly to generic
+# physics). Build:  docker build -f Dockerfile.physics -t nebula-discover:physics .
+
+FROM node:22-slim AS web
+WORKDIR /web
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM python:3.11-slim AS runtime
+ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+# build tools + OpenMP for the PySCF build/runtime
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 build-essential \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY backend/ /app/backend/
+RUN pip install "./backend[physics]"
+COPY src/data/generated/ /app/src/data/generated/
+COPY --from=web /web/dist /app/dist
+ENV NEBULA_STATIC_DIR=/app/dist NEBULA_OFFLINE=0 NEBULA_CORS_ORIGINS=""
+EXPOSE 8000
+WORKDIR /app/backend
+CMD ["python", "-m", "uvicorn", "app.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -30,6 +30,11 @@ from ..state.machine import assert_transition, progress_fraction
 from .fixtures_static import INSTRUMENTS, ROUTES
 
 OFFLINE = os.environ.get("NEBULA_OFFLINE", "0") == "1"
+# Env-driven CORS (single-origin prod serves the SPA same-origin so this is unused there;
+# the localhost default keeps dev working). Never ship the hardcoded localhost list.
+CORS_ORIGINS = [o.strip() for o in os.environ.get("NEBULA_CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if o.strip()]
+# When set (in the container), FastAPI also serves the built React app from this dir.
+STATIC_DIR = os.environ.get("NEBULA_STATIC_DIR")
 
 PROVIDER_HEALTH_URLS = {
     ProviderId.uniprot: "https://rest.uniprot.org/uniprotkb/search?query=reviewed:true&size=1&fields=accession&format=json",
@@ -47,7 +52,7 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -283,3 +288,36 @@ async def get_structure(candidate_id: str) -> StructureResponse:
             mean_plddt=af.global_metric_value, inline_cif=None,
         )
     raise HTTPException(status_code=404, detail=f"no structure available for candidate {candidate_id}")
+
+
+# --- static SPA (single-container prod) --------------------------------------
+# When NEBULA_STATIC_DIR points at the built React app, serve it from this same
+# service: hashed assets via StaticFiles, and an index.html fallback for every
+# non-/api path so client deep-links work. Registered LAST so it never shadows /api.
+# Absent in dev (Vite serves the SPA + proxies /api here), so this is a no-op there.
+def _mount_spa() -> None:
+    from pathlib import Path
+
+    from fastapi.responses import FileResponse
+    from fastapi.staticfiles import StaticFiles
+
+    if not STATIC_DIR:
+        return
+    root = Path(STATIC_DIR)
+    if not root.is_dir():
+        return
+    assets = root / "assets"
+    if assets.is_dir():
+        app.mount("/assets", StaticFiles(directory=str(assets)), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def spa(full_path: str) -> FileResponse:  # noqa: RUF029
+        if full_path.startswith("api/") or full_path in ("openapi.json", "docs", "redoc"):
+            raise HTTPException(status_code=404, detail="not found")
+        candidate = root / full_path
+        if full_path and candidate.is_file():
+            return FileResponse(str(candidate))
+        return FileResponse(str(root / "index.html"))
+
+
+_mount_spa()

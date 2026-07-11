@@ -30,3 +30,11 @@ asyncio_mode = "auto"
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
+
+# Install only the app package (exclude tests) so `pip install ./backend` works in the
+# container. The committed QM cache + provider fixtures ship as package data.
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.setuptools.package-data]
+"app" = ["physics/qm_cache/*.json", "providers/fixtures/**/*"]

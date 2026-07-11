@@ -1,21 +1,14 @@
-# Nebula Discover — local orchestration (Phase 2).
-# The discovery API is the heavy service; the UI is a static Vite build or dev server.
-# Physics (PySCF) and retrieval (torch/ESM) run as ISOLATED subprocesses inside the
-# API container to avoid the macOS/Linux OpenMP conflict (see artifacts/claude recon).
+# Nebula Discover — local single-container run (mirrors the Azure Container Apps image).
+# One service: FastAPI serves the built React SPA (same origin) AND the /api routes.
+#   docker compose up --build   →   http://localhost:8000
 services:
-  discovery-api:
+  nebula:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
-    image: nebula-discovery-api:phase2
+    image: nebula-discover:latest
     ports:
       - "8000:8000"
     environment:
-      - NEBULA_OFFLINE=${NEBULA_OFFLINE:-0}
-    volumes:
-      - ./backend:/app
-      - discovery-artifacts:/app/artifacts
-    command: uvicorn app.api.main:app --host 0.0.0.0 --port 8000
-
-volumes:
-  discovery-artifacts:
+      - NEBULA_OFFLINE=${NEBULA_OFFLINE:-0}      # 0 = live public APIs (product default)
+      - NEBULA_CORS_ORIGINS=${NEBULA_CORS_ORIGINS:-}

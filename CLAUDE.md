@@ -109,6 +109,10 @@ npm run gen:contracts   # regenerate src/contracts/api.ts from the FastAPI OpenA
 (cd backend && python3 -m pytest)   # backend: providers, endpoints, physics, discovery
 python3 scripts/index/build_offline_index.py   # refresh the CI test fixtures (needs network)
 python3 scripts/physics/radical_pair_mary.py   # OPTIONAL: regenerate the reference artifact
+# --- deploy (single container: FastAPI serves the built SPA + /api) ---
+docker compose up --build   # → http://localhost:8000 (NEBULA_STATIC_DIR baked in)
+# Azure Container Apps via .github/workflows/deploy.yml (OIDC → ACR → ACA); the default
+# image omits pyscf (committed QM cache serves the demo) — Dockerfile.physics adds live QM.
 ```
 
 ## Verification requirements (do not weaken to get a pass)
