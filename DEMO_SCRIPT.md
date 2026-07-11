@@ -19,8 +19,9 @@ candidate-specific quantum-chemistry diagnostic; start the run.
 > public accessions, and admits a protein to a route only when its family and cofactor
 > annotations support that route."
 
-Let the run counter advance from real state-machine events. Mention that the offline
-demo replays versioned public fixtures so the judging run is reproducible.
+Let the run counter advance from real state-machine events. Note that a deterministic
+replay of versioned public fixtures is available if a reproducible, network-independent
+run is needed.
 
 ## 0:50-1:20 | Biology constrains the physics
 

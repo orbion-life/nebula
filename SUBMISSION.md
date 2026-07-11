@@ -49,7 +49,7 @@ See [`CLAUDE_TRANSPARENCY.md`](./CLAUDE_TRANSPARENCY.md).
 
 - Script: [`DEMO_SCRIPT.md`](./DEMO_SCRIPT.md)
 - Browser flow: Mission Bench -> live run -> seven-scene result narrative -> Markdown handoff
-- Offline judging mode: versioned public fixtures and cached public-structure cluster result
+- Online-first: live public-protein and structure retrieval; a deterministic fixture replay (versioned public fixtures and a cached public-structure cluster result) is available for reproducible, network-independent judging
 - Seed: `1337`
 
 ## Verify before submission

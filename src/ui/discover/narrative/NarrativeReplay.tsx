@@ -170,6 +170,7 @@ export function NarrativeReplay({ run }: Props) {
 
       <Chapter n="05" kicker="compute">
         <h2 className="narr-h">A computed reference. Assumptions exposed.</h2>
+        <p className="narr-sub">Only the flavin radical pair route computes candidate specific quantum chemistry in this build. Every other route is a frontier hypothesis carried on public annotation and measurement value alone, with no candidate specific compute.</p>
         {physicsDossier && isSpinDynamics(physicsDossier) ? (
           <>
             <p className="narr-sub">
@@ -180,7 +181,7 @@ export function NarrativeReplay({ run }: Props) {
             <div className="narr-trace"><Traces spin={spin} candidateSpecific={cs} candidateLabel={physicsAcc ?? physicsCandidate?.title} /></div>
           </>
         ) : (
-          <p className="narr-sub">This route has no candidate specific spin dynamics model in the current build. It remains an experimental hypothesis, not a computed spin result.</p>
+          <p className="narr-sub">This route has no candidate specific spin dynamics model in the current build. It remains an experimental hypothesis, not a computed spin result. Only the flavin radical pair route computes candidate specific quantum chemistry here; this route has none.</p>
         )}
       </Chapter>
 
@@ -212,6 +213,13 @@ export function NarrativeReplay({ run }: Props) {
           <>
             <h2 className="narr-h">Best supported next measurement under these assumptions: {acc}.</h2>
             <p className="narr-plan-line"><strong>Route compatible measurement scenario:</strong> {(score?.suggested_instrument_id ?? frontier?.discriminating_experiment?.instrument_id ?? run.instrument_id ?? "a route compatible instrument").replace(/_/g, " ")}</p>
+            {(candidate.readout_modes ?? []).length > 0 && (
+              <div className="narr-chips narr-readouts">
+                <span className="narr-readouts-lbl">Candidate readouts to test:</span>
+                {(candidate.readout_modes ?? []).map((m) => <span key={m} className="chip">{m.replace(/_/g, " ")}</span>)}
+                <small className="narr-readouts-note">Separate readouts this scaffold family can support, not a demonstrated joint measurement and not a claim that any of them resolves the effect.</small>
+              </div>
+            )}
             <p className="narr-plan-line"><strong>{claimLabel(candidate.claim_ceiling)}</strong></p>
             {candidate.why_it_might_work?.[0] && <p className="narr-plan-line"><strong>Why it remains:</strong> {candidate.why_it_might_work[0]}</p>}
             <p className="narr-plan-line narr-fals">

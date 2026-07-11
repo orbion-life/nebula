@@ -232,6 +232,7 @@ export function MissionBench({
                 </button>
               ))}
             </div>
+            <span className="mb-field-note">Material or mechanical state, such as swelling or stiffness, is deliberately not offered here. It is a non protein readout with no protein retrieval route, so it never enters this bench as a protein sensing target.</span>
           </div>
 
           <div className="mb-block">

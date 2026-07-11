@@ -128,6 +128,7 @@ export function ObjectivePanel({ onRun, offline, disabled }: Props) {
                 <option value="">choose a supported sensing target</option>
                 {SUPPORTED_SENSES.map((sense) => <option key={sense} value={sense}>{sense.replace("-", " ")}</option>)}
               </select>
+              <span className="obj-hint">Material or mechanical state, such as swelling or stiffness, is not a supported sensing target. It is a non protein readout with no protein retrieval route and is intentionally excluded.</span>
             </Field>
             <Field label="oxygen · experiment handoff only">
               <select value={spec.oxygen_condition} onChange={(e) => patch({ oxygen_condition: e.target.value as ObjectiveSpec["oxygen_condition"] })}>
@@ -140,7 +141,7 @@ export function ObjectivePanel({ onRun, offline, disabled }: Props) {
                 <Field label="temperature °C (min,max)">
                   <RangeInput value={spec.temperature_range_C} onChange={(v) => patch({ temperature_range_C: v })} />
                 </Field>
-                <Field label="seed accessions (offline demo / expert seed)">
+                <Field label="seed accessions (expert seed)">
                   <input
                     value={(spec.seed_accessions ?? []).join(", ")}
                     placeholder="e.g. Q43125, Q8LPD9"
@@ -170,7 +171,7 @@ export function ObjectivePanel({ onRun, offline, disabled }: Props) {
 
           {offline && (spec.seed_accessions ?? []).length > 0 && mode === "novice" && (
             <div className="obj-seeds">
-              offline mode. seeded with real fixtured accessions:{" "}
+              seeded with real fixtured accessions for a deterministic run:{" "}
               {(spec.seed_accessions ?? []).map((a) => <span className="chip" key={a}>{a}</span>)}
             </div>
           )}

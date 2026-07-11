@@ -59,7 +59,9 @@ export function dossierMarkdown(candidate: CandidateRecord, dossier: CandidateDo
   L.push(`**Status:** ${candidate.status} — unvalidated public-protein candidate hypothesis. Computation is not validation.`);
   if (acc) L.push(`**UniProt:** [${acc}](https://www.uniprot.org/uniprotkb/${acc})`);
   L.push(`**Route:** ${routeLabel(candidate.route_class)} · **Claim ${claimLabel(candidate.claim_ceiling)}**`);
-  L.push(`**Run:** ${run.run_id} · seed ${run.seed} · ${run.offline ? "offline fixtures" : "live retrieval"} · fingerprint ${run.input_fingerprint}`, "");
+  if (candidate.readout_modes?.length)
+    L.push(`**Candidate readouts to test:** ${candidate.readout_modes.map((m) => m.replace(/_/g, " ")).join(", ")} — separate readouts the scaffold family can support, not measured together here and not a detectability claim.`);
+  L.push(`**Run:** ${run.run_id} · seed ${run.seed} · ${run.offline ? "public fixtures (deterministic replay)" : "live retrieval"} · fingerprint ${run.input_fingerprint}`, "");
   const spin = computedSpin(dossier);
   if (spin != null)
     L.push(
@@ -68,6 +70,10 @@ export function dossierMarkdown(candidate: CandidateRecord, dossier: CandidateDo
         `isolated neutral-doublet cluster UHF value, HIGH uncertainty, NOT a performance or spin-response prediction; it is also not a probability and requires experimental measurement.`,
       "",
     );
+  else if (isSpinDynamics(dossier))
+    L.push(`**Candidate-specific QM:** not completed for this flavin radical pair candidate; a generic isoalloxazine template applies and no candidate specific spin value was produced. Computation is not validation.`, "");
+  else
+    L.push(`**No candidate-specific quantum chemistry:** ${routeLabel(candidate.route_class)} is a frontier hypothesis. Only the flavin radical pair route computes candidate specific quantum chemistry in this build; this route carries no candidate specific compute and is scored on public annotation and measurement value alone.`, "");
   if (candidate.why_it_might_work?.length) { L.push("## Why it might work"); candidate.why_it_might_work.forEach((x) => L.push(`- ${safe(x)}`)); L.push(""); }
   if (candidate.why_it_might_fail?.length) { L.push("## Why it might fail"); candidate.why_it_might_fail.forEach((x) => L.push(`- ${safe(x)}`)); L.push(""); }
   if (candidate.required_controls?.length) { L.push("## Controls"); candidate.required_controls.forEach((x) => L.push(`- ${safe(x)}`)); L.push(""); }

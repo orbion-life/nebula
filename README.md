@@ -61,9 +61,10 @@ See [`IP_BOUNDARY.md`](./IP_BOUNDARY.md) and
 npm ci
 python3 -m pip install -e './backend[dev,physics]'
 
-# terminal 1: deterministic public fixtures
+# terminal 1: live public-API retrieval (the product path)
 cd backend
-NEBULA_OFFLINE=1 python3 -m uvicorn app.api.main:app --host 127.0.0.1 --port 8000
+python3 -m uvicorn app.api.main:app --host 127.0.0.1 --port 8000
+# for a deterministic, no-network run (CI / reproducible judging), prefix the same command with NEBULA_OFFLINE=1
 
 # terminal 2
 npm run dev

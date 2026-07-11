@@ -77,7 +77,7 @@ export function UniverseHero({ run, selectedId, onSelect, settled = true, fieldP
           <>
             <span className="ul-ev">● evidence</span>
             <span className="ul-fr">● frontier</span>
-            <span className="ul-qm">◎ candidate specific QM</span>
+            <span className="ul-qm">◎ candidate specific QM · flavin radical pair only</span>
           </>
         ) : (
           <span className="ul-searching">searching the protein universe, {nodes.length} route hypotheses retrieved</span>

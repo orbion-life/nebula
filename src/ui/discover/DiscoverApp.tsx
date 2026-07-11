@@ -177,7 +177,7 @@ export function DiscoverApp() {
           {health ? (
             <span className={`hz ${health.offline ? "offline" : health.status === "ok" ? "live" : "down"}`}>
               {health.offline
-                ? "offline · public fixtures"
+                ? "public fixtures · deterministic replay"
                 : health.status === "ok"
                   ? "live · public APIs"
                   : `${health.status} · public APIs`}
