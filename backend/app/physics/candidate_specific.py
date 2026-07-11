@@ -131,7 +131,7 @@ def run_candidate_qm(
             [sys.executable, str(_WORKER)],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,  # drop verbose child stderr so a full pipe buffer cannot stall the poll loop
             text=True,
             env=env,
         )

@@ -16,7 +16,7 @@ import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { PALETTE } from "../render/palette";
 import { QuantumField } from "../render/QuantumField";
-import { Effects } from "../render/effects";
+import { EffectsLazy } from "../render/EffectsLazy";
 
 export interface UNode {
   id: string;
@@ -144,7 +144,7 @@ function Scene({ nodes, selectedId, onSelect, reducedMotion, fieldProgress = 0.4
       {/* faint lane axis references */}
       <gridHelper args={[16, 16, PALETTE.line2, PALETTE.line]} position={[0, -4.5, 0]} rotation={[0, 0, 0]} />
       <OrbitControls enablePan={false} enableZoom autoRotate={!reducedMotion} autoRotateSpeed={0.5} minDistance={6} maxDistance={20} />
-      <Effects enabled={effects} />
+      <EffectsLazy enabled={effects} />
     </>
   );
 }

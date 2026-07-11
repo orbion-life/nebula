@@ -158,7 +158,9 @@ export function streamRun(
       }
     };
     es.addEventListener("end", () => {
-      void poll();
+      // SSE finished; the single poll loop below already delivers the terminal state.
+      es?.close();
+      es = null;
     });
     es.onerror = () => {
       // SSE unavailable/interrupted — degrade to polling rather than stalling.

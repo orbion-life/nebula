@@ -16,7 +16,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Sparkles } from "@react-three/drei";
 import * as THREE from "three";
-import { Effects } from "../render/effects";
+import { EffectsLazy } from "../render/EffectsLazy";
 import { PALETTE } from "../render/palette";
 
 function prefersReducedMotion(): boolean {
@@ -147,7 +147,7 @@ export function WorldCanvas() {
           opacity={0.5}
           color={PALETTE.goldBright}
         />
-        <Effects enabled={!reduced && !small} />
+        <EffectsLazy enabled={!reduced && !small} />
       </Canvas>
     </div>
   );

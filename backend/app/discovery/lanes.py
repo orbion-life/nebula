@@ -50,17 +50,24 @@ def _split_controls(candidate: CandidateRecord) -> tuple[list[str], list[str]]:
     return pos, neg
 
 
-def _experiment(candidate: CandidateRecord, observable: ReadoutMode, instrument_id: str | None) -> DiscriminatingExperiment:
+def _experiment(candidate: CandidateRecord, observable: ReadoutMode, instrument_id: str | None, sensed: str = "") -> DiscriminatingExperiment:
     rc = candidate.route_class
     pos, neg = _split_controls(candidate)
     is_rp = rc in (RouteClass.lov_flavin_radical_pair, RouteClass.cryptochrome_fad_radical_pair)
-    if is_rp:
-        what = "ΔF/F versus static magnetic field, with an RF sweep where available"
-        expected = "a reproducible field-dependent optical change distinct from photobleaching and oxygen effects"
-        null = "no field-dependent change beyond the matched nuisance controls"
-        kill = "if field and RF differences stay within the matched photobleaching and oxygen controls, reject this spin linked route for the scaffold"
-        information = "tests whether the proposed radical-pair route yields a control-surviving field-dependent optical signal"
-        cost = "field-capable optical bench with interleaved controls"
+    if is_rp and sensed == "radio-frequency field":
+        what = "ΔF/F versus RF frequency at a fixed weak static field (RYDMR)"
+        expected = "a reproducible RF frequency dependent optical change distinct from photobleaching and oxygen effects"
+        null = "no RF frequency dependent change beyond the matched nuisance controls"
+        kill = "if the RF frequency response stays within the matched photobleaching and oxygen controls, reject this spin linked route for the scaffold"
+        information = "tests whether the proposed radical pair route yields a control surviving RF frequency dependent optical signal"
+        cost = "RF capable optical bench with interleaved controls"
+    elif is_rp:
+        what = "ΔF/F versus static magnetic field strength (MFE)"
+        expected = "a reproducible static field dependent optical change distinct from photobleaching and oxygen effects"
+        null = "no static field dependent change beyond the matched nuisance controls"
+        kill = "if the static field response stays within the matched photobleaching and oxygen controls, reject this spin linked route for the scaffold"
+        information = "tests whether the proposed radical pair route yields a control surviving static field dependent optical signal"
+        cost = "field capable optical bench with interleaved controls"
     elif rc == RouteClass.triplet_fp:
         what = "fluorescence or lifetime contrast versus RF frequency and static field"
         expected = "a reproducible resonance-like feature that disappears in the RF-off or chromophore-dark control"
@@ -102,6 +109,16 @@ def _experiment(candidate: CandidateRecord, observable: ReadoutMode, instrument_
     )
 
 
+def _instrument_for(sensed: str, inp: ScoreInputs) -> str:
+    """Sensed-target-aware suggested instrument: a static-field MFE reads on a field fluorimeter,
+    an RF sweep (RYDMR) needs an RF-capable confocal; otherwise pick the best-measurability rig."""
+    if sensed == "radio-frequency field":
+        return "odmr_confocal"
+    if sensed == "magnetic field":
+        return "benchtop_field_fluorimeter"
+    return best_instrument(inp, INSTRUMENTS)["id"]
+
+
 def build_discovery(
     candidates: list[CandidateRecord],
     dossiers: list[CandidateDossier],
@@ -112,6 +129,7 @@ def build_discovery(
     elig_by_id = {d.candidate.candidate_id: d.physics_eligibility for d in dossiers}
     desired = set(objective.desired_modalities)
     instrument_id = objective.instrument_id
+    sensed = (objective.sensed_quantity_or_state or "").strip().lower()
 
     scored: list[tuple[ScoreInputs, DiscoveryScore, DiscoveryLane | None]] = []
     primitive_of: dict[str, PrimitiveKind] = {}
@@ -124,8 +142,8 @@ def build_discovery(
         reason, novelty = assign_exploration(cand.route_class, cap, graph)
         inp = ScoreInputs(candidate=cand, capability=cap, graph=graph, eligibility=elig, reason=reason, novelty=novelty)
         score, lane = score_one(inp, instrument, desired)
-        # measurement as OUTPUT: attach the best-matching instrument for THIS candidate (both lanes)
-        score = score.model_copy(update={"suggested_instrument_id": best_instrument(inp, INSTRUMENTS)["id"]})
+        # measurement as OUTPUT: attach a sensed-target-aware instrument for THIS candidate (both lanes)
+        score = score.model_copy(update={"suggested_instrument_id": _instrument_for(sensed, inp)})
         primitive_of[cand.candidate_id] = _SPIN_PRIMITIVE.get(cand.route_class, PrimitiveKind.metal_open_shell if cap.has_metal_open_shell else PrimitiveKind.spin_evolution)
         scored.append((inp, score, lane))
 
@@ -147,8 +165,8 @@ def build_discovery(
         cand = cand_by_id[s.candidate_id]
         # measurement is an OUTPUT the app proposes: pick the best-matching instrument from the
         # registry for THIS candidate (an explicit expert override still wins if one was set).
-        suggested_instrument = instrument_id or best_instrument(inp_by_id[s.candidate_id], INSTRUMENTS)["id"]
-        experiment = _experiment(cand, graph_obs.get(s.candidate_id, ReadoutMode.fluorescence), suggested_instrument)
+        suggested_instrument = instrument_id or _instrument_for(sensed, inp_by_id[s.candidate_id])
+        experiment = _experiment(cand, graph_obs.get(s.candidate_id, ReadoutMode.fluorescence), suggested_instrument, sensed)
         frontier_experiments.append(FrontierExperiment(
             candidate_id=s.candidate_id,
             accession=cand.uniprot.primary_accession if cand.uniprot else s.candidate_id,

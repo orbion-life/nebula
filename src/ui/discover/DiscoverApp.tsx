@@ -90,7 +90,7 @@ export function DiscoverApp() {
       if (["completed", "failed", "cancelled"].includes(first.status)) {
         if (first.status === "completed") {
           const isFreshRun = created.status === "queued";
-          const wait = isFreshRun ? Math.max(0, 700 - (performance.now() - startedAt)) : 0;
+          const wait = isFreshRun ? Math.max(0, 1500 - (performance.now() - startedAt)) : 0;
           window.setTimeout(() => {
             if (generation === requestGeneration.current) setPhase("workspace");
           }, wait);
@@ -108,7 +108,11 @@ export function DiscoverApp() {
         onDone: (s) => {
           if (generation !== requestGeneration.current) return;
           applyState(s);
-          if (s.status === "completed") setPhase("workspace");
+          if (s.status === "completed") {
+            // minimum dwell so the Act II search beat is visible even when a run finishes fast
+            const wait = Math.max(0, 1500 - (performance.now() - startedAt));
+            window.setTimeout(() => { if (generation === requestGeneration.current) setPhase("workspace"); }, wait);
+          }
         },
         onError: (err) => generation === requestGeneration.current && setError(err.message),
       });
@@ -184,7 +188,7 @@ export function DiscoverApp() {
         </div>
       </header>
 
-      <main id="main-content">
+      <main id="main-content" tabIndex={-1}>
       <ExperienceBoundary>
       <CinematicShell
         phase={phase}
