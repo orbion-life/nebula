@@ -31,7 +31,28 @@ const PRODUCTS: Product[] = [
   { id: "hydrogel", label: "gel", sub: "hydrogel", desc: "a hydrogel", shape: "gel" },
 ];
 
-const SENSES = ["a weak magnetic field", "oxygen", "redox state", "light", "temperature", "pH"];
+interface SenseTarget {
+  value: "magnetic field" | "radio-frequency field" | "redox potential" | "light history";
+  label: string;
+}
+
+export function readoutsForSense(value: SenseTarget["value"]): NonNullable<ObjectiveSpec["desired_modalities"]> {
+  switch (value) {
+    case "magnetic field":
+    case "radio-frequency field":
+      return ["RF_magnetic", "fluorescence"];
+    case "redox potential":
+      return ["redox_electrochemical", "fluorescence"];
+    case "light history":
+      return ["fluorescence", "lifetime"];
+  }
+}
+const SENSES: SenseTarget[] = [
+  { value: "magnetic field", label: "weak magnetic field" },
+  { value: "radio-frequency field", label: "radio frequency field" },
+  { value: "redox potential", label: "redox potential" },
+  { value: "light history", label: "light history" },
+];
 
 const TEMPS: { id: string; label: string; range: [number, number] }[] = [
   { id: "body", label: "body warm", range: [33, 39] },
@@ -47,18 +68,18 @@ const OXY: { id: Oxy; label: string }[] = [
 interface Blueprint {
   name: string;
   product: Mat;
-  sense: string;
+  sense: SenseTarget["value"];
   temp: string;
   oxy: Oxy;
   locked: boolean;
 }
 const BLUEPRINTS: Blueprint[] = [
-  { name: "wearable field patch", product: "wearable", sense: "a weak magnetic field", temp: "body", oxy: "aerobic", locked: true },
-  { name: "hydrogel redox film", product: "hydrogel", sense: "redox state", temp: "room", oxy: "controlled", locked: true },
-  { name: "environmental oxygen probe", product: "chip", sense: "oxygen", temp: "cold", oxy: "aerobic", locked: false },
+  { name: "wearable field patch", product: "wearable", sense: "magnetic field", temp: "body", oxy: "aerobic", locked: true },
+  { name: "hydrogel redox film", product: "hydrogel", sense: "redox potential", temp: "room", oxy: "controlled", locked: true },
+  { name: "light history reporter", product: "cell", sense: "light history", temp: "body", oxy: "aerobic", locked: false },
 ];
 
-const OFFLINE_TEST_SEEDS = ["Q8LPD9", "Q43125"];
+const OFFLINE_TEST_SEEDS = ["Q8LPD9", "Q43125", "P28861"];
 
 /** A cheap, elegant platinum silhouette of the chosen product form. */
 function ProductGlyph({ shape }: { shape: Product["shape"] }) {
@@ -101,7 +122,7 @@ export function MissionBench({
   onTypeInstead: () => void;
 }) {
   const [product, setProduct] = useState<Mat>("wearable");
-  const [sense, setSense] = useState<string>("a weak magnetic field");
+  const [sense, setSense] = useState<SenseTarget["value"]>("magnetic field");
   const [temp, setTemp] = useState<string>("body");
   const [oxy, setOxy] = useState<Oxy>("aerobic");
   const [locked, setLocked] = useState<boolean>(true);
@@ -111,11 +132,12 @@ export function MissionBench({
   const productDesc = PRODUCTS.find((p) => p.id === product)?.desc ?? "a device";
   const tempLabel = TEMPS.find((t) => t.id === temp)?.label ?? "room";
   const oxyLabel = OXY.find((o) => o.id === oxy)?.label ?? "oxygen ok";
+  const senseLabel = SENSES.find((s) => s.value === sense)?.label ?? sense;
 
   const sentence = useMemo(
     () =>
-      `${productDesc} that senses ${sense}, holding up ${tempLabel === "room" ? "at room temperature" : tempLabel === "cold" ? "in the cold" : "at body warmth"}, ${oxyLabel === "no oxygen" ? "without oxygen" : oxyLabel === "controlled" ? "under controlled oxygen" : "with oxygen around"}, ${locked ? "locked in place" : "free floating"}.`,
-    [productDesc, sense, tempLabel, oxyLabel, locked],
+      `${productDesc} that senses ${senseLabel}, holding up ${tempLabel === "room" ? "at room temperature" : tempLabel === "cold" ? "in the cold" : "at body warmth"}, ${oxyLabel === "no oxygen" ? "without oxygen" : oxyLabel === "controlled" ? "under controlled oxygen" : "with oxygen around"}, ${locked ? "locked in place" : "free floating"}.`,
+    [productDesc, senseLabel, tempLabel, oxyLabel, locked],
   );
 
   const applyBlueprint = (b: Blueprint) => {
@@ -139,6 +161,10 @@ export function MissionBench({
       spec.oxygen_condition = oxy;
       spec.temperature_range_C = range;
       spec.immobilization_or_integration = locked ? "immobilized, locked in place" : "free floating";
+      spec.desired_modalities = readoutsForSense(sense);
+      spec.acceptable_readouts = [...spec.desired_modalities];
+      spec.objective_support = "supported";
+      spec.objective_support_note = "The sensing target drives mechanism route retrieval in this build.";
       if (offline && (!spec.seed_accessions || spec.seed_accessions.length === 0)) {
         spec.seed_accessions = [...OFFLINE_TEST_SEEDS];
       }
@@ -164,11 +190,12 @@ export function MissionBench({
 
       <div className="mb-grid">
         <section className="mb-build">
-          <span className="mb-eyebrow">the thing you are building</span>
+          <span className="mb-eyebrow">the thing you are building · experiment handoff</span>
+          <span className="mb-field-note">Product form records deployment context; it does not change candidate ranking in this build.</span>
           <div className="mb-preview">
             <ProductGlyph shape={PRODUCTS.find((p) => p.id === product)?.shape ?? "patch"} />
           </div>
-          <div className="mb-forms">
+          <div className="mb-forms" role="group" aria-label="product form for experiment handoff">
             {PRODUCTS.map((p) => (
               <button
                 key={p.id}
@@ -192,38 +219,44 @@ export function MissionBench({
 
         <section className="mb-job">
           <div className="mb-block">
-            <span className="mb-eyebrow">sense · what should it notice</span>
-            <div className="mb-chips">
+            <span className="mb-eyebrow">sense · drives the mechanism search</span>
+            <div className="mb-chips" role="group" aria-label="sensing target that drives the search">
               {SENSES.map((s) => (
-                <button key={s} className={`mb-chip ${sense === s ? "on" : ""}`} onClick={() => setSense(s)}>
-                  {s.replace(/^a /, "")}
+                <button
+                  key={s.value}
+                  className={`mb-chip ${sense === s.value ? "on" : ""}`}
+                  onClick={() => setSense(s.value)}
+                  aria-pressed={sense === s.value}
+                >
+                  {s.label}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="mb-block">
-            <span className="mb-eyebrow">survive · where must it work</span>
+            <span className="mb-eyebrow">survive · recorded for the experiment handoff</span>
+            <span className="mb-field-note">These conditions do not change candidate ranking in this build.</span>
             <div className="mb-gauges">
-              <div className="mb-gauge-row">
+              <div className="mb-gauge-row" role="group" aria-label="temperature context for handoff">
                 {TEMPS.map((t) => (
-                  <button key={t.id} className={`mb-chip ${temp === t.id ? "on" : ""}`} onClick={() => setTemp(t.id)}>
+                  <button key={t.id} className={`mb-chip ${temp === t.id ? "on" : ""}`} onClick={() => setTemp(t.id)} aria-pressed={temp === t.id}>
                     {t.label}
                   </button>
                 ))}
               </div>
-              <div className="mb-gauge-row">
+              <div className="mb-gauge-row" role="group" aria-label="oxygen context for handoff">
                 {OXY.map((o) => (
-                  <button key={o.id} className={`mb-chip ${oxy === o.id ? "on" : ""}`} onClick={() => setOxy(o.id)}>
+                  <button key={o.id} className={`mb-chip ${oxy === o.id ? "on" : ""}`} onClick={() => setOxy(o.id)} aria-pressed={oxy === o.id}>
                     {o.label}
                   </button>
                 ))}
               </div>
-              <div className="mb-gauge-row">
-                <button className={`mb-chip ${locked ? "on" : ""}`} onClick={() => setLocked(true)}>
+              <div className="mb-gauge-row" role="group" aria-label="immobilization context for handoff">
+                <button className={`mb-chip ${locked ? "on" : ""}`} onClick={() => setLocked(true)} aria-pressed={locked}>
                   locked in place
                 </button>
-                <button className={`mb-chip ${!locked ? "on" : ""}`} onClick={() => setLocked(false)}>
+                <button className={`mb-chip ${!locked ? "on" : ""}`} onClick={() => setLocked(false)} aria-pressed={!locked}>
                   free floating
                 </button>
               </div>

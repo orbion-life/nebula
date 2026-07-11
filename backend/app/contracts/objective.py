@@ -17,10 +17,10 @@ OBJECTIVE_SCHEMA_VERSION = "2.0.0"
 
 class RawObjective(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    objective_text: str = Field(min_length=1, max_length=5000)
+    objective_text: str = Field(min_length=10, max_length=5000)
     user_mode: Literal["novice", "expert"] = "novice"
-    instrument_id: str | None = None
-    seed: int = 1337
+    instrument_id: str | None = Field(default=None, max_length=100)
+    seed: int = Field(default=1337, ge=0, le=2_147_483_647)
 
 
 class FieldProvenance(BaseModel):
@@ -38,7 +38,7 @@ class ObjectiveSpec(BaseModel):
 
     schema_version: str = OBJECTIVE_SCHEMA_VERSION
     objective_id: str
-    objective_text: str
+    objective_text: str = Field(min_length=10, max_length=5000)
     user_mode: Literal["novice", "expert"] = "novice"
 
     # what to SENSE (was entirely absent before) vs how to READ it
@@ -78,8 +78,8 @@ class ObjectiveSpec(BaseModel):
     soft_preferences: list[str] = Field(default_factory=list)
 
     # retrieval seeds (mechanism-route query planning)
-    seed_query: str | None = Field(default=None, description="explicit UniProt Lucene query for expert mode")
-    seed_accessions: list[str] = Field(default_factory=list)
+    seed_query: str | None = Field(default=None, max_length=500, description="explicit UniProt Lucene query for expert mode")
+    seed_accessions: list[str] = Field(default_factory=list, max_length=25)
     target_scaffold_families: list[ScaffoldFamily] = Field(default_factory=list)
     include_unreviewed: bool = False
 
@@ -92,6 +92,10 @@ class ObjectiveSpec(BaseModel):
     missing_information: list[str] = Field(default_factory=list)
     forbidden_assumptions: list[str] = Field(default_factory=list)
     field_provenance: list[FieldProvenance] = Field(default_factory=list)
+    objective_support: Literal["supported", "unsupported", "needs_clarification"] = "needs_clarification"
+    objective_support_note: str = "State the physical quantity the protein should sense."
+    decision_active_fields: list[str] = Field(default_factory=list)
+    handoff_only_fields: list[str] = Field(default_factory=list)
     confidential_sequence_provided: Literal[False] = False
 
-    seed: int = 1337
+    seed: int = Field(default=1337, ge=0, le=2_147_483_647)

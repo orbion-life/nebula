@@ -4,6 +4,7 @@
  * gap where only the retired src/core export was guarded.
  */
 import type { CandidateDossier, CandidateRecord, RunState } from "../../api/client";
+import { auditClaim, exportAffirmativeViolations } from "../../core/claimFirewall";
 
 export const SPIN_PARAM = "candidate_isoalloxazine_max_spin_density";
 
@@ -17,6 +18,11 @@ export const CLAIM_LABELS: Record<string, string> = {
 };
 export function claimLabel(c: string | undefined): string {
   return CLAIM_LABELS[c ?? ""] ?? `ceiling: ${c ?? "unknown"}`;
+}
+
+export function routeLabel(route: string): string {
+  if (route === "RFP_flavin_photochemical") return "flavin photochemical light history";
+  return route.replace(/_/g, " ");
 }
 
 export type SpinParam = { value: number; range: [number, number] | null; uncertainty: string | null };
@@ -48,22 +54,27 @@ export function isSpinDynamics(d: CandidateDossier | undefined): boolean {
 export function dossierMarkdown(candidate: CandidateRecord, dossier: CandidateDossier | undefined, run: RunState): string {
   const acc = candidate.uniprot?.primary_accession;
   const L: string[] = [];
-  L.push(`# ${candidate.title}`, "");
+  const safe = (text: string) => auditClaim(text).rewrite;
+  L.push(`# ${safe(candidate.title)}`, "");
   L.push(`**Status:** ${candidate.status} — unvalidated public-protein candidate hypothesis. Computation is not validation.`);
   if (acc) L.push(`**UniProt:** [${acc}](https://www.uniprot.org/uniprotkb/${acc})`);
-  L.push(`**Route:** ${candidate.route_class} · **Claim ${claimLabel(candidate.claim_ceiling)}**`);
+  L.push(`**Route:** ${routeLabel(candidate.route_class)} · **Claim ${claimLabel(candidate.claim_ceiling)}**`);
   L.push(`**Run:** ${run.run_id} · seed ${run.seed} · ${run.offline ? "offline fixtures" : "live retrieval"} · fingerprint ${run.input_fingerprint}`, "");
   const spin = computedSpin(dossier);
   if (spin != null)
     L.push(
-      `**Candidate-specific QM:** max Mulliken spin ${spin.toFixed(3)} ` +
-        `(${isCandidateSpecific(dossier) ? "on this protein's real coordinates" : "generic template"}) — ` +
-        `computed UHF value, HIGH uncertainty, NOT a performance or spin-response prediction; requires experimental measurement.`,
+      `**Candidate-specific QM:** max basis-dependent Mulliken spin population ${spin.toFixed(3)} ` +
+        `(${isCandidateSpecific(dossier) ? "on candidate-associated structure coordinates" : "generic template"}) — ` +
+        `isolated neutral-doublet cluster UHF value, HIGH uncertainty, NOT a performance or spin-response prediction; it is also not a probability and requires experimental measurement.`,
       "",
     );
-  if (candidate.why_it_might_work?.length) { L.push("## Why it might work"); candidate.why_it_might_work.forEach((x) => L.push(`- ${x}`)); L.push(""); }
-  if (candidate.why_it_might_fail?.length) { L.push("## Why it might fail"); candidate.why_it_might_fail.forEach((x) => L.push(`- ${x}`)); L.push(""); }
-  if (candidate.required_controls?.length) { L.push("## Controls"); candidate.required_controls.forEach((x) => L.push(`- ${x}`)); L.push(""); }
-  if (dossier?.disclaimers?.length) { L.push("## Disclaimers"); dossier.disclaimers.forEach((x) => L.push(`- ${x}`)); }
-  return L.join("\n");
+  if (candidate.why_it_might_work?.length) { L.push("## Why it might work"); candidate.why_it_might_work.forEach((x) => L.push(`- ${safe(x)}`)); L.push(""); }
+  if (candidate.why_it_might_fail?.length) { L.push("## Why it might fail"); candidate.why_it_might_fail.forEach((x) => L.push(`- ${safe(x)}`)); L.push(""); }
+  if (candidate.required_controls?.length) { L.push("## Controls"); candidate.required_controls.forEach((x) => L.push(`- ${safe(x)}`)); L.push(""); }
+  if (dossier?.disclaimers?.length) { L.push("## Disclaimers"); dossier.disclaimers.forEach((x) => L.push(`- ${safe(x)}`)); }
+  const output = L.join("\n");
+  if (exportAffirmativeViolations(output).length > 0) {
+    throw new Error("The claim boundary blocked this handoff export.");
+  }
+  return output;
 }

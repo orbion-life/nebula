@@ -31,7 +31,8 @@ interface Props {
 // product feature. When the backend is in its deterministic offline test mode
 // (NEBULA_OFFLINE=1, no network), these committed-fixture accessions seed the run so the
 // E2E suite is deterministic. In production (online) this never fires.
-const OFFLINE_TEST_SEEDS = ["Q8LPD9", "Q43125"];
+const OFFLINE_TEST_SEEDS = ["Q8LPD9", "Q43125", "P28861"];
+const SUPPORTED_SENSES = ["magnetic field", "radio-frequency field", "redox potential", "light history"] as const;
 
 export function ObjectivePanel({ onRun, offline, disabled }: Props) {
   const [mode, setMode] = useState<UserMode>("novice");
@@ -74,12 +75,11 @@ export function ObjectivePanel({ onRun, offline, disabled }: Props) {
 
   return (
     <div className="obj-panel">
-      <div className="obj-modes" role="tablist" aria-label="objective mode">
+      <div className="obj-modes" role="group" aria-label="objective mode">
         {(["novice", "expert"] as UserMode[]).map((m) => (
           <button
             key={m}
-            role="tab"
-            aria-selected={mode === m}
+            aria-pressed={mode === m}
             className={`obj-mode ${mode === m ? "on" : ""}`}
             onClick={() => setMode(m)}
           >
@@ -114,10 +114,22 @@ export function ObjectivePanel({ onRun, offline, disabled }: Props) {
           </div>
 
           <div className="obj-grid">
-            <Field label="sensed quantity / state">
-              <input value={spec.sensed_quantity_or_state ?? ""} placeholder="(not stated)" onChange={(e) => patch({ sensed_quantity_or_state: e.target.value || null })} />
+            <Field label="sensed quantity / state · drives the search">
+              <select
+                value={SUPPORTED_SENSES.includes(spec.sensed_quantity_or_state as typeof SUPPORTED_SENSES[number]) ? spec.sensed_quantity_or_state ?? "" : ""}
+                onChange={(e) => patch({
+                  sensed_quantity_or_state: e.target.value || null,
+                  objective_support: e.target.value ? "supported" : "needs_clarification",
+                  objective_support_note: e.target.value
+                    ? "The sensing target drives mechanism route retrieval in this build."
+                    : "State the physical quantity the protein should sense before running discovery.",
+                })}
+              >
+                <option value="">choose a supported sensing target</option>
+                {SUPPORTED_SENSES.map((sense) => <option key={sense} value={sense}>{sense.replace("-", " ")}</option>)}
+              </select>
             </Field>
-            <Field label="oxygen">
+            <Field label="oxygen · experiment handoff only">
               <select value={spec.oxygen_condition} onChange={(e) => patch({ oxygen_condition: e.target.value as ObjectiveSpec["oxygen_condition"] })}>
                 {["unknown", "aerobic", "controlled", "anaerobic"].map((o) => <option key={o}>{o}</option>)}
               </select>
@@ -145,6 +157,11 @@ export function ObjectivePanel({ onRun, offline, disabled }: Props) {
             )}
           </div>
 
+          <div className={`obj-support obj-support-${spec.objective_support}`}>
+            <strong>{spec.objective_support === "supported" ? "search supported" : spec.objective_support === "unsupported" ? "no supported route" : "clarification needed"}:</strong>{" "}
+            {spec.objective_support_note}
+          </div>
+
           {(spec.missing_information ?? []).length > 0 && (
             <div className="obj-missing">
               <strong>needs clarification:</strong> {(spec.missing_information ?? []).join(" · ")}
@@ -159,10 +176,10 @@ export function ObjectivePanel({ onRun, offline, disabled }: Props) {
           )}
 
           <div className="obj-run">
-            <button className="btn-run" onClick={() => spec && onRun(spec)} disabled={disabled}>
+            <button className="btn-run" onClick={() => spec && onRun(spec)} disabled={disabled || spec.objective_support !== "supported"}>
               run discovery →
             </button>
-            <span className="obj-hint">Charts real public proteins, simulates the physics, ranks the one worth proving.</span>
+            <span className="obj-hint">Retrieves real public proteins, exposes mechanism assumptions, then proposes what to measure.</span>
           </div>
         </div>
       )}

@@ -37,31 +37,68 @@ _SPIN_PRIMITIVE = {
 }
 
 
-def _split_controls(controls: list[str]) -> tuple[list[str], list[str]]:
+def _split_controls(candidate: CandidateRecord) -> tuple[list[str], list[str]]:
+    controls = candidate.required_controls
     neg = [c for c in controls if any(k in c.lower() for k in ("no-field", "apo", "reference", "dark", "photobleach"))]
     pos = [c for c in controls if c not in neg]
-    neg = neg + ["Illuminated no-stimulus photobleach control (must stay flat)"]
+    if candidate.route_class == RouteClass.redox_electrochemical:
+        neg.append("Electrode-only and no-applied-potential controls")
+    elif candidate.route_class == RouteClass.rfp_flavin_photochemical:
+        neg.append("Matched illumination-dose photobleaching control")
+    else:
+        neg.append("Illuminated no-stimulus photobleaching control")
     return pos, neg
 
 
 def _experiment(candidate: CandidateRecord, observable: ReadoutMode, instrument_id: str | None) -> DiscriminatingExperiment:
     rc = candidate.route_class
-    pos, neg = _split_controls(candidate.required_controls)
+    pos, neg = _split_controls(candidate)
     is_rp = rc in (RouteClass.lov_flavin_radical_pair, RouteClass.cryptochrome_fad_radical_pair)
-    what = ("ΔF/F vs static magnetic field (and vs RF frequency where available)" if is_rp
-            else "fluorescence contrast vs RF frequency (ODMR)" if rc == RouteClass.triplet_fp
-            else f"{observable.value.replace('_', ' ')} vs its controllable variable")
+    if is_rp:
+        what = "ΔF/F versus static magnetic field, with an RF sweep where available"
+        expected = "a reproducible field-dependent optical change distinct from photobleaching and oxygen effects"
+        null = "no field-dependent change beyond the matched nuisance controls"
+        kill = "if field and RF differences stay within the matched photobleaching and oxygen controls, reject this spin linked route for the scaffold"
+        information = "tests whether the proposed radical-pair route yields a control-surviving field-dependent optical signal"
+        cost = "field-capable optical bench with interleaved controls"
+    elif rc == RouteClass.triplet_fp:
+        what = "fluorescence or lifetime contrast versus RF frequency and static field"
+        expected = "a reproducible resonance-like feature that disappears in the RF-off or chromophore-dark control"
+        null = "no RF-dependent feature beyond optical and temperature drift"
+        kill = "if the feature persists in the RF off or chromophore dark controls, reject the triplet spin interpretation"
+        information = "tests whether a triplet-state route produces a control-surviving, RF-dependent optical feature"
+        cost = "RF-capable optical bench with field and temperature control"
+    elif rc == RouteClass.redox_electrochemical:
+        what = "electrochemical current and optional optical signal versus applied potential"
+        expected = "a reproducible potential-dependent response separated from pH, oxygen, and electrode-background effects"
+        null = "no potential-dependent response beyond electrode background and environmental controls"
+        kill = "if electrode only, pH, or oxygen controls explain the response, reject this redox readout route for the scaffold"
+        information = "tests whether the annotated flavin redox chemistry connects to a measurable potential-dependent readout"
+        cost = "potentiostat with optical control channel"
+    elif rc == RouteClass.rfp_flavin_photochemical:
+        what = "fluorescence or lifetime after a defined illumination and dark-recovery sequence"
+        expected = "a reproducible light-history-dependent state change distinct from cumulative photobleaching"
+        null = "no history dependence after matching illumination dose and dark recovery"
+        kill = "if matched dose photobleaching reproduces the signal, reject the proposed flavin light history route"
+        information = "tests whether flavin photochemistry retains a reversible, measurable record of illumination history"
+        cost = "programmable optical bench with dark-recovery timing"
+    else:
+        what = f"{observable.value.replace('_', ' ')} versus its controlled stimulus"
+        expected = "a reproducible change that survives the route-specific controls"
+        null = "no stimulus-dependent change beyond nuisance controls"
+        kill = "if the matched controls reproduce the response, reject the proposed route for the scaffold"
+        information = "tests whether the proposed route produces a control-surviving measurable response"
+        cost = "route-compatible measurement bench"
     return DiscriminatingExperiment(
         what_to_measure=what,
         instrument_id=instrument_id,
-        expected_signature=("a small, non-monotonic ΔF/F (low-field dip → high-field rise) if the radical-pair coupling is real"
-                            if is_rp else "a control-surviving change in the readout under the driven variable"),
-        null_expectation="flat readout under the mandatory controls (no field/stimulus-dependent change beyond nuisance)",
+        expected_signature=expected,
+        null_expectation=null,
         positive_controls=pos,
         negative_controls=neg,
-        kill_criterion="if the readout is flat under photobleach + O2 (and no-field/RF-off) controls, the spin-linked mechanism is falsified for this scaffold.",
-        information_gained="resolves whether this scaffold's proposed spin→optical coupling produces a measurable, control-surviving signal.",
-        approx_cost=("RF-capable bench + interleaved acquisition" if (is_rp or rc == RouteClass.triplet_fp) else "standard optical/electrochemical bench"),
+        kill_criterion=kill,
+        information_gained=information,
+        approx_cost=cost,
     )
 
 
@@ -111,6 +148,7 @@ def build_discovery(
         # measurement is an OUTPUT the app proposes: pick the best-matching instrument from the
         # registry for THIS candidate (an explicit expert override still wins if one was set).
         suggested_instrument = instrument_id or best_instrument(inp_by_id[s.candidate_id], INSTRUMENTS)["id"]
+        experiment = _experiment(cand, graph_obs.get(s.candidate_id, ReadoutMode.fluorescence), suggested_instrument)
         frontier_experiments.append(FrontierExperiment(
             candidate_id=s.candidate_id,
             accession=cand.uniprot.primary_accession if cand.uniprot else s.candidate_id,
@@ -118,8 +156,8 @@ def build_discovery(
             outside_family_because=s.exploration.outside_family_because or "outside the canonical family arrangement",
             physical_constraints_satisfied=s.exploration.physical_constraints_satisfied,
             assumptions_remaining=s.exploration.assumptions_remaining,
-            discriminating_experiment=_experiment(cand, graph_obs.get(s.candidate_id, ReadoutMode.fluorescence), suggested_instrument),
-            falsifier="flat, control surviving readout across the field/RF/stimulus sweep falsifies the proposed mechanism for this scaffold.",
+            discriminating_experiment=experiment,
+            falsifier=experiment.kill_criterion,
             score=s,
             claim_ceiling=s.exploration.claim_ceiling,
         ))

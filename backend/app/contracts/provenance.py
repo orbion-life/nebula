@@ -50,7 +50,7 @@ class ParameterProvenance(BaseModel):
     name: str
     value: float | str
     unit: str
-    value_range: tuple[float, float] = Field(alias="range")
+    value_range: tuple[float, float] | None = Field(default=None, alias="range")
     uncertainty: Uncertainty
     source_type: ParameterSourceType
     citation_or_assumption: str

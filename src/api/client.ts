@@ -43,8 +43,28 @@ async function json<T>(res: Response): Promise<T> {
   return (await res.json()) as T;
 }
 
+async function request<T>(input: RequestInfo | URL, init?: RequestInit, timeoutMs = 15_000): Promise<T> {
+  const controller = new AbortController();
+  const timer = globalThis.setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await json<T>(await fetch(input, {
+      ...init,
+      cache: "no-store",
+      signal: controller.signal,
+      headers: { ...init?.headers },
+    }));
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error("The discovery service did not respond in time.");
+    }
+    throw error;
+  } finally {
+    globalThis.clearTimeout(timer);
+  }
+}
+
 export async function getHealth(): Promise<Health> {
-  return json<Health>(await fetch("/api/health"));
+  return request<Health>("/api/health", undefined, 8_000);
 }
 
 export async function compileObjective(
@@ -53,12 +73,13 @@ export async function compileObjective(
   instrument_id?: string | null,
   seed = 1337,
 ): Promise<ObjectiveSpec> {
-  return json<ObjectiveSpec>(
-    await fetch("/api/objectives/compile", {
+  return request<ObjectiveSpec>(
+    "/api/objectives/compile",
+    {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ objective_text, user_mode, instrument_id: instrument_id ?? null, seed }),
-    }),
+    },
   );
 }
 
@@ -66,29 +87,30 @@ export async function compileObjective(
 export async function createRun(
   body: ObjectiveSpec | { objective_text: string; user_mode: UserMode; instrument_id?: string | null; seed?: number },
 ): Promise<RunCreated> {
-  return json<RunCreated>(
-    await fetch("/api/runs", {
+  return request<RunCreated>(
+    "/api/runs",
+    {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
-    }),
+    },
   );
 }
 
 export async function getRun(runId: string): Promise<RunState> {
-  return json<RunState>(await fetch(`/api/runs/${encodeURIComponent(runId)}`));
+  return request<RunState>(`/api/runs/${encodeURIComponent(runId)}`);
 }
 
 export async function cancelRun(runId: string): Promise<RunState> {
-  return json<RunState>(await fetch(`/api/runs/${encodeURIComponent(runId)}/cancel`, { method: "POST" }));
+  return request<RunState>(`/api/runs/${encodeURIComponent(runId)}/cancel`, { method: "POST" });
 }
 
 export async function getDossier(candidateId: string): Promise<CandidateDossier> {
-  return json<CandidateDossier>(await fetch(`/api/candidates/${encodeURIComponent(candidateId)}/dossier`));
+  return request<CandidateDossier>(`/api/candidates/${encodeURIComponent(candidateId)}/dossier`);
 }
 
 export async function getStructure(candidateId: string): Promise<StructureResponse> {
-  return json<StructureResponse>(await fetch(`/api/candidates/${encodeURIComponent(candidateId)}/structure`));
+  return request<StructureResponse>(`/api/candidates/${encodeURIComponent(candidateId)}/structure`);
 }
 
 /**
@@ -103,33 +125,26 @@ export function streamRun(
   let closed = false;
   let es: EventSource | null = null;
   let pollTimer: number | null = null;
+  let deliveredTerminal = false;
 
-  const finish = async () => {
-    try {
-      const s = await getRun(runId);
-      handlers.onState?.(s);
-      if (isTerminal(s.status)) handlers.onDone?.(s);
-    } catch (err) {
-      handlers.onError?.(err as Error);
+  const deliver = (state: RunState) => {
+    if (closed) return;
+    handlers.onState?.(state);
+    if (isTerminal(state.status) && !deliveredTerminal) {
+      deliveredTerminal = true;
+      handlers.onDone?.(state);
+      cleanup();
     }
   };
 
-  const poll = () => {
+  const poll = async () => {
     if (closed) return;
-    getRun(runId)
-      .then((s) => {
-        handlers.onState?.(s);
-        if (isTerminal(s.status)) {
-          handlers.onDone?.(s);
-          cleanup();
-        } else {
-          pollTimer = window.setTimeout(poll, 700);
-        }
-      })
-      .catch((err) => {
-        handlers.onError?.(err as Error);
-        pollTimer = window.setTimeout(poll, 1200);
-      });
+    try {
+      deliver(await getRun(runId));
+    } catch (err) {
+      handlers.onError?.(err as Error);
+    }
+    if (!closed) pollTimer = window.setTimeout(poll, 700);
   };
 
   try {
@@ -143,18 +158,18 @@ export function streamRun(
       }
     };
     es.addEventListener("end", () => {
-      cleanup();
-      void finish();
+      void poll();
     });
     es.onerror = () => {
       // SSE unavailable/interrupted — degrade to polling rather than stalling.
       es?.close();
       es = null;
-      if (!closed && pollTimer === null) poll();
+      // State polling already runs in parallel. SSE is only the low latency event lane.
     };
   } catch {
-    poll();
+    es = null;
   }
+  void poll();
 
   function cleanup() {
     closed = true;

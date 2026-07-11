@@ -7,10 +7,10 @@ enforce these rules in CI.
 
 ## Allowed public claim
 
-> Nebula Discover generates public construct hypotheses and simulates
-> transparent, assumption-driven multimodal measurement signatures for
-> literature-backed protein-sensor routes, then turns them into
-> measurement-ready hypotheses.
+> Nebula Discover retrieves public protein candidates for supported sensing
+> objectives, checks which mechanism routes their annotations can support,
+> exposes assumption-driven physics references and triage logic, and produces
+> measurement hypotheses with controls and falsifiers.
 
 ## The public artifact must NOT
 

@@ -7,7 +7,6 @@
  * (this is not run progress — the run has its own counter later).
  */
 import { useEffect, useRef, useState } from "react";
-import { getHealth } from "../../api/client";
 
 const R = 46;
 const CIRC = 2 * Math.PI * R;
@@ -20,38 +19,28 @@ export function Preloader({ onDone }: { onDone: () => void }) {
   onDoneRef.current = onDone;
 
   useEffect(() => {
-    let ready = false;
-    let raf = 0;
-    const start = performance.now();
-    Promise.allSettled([
-      (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts?.ready ?? Promise.resolve(),
-      getHealth().catch(() => null),
-    ]).then(() => {
-      ready = true;
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
+    let active = true;
+    let exitTimer = 0;
+    let doneTimer = 0;
+    let capTimer = 0;
+    setPct(50); // application shell is mounted
+    const fonts = (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts?.ready ?? Promise.resolve();
+    const cap = new Promise<void>((resolve) => { capTimer = window.setTimeout(resolve, reduced ? 0 : 900); });
+    Promise.race([fonts.then(() => undefined), cap]).then(() => {
+      if (!active || doneRef.current) return;
+      doneRef.current = true;
+      setPct(100); // required typography is ready, or the bounded fallback elapsed
+      exitTimer = window.setTimeout(() => {
+        setGone(true);
+        doneTimer = window.setTimeout(() => onDoneRef.current(), reduced ? 0 : 320);
+      }, reduced ? 0 : 120);
     });
-    const cap = window.setTimeout(() => {
-      ready = true;
-    }, 3000);
-
-    const tick = (t: number) => {
-      const elapsed = t - start;
-      const ceil = ready ? 100 : 92; // can't fake completion before readiness
-      const value = Math.min(ceil, (elapsed / 1600) * 100);
-      setPct(Math.round(value));
-      if (ready && value >= 100 && !doneRef.current) {
-        doneRef.current = true;
-        window.setTimeout(() => {
-          setGone(true);
-          window.setTimeout(() => onDoneRef.current(), 520);
-        }, 220);
-        return;
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
     return () => {
-      cancelAnimationFrame(raf);
-      window.clearTimeout(cap);
+      active = false;
+      window.clearTimeout(capTimer);
+      window.clearTimeout(exitTimer);
+      window.clearTimeout(doneTimer);
     };
     // run once: onDone is captured via ref so the entry animation never restarts on parent re-render
     // eslint-disable-next-line react-hooks/exhaustive-deps

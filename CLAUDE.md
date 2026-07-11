@@ -1,139 +1,104 @@
-# CLAUDE.md — operating guide for Nebula Discover
+# CLAUDE.md: operating guide for Nebula Discover
 
-Nebula Discover is a **public, open-source counterfactual measurement studio**.
-Given a public protein scaffold, a sensing objective, an environment, and an
-instrument, it answers: *which mechanism and measurement should we test next, and
-what result would falsify it?* It does **not** discover sensors, validate
-sensors, or predict magnetic/RF response for arbitrary proteins.
+Nebula Discover is the public, open-source discovery module for deciding which
+public protein and mechanism hypotheses deserve measurement next. It retrieves and
+enriches public protein records, applies explicit mechanism and physics-eligibility
+gates, separates evidence from exploration, and produces a measurement handoff with
+controls and falsifiers.
 
-## Architecture (authoritative)
+It does not discover or validate working sensors, predict arbitrary protein magnetic
+responses, or claim that sequence or structure determines spin behavior.
 
-Pipeline (`src/core/`), simulation happens **before** ranking:
+## Shipped execution path
 
+```text
+Mission Bench or expert objective
+  -> backend ObjectiveSpec compiler
+  -> sensed-quantity route planner
+  -> UniProt retrieval
+  -> InterPro + RCSB + AlphaFold enrichment
+  -> family/cofactor route check
+  -> physics eligibility
+  -> optional bounded candidate cluster UHF diagnostic
+  -> route-level measurement compatibility
+  -> evidence and exploration lanes
+  -> measurement handoff
 ```
-RawObjective
-  → ObjectiveInput            objectiveCompiler.ts  (+ Zod: schema.ts; invalid input throws)
-  → EvidenceBundle            evidenceBundle.ts     (public cards + benchmarks + analogs)
-  → ConstructHypothesis[]     constructGenerator.ts
-  → MechanismRoute[]          fixtures/routes.ts, mechanismRouter.ts
-  → ParameterEnsemble[]       parameterEnsemble.ts
-  → SimulationEvidence[]      simulationEvidence.ts (EVERY candidate, under an InstrumentProfile)
-  → ExperimentScore[]         experimentScore.ts    (8 transparent components, NO offset)
-  → MeasurementPlan           measurementPlan.ts    (the decisive next experiment)
-  → BenchmarkComparison[]     benchmark.ts          (retrospective, qualitative)
-  → claim audit               claimFirewall.ts
-  → handoff export            export.ts
-```
 
-- **Physics:** the radical-pair route is real spin dynamics. `scripts/physics/
-  radical_pair_mary.py` (RadicalPy) computes a Zeeman + hyperfine + Haberkorn +
-  relaxation MARY curve, an uncertainty ensemble, counterfactual controls, and an
-  eigenspectrum-derived RF response, and writes a versioned, content-hashed,
-  provenance-tagged artifact to `src/data/generated/radical_pair_mary.v1.json`.
-  The TS app consumes it only after Zod validation (`src/core/generated/
-  radicalPair.ts`). Heavy Python stays offline; `npm test`/`npm run build` never
-  touch it.
-- **Ranking:** `experimentScore.ts` ranks the *next experiment* by expected
-  information gain, observability/SNR, instrument compatibility, mechanism
-  discrimination, uncertainty reduction, control completeness, minus execution
-  burden and nuisance risk. Weights are open; there is **no display offset** and
-  no predicted sensor performance. (The old heuristic `ranking.ts` is deleted.)
-- **UI:** four cinematic screens in `src/ui/screens/` — Ask, Explain, Simulate,
-  Measure next — over a small state machine in `src/ui/App.tsx`. There is no
-  section-numbered dashboard, no architecture board, no library registry, no
-  swarm panel, and no 3D viewer in the primary journey. Provenance and technical
-  detail live in progressive disclosure. Charts are Tufte-style
-  (`src/ui/components/`).
-- **Swarm** (`src/core/swarm/`, note: a directory, not `swarm.ts`): a
-  **deterministic in-code release audit** that runs on every result as a CI gate.
-  It is NOT a product feature and NOT "live Claude agents" — never describe its
-  synchronous checks that way. It is surfaced only in progressive disclosure.
+Authoritative shipped modules:
 
-## Scientific boundaries (hard rules)
+- contracts: `backend/app/contracts/`
+- objective compiler: `backend/app/objective/compile.py`
+- route planning and assembly: `backend/app/retrieval/`
+- physics gate and cluster calculation: `backend/app/physics/`
+- mechanism and triage logic: `backend/app/discovery/`
+- run identity, persistence, and orchestration: `backend/app/jobs/`
+- API: `backend/app/api/main.py`
+- generated browser contract: `src/contracts/api.ts`
+- browser journey: `src/ui/discover/`
 
-- Never claim a validated sensor, sensor discovery, or magnetic/RF response
-  prediction for an arbitrary protein. Never claim sequence/AlphaFold/ESM
-  determine spin response.
-- Every simulated trace is a *synthetic assumption sweep*, labelled as such and
-  distinguished from *public/measured* (qualitative only) and *assumption-derived*.
-- Every numeric parameter carries provenance: source type, citation/assumption,
-  range, unit, uncertainty, applicability limits (`ParameterProvenance`).
-- No private Orbion/Nebula/Astra data, no partner data, no mutation lists, no
-  orderable sequences. See `IP_BOUNDARY.md`; enforced by `tests/boundary.test.ts`.
+The deterministic TypeScript modules under `src/core/` remain tested public reference
+code. They do not power the current browser journey. Do not describe them as live UI.
 
-## Source-of-truth files
+## Hard scientific rules
 
-- Contracts: `src/core/types.ts` (authoritative schema).
-- Route registry: `src/core/fixtures/routes.ts`. Evidence: `fixtures/evidenceCards.ts`.
-  Instruments: `fixtures/instruments.ts`. Benchmarks: `benchmark.ts`.
-- Generated physics: `src/data/generated/radical_pair_mary.v1.json` (+ its generator).
-- Claude review artifacts: `artifacts/claude/` (dated decisions + verification).
+- A seed accession may enter only a route supported by its public family and cofactor
+  annotations. Never replay every seed through every mechanism.
+- Mission Bench targets must map to implemented route planning. Unsupported targets
+  must fail explicitly.
+- Product form, temperature, oxygen, expression host, and immobilization are handoff
+  context until a tested decision rule consumes them. Never imply they move ranking.
+- The RadicalPy MARY artifact is a shared model-flavin assumption sweep, not a
+  candidate-specific biological response.
+- The candidate UHF calculation is an isolated neutral-doublet isoalloxazine cluster
+  diagnostic. Mulliken spin populations are basis dependent and are neither
+  probabilities nor response predictions. Non-converged calculations are discarded.
+- P, M, D, novelty, uncertainty, and information-gain values are uncalibrated triage
+  dimensions. Never call them probabilities, confidence, or performance.
+- A route-compatible instrument scenario is not a hardware recommendation or claim of
+  detectability.
+- Evidence and exploration lanes are separate. Novelty and uncertainty cannot increase
+  plausibility or predicted performance.
+- Outputs are unvalidated public-protein hypotheses requiring measurement.
 
-## Live discovery service (primary journey)
+## Runtime and reliability rules
 
-The shipped app is a **real public-protein discovery application**: a FastAPI
-service under `backend/` (retrieve → enrich → physics-eligibility gate → simulate
-→ two-lane rank → plan) with a React front end under `src/ui/discover/` that
-drives it over generated OpenAPI contracts (`src/contracts/api.ts`). Normal runs
-return **real UniProt accessions** (not template families), stream stages over
-SSE, are cancellable, and are content-addressed/reproducible by fingerprint. One
-route (flavin radical-pair) runs **candidate-specific quantum chemistry** on the
-protein's real cofactor coordinates (PySCF UHF, subprocess-isolated). The legacy
-in-browser `src/core` pipeline is retained only as the offline vitest smoke
-fixture; it no longer powers the shipped UI. `3Dmol.js` is the shipped structure
-viewer (the Mol* target's stand-in). Outputs are **unvalidated public-protein
-candidate hypotheses** — computation is not validation.
+- Identical active or completed inputs are idempotent.
+- Failed and cancelled retries receive a new attempt ID.
+- Terminal run states are immutable; stale workers cannot overwrite them.
+- Run fingerprints include decision-bearing source hashes and the versioned physics
+  artifact.
+- User input, seed counts, concurrent runs, and run creation rate are bounded.
+- The UI must remain usable without WebGL, under reduced motion, and from the keyboard.
+- No progress counter may imply completion after failure or cancellation.
 
 ## Commands
 
-The product runs **online** against live public APIs — that is the shipped mode.
-`NEBULA_OFFLINE=1` and the committed provider fixtures / QM cache exist ONLY to make
-the test suite and CI deterministic; offline is **not a product feature** and is not
-presented to users as a mode. (A cold online run completes in ~30 s — real accessions
-stream in during retrieval and the candidate-specific QM is served from the
-content-addressed cache; a genuinely novel flavin structure pays the one-time UHF cost.)
-
 ```bash
-npm install
-# --- run the app (two servers) — ONLINE, live public APIs ---
-(cd backend && python3 -m uvicorn app.api.main:app --port 8000)   # discovery API (live)
-npm run dev             # React app on :5173, proxies /api → :8000
-# --- verify ---
-npm test                # TS: deterministic + boundary + client + acceptance (vitest)
-npm run e2e             # Playwright E2E (uses NEBULA_OFFLINE=1 fixtures for determinism):
-                        #   run → real accession → non-blank 3Dmol + universe canvas
-                        #   across 390/768/1280/1920 + reduced-motion + keyboard (chrome + swiftshader)
-npm run build           # tsc --noEmit + vite build
-npm audit               # FULL audit must be 0 high/critical (currently 0 total)
-npm run gen:contracts   # regenerate src/contracts/api.ts from the FastAPI OpenAPI
-(cd backend && python3 -m pytest)   # backend: providers, endpoints, physics, discovery
-python3 scripts/index/build_offline_index.py   # refresh the CI test fixtures (needs network)
-python3 scripts/physics/radical_pair_mary.py   # OPTIONAL: regenerate the reference artifact
-# --- deploy (single container: FastAPI serves the built SPA + /api) ---
-docker compose up --build   # → http://localhost:8000 (NEBULA_STATIC_DIR baked in)
-# Azure Container Apps via .github/workflows/deploy.yml (OIDC → ACR → ACA); the default
-# image omits pyscf (committed QM cache serves the demo) — Dockerfile.physics adds live QM.
+npm ci
+python3 -m pip install -e './backend[dev,physics]'
+
+(cd backend && NEBULA_OFFLINE=1 python3 -m uvicorn app.api.main:app --port 8000)
+npm run dev
+
+npm test
+npm run build
+(cd backend && python3 -m pytest -q)
+npm run e2e
+npm audit --omit=dev
+npm run gen:contracts
 ```
 
-## Verification requirements (do not weaken to get a pass)
+Do not weaken tests to obtain a pass. Regenerate the TypeScript OpenAPI contract after
+changing Pydantic models.
 
-Before committing a change, `npm test` and `npm run build` must pass, and:
-physics/instrument changes must still move the ranking; ≥1 public benchmark has a
-reproducible comparison; every trace distinguishes public vs simulation vs
-assumption; every numeric parameter has provenance; the same seed yields
-identical results; invalid objectives surface Zod errors; the boundary scan is
-clean; mobile has zero horizontal overflow; the app works without optional
-adapters; the downloaded handoff matches the selected result.
+## Claude workflow
 
-## Agent workflow
+Specialist agents and skills under `.claude/` are review and build tools, not product
+features. Any factual or scientific claim raised by an agent must be verified against
+source, tests, or a cited public reference before it enters product copy. Record
+substantive Claude decisions in `artifacts/claude/` without exposing private data.
 
-Specialist agents in `.claude/agents/` are used in **five review groups**, not as
-a product feature: **evidence** (evidence-citation, construct anchors),
-**physics** (physics-data-simulator, mechanism-router, scientific-skeptic),
-**experiment/ranking** (measurement-worthiness-ranker, rationale-explainer),
-**safety** (claim-boundary-auditor, code-quality-reviewer), **product/demo**
-(visual-system-director, demo-director). After a phase, the relevant group
-reviews; any factual claim a subagent surfaces is verified directly before it is
-relayed or acted on; the verified decision is recorded under `artifacts/claude/`.
-Do not add agents/skills unless a demonstrated capability is missing, and do not
-market agent/skill counts as the product's scientific value.
+The project is a Built with Claude submission. Preserve truthful Claude attribution and
+the public audit trail. Do not fabricate authorship, agent execution, validation, or
+bench evidence.

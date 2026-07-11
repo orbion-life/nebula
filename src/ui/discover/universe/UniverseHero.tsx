@@ -6,6 +6,7 @@
 import { Component, Suspense, lazy, useMemo, type ReactNode } from "react";
 import type { DiscoveryScore, RunState } from "../../../api/client";
 import type { UNode } from "./CandidateUniverse";
+import { canUseWebGL } from "../render/webgl";
 
 const CandidateUniverse = lazy(() => import("./CandidateUniverse"));
 
@@ -52,30 +53,34 @@ interface Props {
   onSelect: (id: string) => void;
   settled?: boolean; // default true (workspace); pass false during a live run
   fieldProgress?: number; // quantum-field intensity (real run fraction in Act II)
+  interactive?: boolean;
 }
 
 function isSmallViewport(): boolean {
   return typeof window !== "undefined" && window.matchMedia?.("(max-width: 700px)").matches === true;
 }
 
-export function UniverseHero({ run, selectedId, onSelect, settled = true, fieldProgress = 0.45 }: Props) {
+export function UniverseHero({ run, selectedId, onSelect, settled = true, fieldProgress = 0.45, interactive = true }: Props) {
   const nodes = useMemo(() => buildNodes(run, settled), [run, settled]);
   const reduced = prefersReducedMotion();
   const effects = !reduced && !isSmallViewport(); // bloom off for reduced-motion/mobile (+ software-GL, gated in Effects)
   if (nodes.length === 0) return null;
 
   const fallback = <DomFallback nodes={nodes} selectedId={selectedId} onSelect={onSelect} />;
+  if (!canUseWebGL()) {
+    return <div className="universe universe-fallback" aria-label="candidate list by discovery lane">{fallback}</div>;
+  }
   return (
-    <div className="universe" aria-label="candidate universe — proteins positioned by discovery lane and rank">
+    <div className="universe" aria-label="candidate universe, proteins positioned by discovery lane and rank">
       <div className="universe-legend">
         {settled ? (
           <>
             <span className="ul-ev">● evidence</span>
             <span className="ul-fr">● frontier</span>
-            <span className="ul-qm">◎ candidate-specific QM</span>
+            <span className="ul-qm">◎ candidate specific QM</span>
           </>
         ) : (
-          <span className="ul-searching">searching the protein universe — {nodes.length} retrieved</span>
+          <span className="ul-searching">searching the protein universe, {nodes.length} route hypotheses retrieved</span>
         )}
       </div>
       <WebGLBoundary fallback={fallback}>
@@ -83,6 +88,7 @@ export function UniverseHero({ run, selectedId, onSelect, settled = true, fieldP
           <CandidateUniverse nodes={nodes} selectedId={selectedId} onSelect={onSelect} reducedMotion={reduced} fieldProgress={fieldProgress} effects={effects} />
         </Suspense>
       </WebGLBoundary>
+      {interactive && <div className="universe-a11y">{fallback}</div>}
     </div>
   );
 }
@@ -91,7 +97,7 @@ export function UniverseHero({ run, selectedId, onSelect, settled = true, fieldP
 function DomFallback({ nodes, selectedId, onSelect }: { nodes: UNode[]; selectedId: string | null; onSelect: (id: string) => void }) {
   const lanes: UNode["lane"][] = ["pending", "evidence", "frontier", "excluded"];
   return (
-    <div className="universe-dom" role="list">
+    <div className="universe-dom" role="group" aria-label="candidate lanes">
       {lanes.map((lane) => {
         const items = nodes.filter((n) => n.lane === lane).sort((a, b) => a.rank - b.rank);
         if (!items.length) return null;
@@ -99,7 +105,7 @@ function DomFallback({ nodes, selectedId, onSelect }: { nodes: UNode[]; selected
           <div key={lane} className={`udom-lane udom-${lane}`}>
             <span className="udom-lane-title">{lane}</span>
             {items.map((n) => (
-              <button key={n.id} role="listitem" className={`udom-node ${n.id === selectedId ? "on" : ""}`} onClick={() => onSelect(n.id)}>
+              <button key={n.id} className={`udom-node ${n.id === selectedId ? "on" : ""}`} onClick={() => onSelect(n.id)}>
                 {n.accession}{n.candidateSpecific ? " ◎" : ""}
               </button>
             ))}

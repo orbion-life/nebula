@@ -1,21 +1,23 @@
-"""Nebula Discover — discovery API (FastAPI).
+"""Nebula Discover discovery API.
 
-Phase-1 skeleton: contracts, health with live provider reachability, deterministic
-objective compilation, and the immutable run lifecycle over the state machine.
-Real provider retrieval + orchestration land in Phase 2/3; runs created here sit
-at `queued` until the orchestrator is wired, and that is stated honestly.
+Compiles bounded objectives, retrieves public protein records, evaluates supported
+mechanism routes, runs explicitly scoped calculations, and persists an immutable
+measurement-triage run. A completed run is a hypothesis handoff, not validation.
 """
 from __future__ import annotations
 
 import asyncio
 import os
+import time
+from collections import defaultdict, deque
 from datetime import datetime, timezone
+from typing import Literal
 
 import httpx
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from fastapi.responses import JSONResponse, StreamingResponse
+from pydantic import BaseModel, Field
 
 from ..contracts.candidate import CandidateDossier, CandidateRecord
 from ..contracts.enums import TERMINAL_STATUSES, ProviderId, RunStatus
@@ -59,6 +61,62 @@ app.add_middleware(
 
 STORE = RunStore()
 _BG_TASKS: set = set()
+_MAX_ACTIVE_RUNS = max(1, int(os.environ.get("NEBULA_MAX_ACTIVE_RUNS", "2")))
+_RUNS_PER_MINUTE = max(1, int(os.environ.get("NEBULA_RUNS_PER_MINUTE", "20")))
+_SUPPORTED_SENSES = {"magnetic field", "radio-frequency field", "redox potential", "light history"}
+_RUN_REQUESTS: dict[str, deque[float]] = defaultdict(deque)
+_HEALTH_CACHE: tuple[float, bool, "Health"] | None = None
+_CSP = (
+    "default-src 'self'; "
+    "script-src 'self' 'unsafe-eval'; "  # 3Dmol currently uses dynamic function evaluation
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+    "font-src 'self' https://fonts.gstatic.com data:; "
+    "img-src 'self' data: blob:; "
+    "connect-src 'self' https://rest.uniprot.org https://www.ebi.ac.uk https://data.rcsb.org "
+    "https://files.rcsb.org https://alphafold.ebi.ac.uk https://www.fpbase.org; "
+    "worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+)
+
+
+def _rejection(status: int, detail: str) -> JSONResponse:
+    return JSONResponse(
+        status_code=status,
+        content={"detail": detail},
+        headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"},
+    )
+
+
+@app.middleware("http")
+async def harden_responses(request: Request, call_next):
+    if request.method in {"POST", "PUT", "PATCH"}:
+        try:
+            if int(request.headers.get("content-length", "0")) > 65_536:
+                return _rejection(413, "Request body exceeds 64 KiB.")
+        except ValueError:
+            return _rejection(400, "Invalid Content-Length header.")
+    if request.method == "POST" and request.url.path == "/api/runs":
+        key = request.client.host if request.client else "unknown"
+        now = time.monotonic()
+        window = _RUN_REQUESTS[key]
+        while window and now - window[0] > 60:
+            window.popleft()
+        if len(window) >= _RUNS_PER_MINUTE:
+            return _rejection(429, "Run request limit reached. Retry in one minute.")
+        window.append(now)
+        # bound the limiter dict on a public endpoint: sweep fully-expired keys when it grows
+        if len(_RUN_REQUESTS) > 4096:
+            for k in [k for k, w in _RUN_REQUESTS.items() if not w or now - w[-1] > 60]:
+                _RUN_REQUESTS.pop(k, None)
+
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+    response.headers["Content-Security-Policy"] = _CSP
+    if request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 def _now() -> datetime:
@@ -73,10 +131,10 @@ class Health(BaseModel):
 
 
 class CompileRequest(BaseModel):
-    objective_text: str
-    user_mode: str = "novice"
-    instrument_id: str | None = None
-    seed: int = 1337
+    objective_text: str = Field(min_length=10, max_length=5000)
+    user_mode: Literal["novice", "expert"] = "novice"
+    instrument_id: str | None = Field(default=None, max_length=100)
+    seed: int = Field(default=1337, ge=0, le=2_147_483_647)
 
 
 class StructureResponse(BaseModel):
@@ -92,6 +150,10 @@ class StructureResponse(BaseModel):
 
 @app.get("/api/health", response_model=Health)
 async def health() -> Health:
+    global _HEALTH_CACHE
+    now = time.monotonic()
+    if _HEALTH_CACHE is not None and _HEALTH_CACHE[1] == OFFLINE and now - _HEALTH_CACHE[0] < 30:
+        return _HEALTH_CACHE[2]
     providers: dict[str, bool] = {}
     if OFFLINE:
         providers = {p.value: False for p in ProviderId}
@@ -105,7 +167,17 @@ async def health() -> Health:
                     return pid.value, False
             results = await asyncio.gather(*(probe(p, u) for p, u in PROVIDER_HEALTH_URLS.items()))
             providers = dict(results)
-    return Health(status="ok", offline=OFFLINE, providers=providers, version=app.version)
+    if OFFLINE:
+        status = "offline"
+    elif providers and all(providers.values()):
+        status = "ok"
+    elif any(providers.values()):
+        status = "degraded"
+    else:
+        status = "unavailable"
+    result = Health(status=status, offline=OFFLINE, providers=providers, version=app.version)
+    _HEALTH_CACHE = (now, OFFLINE, result)
+    return result
 
 
 @app.get("/api/routes")
@@ -129,13 +201,14 @@ async def compile_endpoint(req: CompileRequest) -> ObjectiveSpec:
     return compile_objective(raw)
 
 
-def _new_run(objective: ObjectiveSpec) -> RunState:
-    fp = input_fingerprint(objective, objective.seed, objective.instrument_id)
-    rid = run_id_for(fp)
+def _new_run(objective: ObjectiveSpec, *, fingerprint: str | None = None, attempt: int = 0) -> RunState:
+    fp = fingerprint or input_fingerprint(objective, objective.seed, objective.instrument_id)
+    rid = run_id_for(fp, attempt)
     now = _now()
     return RunState(
         run_id=rid,
         input_fingerprint=fp,
+        attempt=attempt,
         status=RunStatus.queued,
         seed=objective.seed,
         objective=objective,
@@ -159,15 +232,38 @@ async def create_run(body: dict) -> RunCreated:
     except Exception as exc:  # surfaced validation error — never bypassed
         raise HTTPException(status_code=422, detail=str(exc))
 
-    # idempotent: identical inputs → same run_id → return the cached run, EXCEPT when the
-    # cached run ended in failure/cancellation — those are retryable (otherwise one transient
-    # failure would make that exact objective+seed permanently unrunnable).
-    existing = STORE.get(run_id_for(input_fingerprint(objective, objective.seed, objective.instrument_id)))
-    if existing is not None and existing.status not in (RunStatus.failed, RunStatus.cancelled):
+    sensed = (objective.sensed_quantity_or_state or "").strip().lower()
+    if sensed not in _SUPPORTED_SENSES:
+        supported = ", ".join(sorted(_SUPPORTED_SENSES))
+        raise HTTPException(
+            status_code=422,
+            detail=f"This build cannot search '{sensed or 'an unstated target'}'. Supported sensing targets: {supported}.",
+        )
+    # Bound and deduplicate expert seeds before any provider I/O.
+    objective = objective.model_copy(update={"seed_accessions": list(dict.fromkeys(objective.seed_accessions))})
+
+    # Idempotency applies across attempts: a live or completed attempt is returned before
+    # capacity is checked. Failed/cancelled attempts get a fresh run id so their old worker
+    # can never race with the retry and overwrite it.
+    fingerprint = input_fingerprint(objective, objective.seed, objective.instrument_id)
+    prior = STORE.by_fingerprint(fingerprint)
+    existing = next((r for r in prior if r.status not in (RunStatus.failed, RunStatus.cancelled)), None)
+    if existing is not None:
         return RunCreated(run_id=existing.run_id, status=existing.status, input_fingerprint=existing.input_fingerprint)
 
-    run = _new_run(objective)
-    STORE.put(run)
+    active = sum(1 for task in _BG_TASKS if not task.done())
+    if active >= _MAX_ACTIVE_RUNS:
+        raise HTTPException(status_code=429, detail="Discovery capacity is full. Retry after an active run completes.")
+
+    attempt = max((r.attempt for r in prior), default=-1) + 1
+    while True:
+        run = _new_run(objective, fingerprint=fingerprint, attempt=attempt)
+        if STORE.put_new(run):
+            break
+        collision = STORE.get(run.run_id)
+        if collision is not None and collision.status not in (RunStatus.failed, RunStatus.cancelled):
+            return RunCreated(run_id=collision.run_id, status=collision.status, input_fingerprint=collision.input_fingerprint)
+        attempt += 1
     # Real orchestration runs off the event loop (providers use sync httpx). The
     # run advances retrieve → enrich → assess-physics in the background; clients
     # poll GET /api/runs/{id} or the events stream.
@@ -229,11 +325,12 @@ async def cancel_run(run_id: str) -> RunState:
     except Exception as exc:
         raise HTTPException(status_code=409, detail=str(exc))
     now = _now()
+    last_progress = next((e.progress for e in reversed(run.events) if e.progress is not None), 0.0)
     run = run.model_copy(update={
         "status": RunStatus.cancelled,
         "current_stage": "cancelled",
         "updated_at": now,
-        "events": [*run.events, RunEvent(at=now, from_status=run.status, to_status=RunStatus.cancelled, stage="cancelled", note="cancelled by user", progress=1.0)],
+        "events": [*run.events, RunEvent(at=now, from_status=run.status, to_status=RunStatus.cancelled, stage="cancelled", note="cancelled by user", progress=last_progress)],
     })
     STORE.put(run)
     return run

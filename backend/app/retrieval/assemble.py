@@ -46,7 +46,7 @@ _ROUTE_META: dict[RouteClass, dict] = {
         controls=["RF off/on paired control", "Oxygen control (triplet quenching)", "Photobleaching decay control", "Temperature control"],
         confounders=["oxygen quenching", "low triplet yield", "photobleaching"]),
     RouteClass.rfp_flavin_photochemical: dict(
-        arch=ArchitectureKind.co_encapsulated_pair, readouts=[ReadoutMode.fluorescence, ReadoutMode.lifetime],
+        arch=ArchitectureKind.single_scaffold, readouts=[ReadoutMode.fluorescence, ReadoutMode.lifetime],
         claim=ClaimLevel.measurement_triage, route_id="route_rfp_flavin_photo",
         controls=["Explicit light-history control", "Photobleaching decay control", "Dark-recovery control"],
         confounders=["photobleaching", "light-history ambiguity"]),
@@ -89,6 +89,39 @@ def _rationale(rec: UniProtRecord, plan: QueryPlan, has_cofactor: bool, has_expe
     return work, fail
 
 
+def _matches_route(rec: UniProtRecord, plan: QueryPlan, interpro_matches: list, has_cofactor: bool) -> bool:
+    """Reject accession/route pairings that public annotations do not support.
+
+    Seed accessions are candidate *inputs*, not permission to relabel a phototropin as
+    a cryptochrome (or vice versa). This deliberately prefers an honest omission over
+    a larger but biologically mislabeled shortlist.
+    """
+    if plan.required_cofactor_name and plan.required_cofactor_name != "intrinsic chromophore" and not has_cofactor:
+        return False
+    blob = " ".join(
+        [
+            rec.protein_name or "",
+            rec.uniprotkb_id or "",
+            *rec.functions,
+            *(m.name or m.interpro_accession for m in interpro_matches),
+            *(k.name for k in rec.keywords),
+        ]
+    ).lower()
+    if plan.route_class == RouteClass.cryptochrome_fad_radical_pair:
+        return "cryptochrome" in blob and any("fad" in (c.name or "").lower() for c in rec.cofactors)
+    if plan.route_class == RouteClass.lov_flavin_radical_pair:
+        return any(k in blob for k in ("phototropin", "lov domain", "light oxygen voltage")) and any(
+            "fmn" in (c.name or "").lower() for c in rec.cofactors
+        )
+    if plan.route_class == RouteClass.triplet_fp:
+        return any(k in blob for k in ("fluorescent protein", "gfp", "rfp", "chromophore"))
+    if plan.route_class == RouteClass.rfp_flavin_photochemical:
+        return has_cofactor and any(k in blob for k in ("phototropin", "lov domain", "photoreceptor", "blue light"))
+    if plan.route_class == RouteClass.redox_electrochemical:
+        return has_cofactor and any(k in blob for k in ("redox", "oxidoreduct", "electron transfer", "flavodoxin"))
+    return True
+
+
 def _build_candidate(
     rec: UniProtRecord,
     prov: Provenance,
@@ -96,7 +129,7 @@ def _build_candidate(
     ip: InterProProvider,
     rc: RcsbProvider,
     af: AlphaFoldProvider,
-) -> CandidateRecord:
+) -> CandidateRecord | None:
     meta = _ROUTE_META[plan.route_class]
     provenance: list[Provenance] = [prov]
     degradations: list[str] = []
@@ -148,6 +181,8 @@ def _build_candidate(
         degradations.append("no structure resolved (experimental or predicted)")
 
     has_cofactor = _has_cofactor(rec, plan.required_cofactor_chebi, plan.required_cofactor_name)
+    if not _matches_route(rec, plan, interpro_matches, has_cofactor):
+        return None
     work, fail = _rationale(rec, plan, has_cofactor, has_experimental)
     name = rec.protein_name or rec.uniprotkb_id or rec.primary_accession
 
@@ -212,6 +247,8 @@ def assemble_candidates(
                 continue
             seen.add(key)
             cand = _build_candidate(rec, prov, plan, ip, rc, af)
+            if cand is None:
+                continue
             out.append(cand)
             if on_candidate is not None:
                 on_candidate(cand)

@@ -7,10 +7,11 @@ See also: [`CLAUDE_TRANSPARENCY.md`](./CLAUDE_TRANSPARENCY.md) · [`SUBMISSION.m
 
 ## How Claude is used
 
-Claude acts as a **visible, bounded panel of roles** on top of deterministic
-code. The schemas, mechanism-route registry, simulator, ranking, claim firewall,
-falsification rules, and **mandatory adversarial swarm** are deterministic TypeScript
-(fully tested); Claude works *within* those constraints.
+Claude acts as a **visible, bounded panel of roles** around deterministic,
+reviewable Python and TypeScript. The shipped browser journey uses the FastAPI
+objective, retrieval, mechanism, physics-eligibility, and run-orchestration path;
+the older TypeScript research pipeline remains a tested reference implementation.
+Claude works within the repository's contracts and scientific boundaries.
 
 ## Agents (13)
 

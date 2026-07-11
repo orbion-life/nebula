@@ -1,63 +1,45 @@
-# Claude Transparency Report
+# Claude transparency report
 
-Verifiable map of Claude roles → repository artifacts. **Deterministic TypeScript
-owns execution**; Claude owns bounded authoring and review under constraints.
+Nebula Discover is a **Built with Claude: Life Sciences** project. This report maps the
+visible Claude project system to the current shipped architecture.
 
-## Division of labor
+## Division of work
 
-| Deterministic (code + tests) | Claude (agents + skills) |
+| Deterministic runtime | Claude project workflow |
 | --- | --- |
-| `objectiveCompiler.ts`, zod schema | Parse messy objectives |
-| `constructGenerator.ts`, routes registry | Hypothesis framing |
-| `simulator.ts`, `physics.ts`, PRNG | Explain sweeps (not run them) |
-| `experimentScore.ts` weights | Rationale prose |
-| `claimFirewall.ts` | Red-team wording |
-| `src/core/swarm/` orchestrator | Mirror swarm in sessions |
-| `export.ts`, falsification rules | Handoff narration |
+| Pydantic and OpenAPI contracts | Objective and contract review |
+| Public provider retrieval and normalization | Evidence and citation critique |
+| Route matching and physics eligibility | Mechanism and scientific red-team |
+| Bounded cluster calculation and reference artifacts | Assumption and claim review |
+| Triage lanes, controls, and falsifiers | Product, visual, demo, and accessibility review |
+| Claim-boundary tests and export checks | Submission and judge-facing audit |
 
-## Agent → artifact map
+Claude roles do not execute inside the public web app. They are repository-visible build
+and review tools under `.claude/`, with dated artifacts under `artifacts/claude/`.
 
-| Agent | Skill | Code / test proof |
-| --- | --- | --- |
-| objective-compiler | objective-to-constraints | `src/core/objectiveCompiler.ts`, `tests/objective.test.ts` |
-| construct-architect | construct-hypothesis | `src/core/constructGenerator.ts`, `tests/construct.test.ts` |
-| mechanism-router | mechanism-route | `src/core/mechanismRouter.ts`, `fixtures/routes.ts` |
-| physics-data-simulator | physics-data-simulation | `src/core/simulator.ts`, `tests/simulator.test.ts` |
-| rationale-explainer | rationale-evidence | `src/core/rationale.ts`, `src/core/falsification.ts` |
-| measurement-worthiness-ranker | measurement-worthiness | `src/core/experimentScore.ts` |
-| design-adapter | design-adapter | `src/core/designAdapter.ts` |
-| swarm-orchestrator | adversarial-swarm | `src/core/swarm/`, `tests/swarm.test.ts` (release audit) |
-| scientific-skeptic | hackathon-judge-qa, falsification-path | Swarm lenses + skills |
-| claim-boundary-auditor | claim-boundary | `src/core/claimFirewall.ts`, `tests/claim.test.ts` |
-| visual-system-director | visual-system, accessibility-demo-pass | `src/ui/`, `theme.css` |
-| demo-director | demo-video, demo-recording-qa | `DEMO_SCRIPT.md` |
-| code-quality-reviewer | audit-submit | `tests/`, `.github/workflows/ci.yml` |
+## Agent to current artifact map
 
-## Hackathon skills (judge-facing)
-
-| Skill | Purpose |
+| Agent | Current source or proof |
 | --- | --- |
-| claude-transparency-report | This document |
-| hackathon-judge-qa | Q&A rehearsal |
-| falsification-path | Kill criteria |
-| objective-stress-test | Robustness beyond demo |
-| github-submission-pack | README + SUBMISSION polish |
-| evidence-citation-audit | DOI verification |
-| measurement-collaborator-handoff | Wet-lab brief |
-| not-a-model-wrapper | Differentiation narrative |
-| demo-recording-qa | Post-record checklist |
-| life-sciences-impact-narrator | PI-facing prose |
-| route-registry-curator | New mechanism routes |
-| post-swarm-patch | Fix swarm blockers |
-| competitive-landscape | Honest comparisons |
-| accessibility-demo-pass | Video readability |
+| objective-compiler | `backend/app/objective/compile.py`, `backend/tests/test_phase1.py` |
+| construct-architect | public hypothesis contracts in `backend/app/contracts/candidate.py` |
+| mechanism-router | `backend/app/retrieval/plan.py`, `backend/app/discovery/mechanism.py` |
+| physics-data-simulator | `backend/app/physics/`, `src/data/generated/`, `backend/tests/test_phase4.py` |
+| measurement-worthiness-ranker | `backend/app/discovery/scoring.py`, `backend/app/discovery/lanes.py` |
+| rationale-explainer | candidate rationale and measurement contracts under `backend/app/` |
+| scientific-skeptic | dated reviews in `artifacts/claude/`, hardening tests |
+| claim-boundary-auditor | `tests/exportBoundary.test.ts`, `tests/boundary.test.ts`, `IP_BOUNDARY.md` |
+| visual-system-director | `src/ui/discover/`, Playwright viewport and fallback tests |
+| demo-director | `DEMO_SCRIPT.md`, `e2e/discovery.spec.ts` |
+| code-quality-reviewer | frontend, backend, E2E, build, audit, and deploy gates |
 
 ## Commands
 
 `build-discover` · `swarm-review` · `skeptic-pass` · `demo-script` · `audit-submit`
 · `judge-qa` · `stress-test` · `submission-pack` · `transparency-report`
 
-## Regenerate
+## Boundary
 
-Run skill `.claude/skills/claude-transparency-report/SKILL.md` after adding agents
-or core modules.
+Claude is never cited as experimental validation. The repository does not claim that a
+Claude agent measured a protein, ran in the deployed application, or established a
+working sensor. See [`IP_BOUNDARY.md`](./IP_BOUNDARY.md).

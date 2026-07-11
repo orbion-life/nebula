@@ -10,6 +10,7 @@ import sqlite3
 import threading
 from pathlib import Path
 
+from ..contracts.enums import TERMINAL_STATUSES
 from ..contracts.run import RunState
 
 _DEFAULT_DB = Path(__file__).resolve().parents[2] / "artifacts" / "runs.sqlite"
@@ -45,18 +46,52 @@ class RunStore:
                     raw = row[0] if row else None
         return RunState.model_validate_json(raw) if raw else None
 
-    def put(self, run: RunState) -> None:
+    @staticmethod
+    def _terminal(raw: str | None) -> bool:
+        if not raw:
+            return False
+        try:
+            return RunState.model_validate_json(raw).status in TERMINAL_STATUSES
+        except Exception:
+            return False
+
+    def put(self, run: RunState) -> bool:
+        """Store a state update without allowing stale workers to revive terminal runs."""
         raw = run.model_dump_json()
         with self._lock:
             if self._path == ":memory:":
+                previous = self._mem.get(run.run_id)
+                if self._terminal(previous) and previous != raw:
+                    return False
                 self._mem[run.run_id] = raw
             else:
                 with self._connect() as con:
+                    row = con.execute("SELECT json FROM runs WHERE run_id=?", (run.run_id,)).fetchone()
+                    previous = row[0] if row else None
+                    if self._terminal(previous) and previous != raw:
+                        return False
                     con.execute(
                         "INSERT INTO runs(run_id,fingerprint,status,json) VALUES(?,?,?,?) "
                         "ON CONFLICT(run_id) DO UPDATE SET status=excluded.status, json=excluded.json",
                         (run.run_id, run.input_fingerprint, run.status.value, raw),
                     )
+        return True
+
+    def put_new(self, run: RunState) -> bool:
+        """Insert a new attempt atomically; return False when the id already exists."""
+        raw = run.model_dump_json()
+        with self._lock:
+            if self._path == ":memory:":
+                if run.run_id in self._mem:
+                    return False
+                self._mem[run.run_id] = raw
+                return True
+            with self._connect() as con:
+                cur = con.execute(
+                    "INSERT OR IGNORE INTO runs(run_id,fingerprint,status,json) VALUES(?,?,?,?)",
+                    (run.run_id, run.input_fingerprint, run.status.value, raw),
+                )
+                return cur.rowcount == 1
 
     def exists(self, run_id: str) -> bool:
         return self.get(run_id) is not None
@@ -72,3 +107,7 @@ class RunStore:
         runs = [RunState.model_validate_json(r) for r in raws]
         runs.sort(key=lambda r: r.created_at, reverse=True)
         return runs
+
+    def by_fingerprint(self, fingerprint: str) -> list[RunState]:
+        """All attempts for one immutable input fingerprint, newest first."""
+        return [run for run in self.all_runs() if run.input_fingerprint == fingerprint]

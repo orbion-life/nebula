@@ -1,70 +1,60 @@
-# Nebula Discover — 3-Minute Demo Script
+# Nebula Discover: 3-minute demo
 
-**Built with Claude: Life Sciences.** One scientific reveal: objective → public
-benchmark → mechanism → a virtual counterfactual experiment whose *physics and
-instrument change the ranking* → "measure this next" → the falsification rule.
+## 0:00-0:25 | The objective
 
-Run `npm run dev`. The studio has four states: **Ask · Explain · Simulate ·
-Measure next**. Keep the demo objective loaded.
+> "A materials or biosensor team can describe what a protein should sense without
+> pretending to know the mechanism or instrument. The target drives the search;
+> deployment conditions are preserved for the experiment handoff."
 
----
+Show the Mission Bench. Point out that the supported sensing targets are explicit and
+that the product and survival fields say they are handoff context in this build. Choose
+the wearable magnetic-field example and start the run.
 
-**0:00–0:20 — Ask (the problem)**
+## 0:25-0:50 | The search
 
-> "Protein-sensor teams generate mechanism ideas faster than they can measure
-> them. Nebula Discover decides what deserves measurement first — and what result
-> would falsify it. It does not claim any sensor works."
+> "The run is not a canned animation. It plans mechanism-specific searches, retrieves
+> public accessions, and admits a protein to a route only when its family and cofactor
+> annotations support that route."
 
-On screen: the Ask state — objective compiled to constraints; the honest status
-line ("synthetic assumption sweeps, not measured data"); the instrument picker.
-Note the instrument gates what is observable. Click **Explain the mechanisms**.
+Let the run counter advance from real state-machine events. Mention that the offline
+demo replays versioned public fixtures so the judging run is reproducible.
 
-**0:20–0:55 — Explain (evidence → mechanism)**
+## 0:50-1:20 | Biology constrains the physics
 
-> "Public evidence, then the mechanism it can and can't support. Each causal step
-> is tagged anchored, assumed, or unknown — the honest gap is visible before any
-> measurement. Anchors link to real DOIs."
+Scroll through the objective, unique-accession count, mechanism routes, and structure.
 
-Point out the ranked routes (each tagged **physics** or **proxy**). Click the
-**LOV / flavin** radical-pair route to inspect the deep path.
+> "A seed is not permission to relabel a protein. This phototropin stays on the LOV and
+> FMN route; this cryptochrome stays on the cryptochrome and FAD route. The structure
+> view focuses the cofactor context that makes the next calculation possible."
 
-**0:55–1:45 — Simulate (the reveal)**
+## 1:20-1:55 | Computation with assumptions exposed
 
-> "This trace is simulation from a real radical-pair spin-dynamics model —
-> RadicalPy: Zeeman, hyperfine, Haberkorn recombination, relaxation. The low-field
-> dip and high-field rise are the radical-pair signature, with an ensemble
-> uncertainty band and the instrument's noise floor drawn in."
+> "The MARY curve is a versioned RadicalPy reference for a model flavin radical pair,
+> not a response prediction for this protein. Where a cofactor-bound structure exists,
+> the app can run an isolated UHF cluster diagnostic on the extracted isoalloxazine.
+> The displayed Mulliken population is basis dependent. Protein environment, radical
+> partner, protonation alternatives, and dynamics remain unresolved."
 
-Now demonstrate that the physics and instrument drive the answer:
-- Switch the instrument to **plate reader** → the same signal sinks toward the
-  red noise floor and the route loses rank (watch the live ranking table move).
-- Switch to **confocal ODMR** → the RF resonance appears (frequency-resolved from
-  the Hamiltonian eigen-gaps; the RF-off control is flat — not a scalar gain).
-- Toggle **counterfactual: fast spin relaxation** → the field effect collapses
-  below the floor.
+Show the direct labels on both small multiples and the `not a prediction` caption.
 
-> "Change the physics or the instrument and the ranking changes — because we
-> simulate every route before we rank. Beside the trace, the public benchmark is
-> quoted qualitatively: we reproduce the *mechanism class*, not measured numbers."
+## 1:55-2:25 | Prioritization without a magic score
 
-**1:45–2:40 — Measure next (the decision)**
+> "Evidence and exploration are separate lanes. The main view uses plain-language
+> bands; experts can open the uncalibrated P, M, D, and information-gain axes. These are
+> triage heuristics, not probabilities or predicted performance."
 
-> "One decisive experiment: what to measure, the expected signature and
-> uncertainty, the null expectation, the required positive and negative controls
-> — including mandatory oxygen and temperature for a radical pair — the competing
-> explanations, and the exact kill criterion."
+Show the keyboard-accessible candidate universe and open the expert details briefly.
 
-Show the live **claim firewall** downgrading an unsafe claim. Click **Download
-handoff** — the brief matches the selected hypothesis, ready for a measurement
-collaborator (Orbion has no wet lab; validation comes from a partner or public
-data).
+## 2:25-2:50 | Measurement handoff
 
-**2:40–3:00 — Close**
+> "The output is a best-supported next measurement under the registered assumptions:
+> a public accession, route-compatible measurement scenario, controls, and a falsifier.
+> A collaborator can reject the hypothesis instead of being sold a finished sensor."
 
-> "A pipeline, not a model wrapper. Deterministic code owns the physics, ranking,
-> and claim firewall; Claude's contribution is in the review artifacts and commit
-> history, not an in-product claim that agents ran. Nebula Discover doesn't say
-> the sensor works — it says what is worth measuring first, and what would prove
-> it wrong."
+Download the Markdown handoff.
 
-**Closing line:** *"Decide what deserves measurement first."*
+## 2:50-3:00 | Close
+
+> "Nebula Discover does not say the sensor works. It makes the search auditable and tells
+> you what to measure next, what remains unknown, and what result would prove the idea
+> wrong."

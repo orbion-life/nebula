@@ -19,7 +19,7 @@ from app.discovery.ladder import assign_exploration
 from app.discovery.lanes import build_discovery
 from app.discovery.mechanism import compose_graph
 from app.discovery.scoring import ScoreInputs, score_one
-from app.jobs.fingerprint import input_fingerprint
+from app.jobs.fingerprint import component_versions, input_fingerprint
 from app.physics.eligibility import assess_eligibility
 
 BENCH = next(i for i in INSTRUMENTS if i["id"] == "benchtop_field_fluorimeter")
@@ -138,6 +138,35 @@ def test_reproducible_fingerprint_includes_versions() -> None:
     fp2 = input_fingerprint(obj, 1337, None)
     assert fp1 == fp2                                  # same inputs+versions+seed → same identity
     assert input_fingerprint(obj, 4242, None) != fp1   # seed is part of identity
+    assert component_versions()["pipeline_source"] not in ("", "source-unavailable")
+
+
+def test_measurement_scenario_varies_by_route() -> None:
+    scores, _, _ = build_discovery(
+        [CRY, REDOX, TRIPLET],
+        [_dossier(CRY), _dossier(REDOX), _dossier(TRIPLET)],
+        instrument=CONFOCAL,
+        objective=_obj(),
+    )
+    by_id = {score.candidate_id: score.suggested_instrument_id for score in scores}
+    assert by_id[CRY.candidate_id] == "benchtop_field_fluorimeter"
+    assert by_id[REDOX.candidate_id] == "potentiostat_optical_bench"
+    assert by_id[TRIPLET.candidate_id] == "odmr_confocal"
+
+
+def test_redox_handoff_uses_potential_not_field_rf_language() -> None:
+    from app.discovery.lanes import _experiment
+
+    experiment = _experiment(REDOX, ReadoutMode.redox_electrochemical, "potentiostat_optical_bench")
+    joined = " ".join([
+        experiment.what_to_measure,
+        experiment.expected_signature,
+        experiment.null_expectation,
+        experiment.kill_criterion,
+    ]).lower()
+    assert "applied potential" in joined
+    assert "field/rf" not in joined
+    assert "rf-off" not in joined
 
 
 def test_every_frontier_hypothesis_has_falsifier_and_plan() -> None:

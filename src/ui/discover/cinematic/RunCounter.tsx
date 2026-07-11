@@ -11,11 +11,16 @@ const R = 78;
 const CIRC = 2 * Math.PI * R;
 
 export function RunCounter({ fraction, stage, candidateCount }: { fraction: number; stage: string; candidateCount: number }) {
+  const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
   const target = useRef(fraction);
   target.current = fraction;
   const [shown, setShown] = useState(fraction);
 
   useEffect(() => {
+    if (reduced) {
+      setShown(target.current);
+      return;
+    }
     let raf = 0;
     const tick = () => {
       setShown((s) => (Math.abs(target.current - s) < 0.002 ? target.current : s + (target.current - s) * 0.07));
@@ -23,11 +28,11 @@ export function RunCounter({ fraction, stage, candidateCount }: { fraction: numb
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [reduced]);
 
   const pct = Math.round(shown * 100);
   return (
-    <div className="runcounter" role="status" aria-live="polite" aria-label={`discovery progress ${pct} percent`}>
+    <div className="runcounter" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-label={`discovery pipeline ${pct} percent complete`}>
       <div className="rc-ring">
         <svg viewBox="0 0 180 180" aria-hidden>
           <circle cx="90" cy="90" r={R} className="rc-track" />

@@ -36,7 +36,7 @@ void main(){
   gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.7));
 }`;
 
-export function QuantumField({ progress = 0.45 }: { progress?: number }) {
+export function QuantumField({ progress = 0.45, reducedMotion = false }: { progress?: number; reducedMotion?: boolean }) {
   const mat = useRef<THREE.ShaderMaterial>(null);
   const target = useRef(progress);
   target.current = progress;
@@ -53,6 +53,11 @@ export function QuantumField({ progress = 0.45 }: { progress?: number }) {
 
   useFrame((s) => {
     if (!mat.current) return;
+    if (reducedMotion) {
+      mat.current.uniforms.uTime.value = 0;
+      mat.current.uniforms.uProgress.value = target.current;
+      return;
+    }
     mat.current.uniforms.uTime.value = s.clock.elapsedTime;
     const u = mat.current.uniforms.uProgress;
     u.value += (target.current - u.value) * 0.05;

@@ -3,10 +3,10 @@
  *
  * State machine: objective → running → workspace. A run is started explicitly
  * (never on keystroke), streamed via SSE with a polling fallback, cancellable, and
- * its immutable result is shown in the workspace. All data is real: the objective is
- * compiled server-side, candidates are real public accessions, physics is computed.
+ * its immutable result is shown in the workspace. Public records, deterministic
+ * heuristics, computed cluster values, and synthetic references stay differentiated.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Component, Suspense, lazy, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   cancelRun,
   createRun,
@@ -19,10 +19,33 @@ import {
   type RunState,
 } from "../../api/client";
 import { SmoothScroll } from "./scroll/SmoothScroll";
-import { WorldCanvas } from "./world/WorldCanvas";
 import { Preloader } from "./Preloader";
 import { AmbientAudio } from "./audio/AmbientAudio";
 import { CinematicShell } from "./cinematic/CinematicShell";
+import { canUseWebGL } from "./render/webgl";
+
+const WorldCanvas = lazy(() => import("./world/WorldCanvas").then((module) => ({ default: module.WorldCanvas })));
+
+class VisualBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() { return this.state.failed ? <div className="world-fallback" aria-hidden /> : this.props.children; }
+}
+
+class ExperienceBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() {
+    if (!this.state.failed) return this.props.children;
+    return (
+      <section className="experience-error" role="alert">
+        <h1>The discovery view could not render.</h1>
+        <p>Your objective was not changed. Reload the local application to recover the view.</p>
+        <button className="btn-primary" onClick={() => window.location.reload()}>reload view</button>
+      </section>
+    );
+  }
+}
 
 type Phase = "objective" | "running" | "workspace";
 
@@ -37,24 +60,18 @@ export function DiscoverApp() {
   const [error, setError] = useState<string | null>(null);
   const [booted, setBooted] = useState(false); // dismissed once the entry preloader completes
   const cleanupRef = useRef<(() => void) | null>(null);
+  const requestGeneration = useRef(0);
 
   useEffect(() => {
     getHealth().then(setHealth).catch(() => setHealth(null));
     return () => cleanupRef.current?.();
   }, []);
 
-  // During a live run, poll the FULL run state so the universe fills in as real
-  // accessions arrive (SSE only carries stage events, not the growing candidate list).
-  useEffect(() => {
-    if (phase !== "running" || !runId) return;
-    if (["completed", "failed", "cancelled"].includes(status)) return;
-    const id = window.setInterval(() => {
-      getRun(runId).then(setRun).catch(() => {});
-    }, 700);
-    return () => window.clearInterval(id);
-  }, [phase, runId, status]);
-
   const start = useCallback(async (spec: ObjectiveSpec) => {
+    const generation = ++requestGeneration.current;
+    const startedAt = performance.now();
+    cleanupRef.current?.();
+    cleanupRef.current = null;
     setError(null);
     setEvents([]);
     setRun(null);
@@ -63,28 +80,37 @@ export function DiscoverApp() {
     setPhase("running");
     try {
       const created = await createRun(spec);
+      if (generation !== requestGeneration.current) return;
       setRunId(created.run_id);
       setStatus(created.status);
       // if idempotent-cached and already complete, jump straight to the result
       const first = await getRun(created.run_id);
+      if (generation !== requestGeneration.current) return;
       applyState(first);
       if (["completed", "failed", "cancelled"].includes(first.status)) {
-        if (first.status === "completed") setPhase("workspace");
+        if (first.status === "completed") {
+          const isFreshRun = created.status === "queued";
+          const wait = isFreshRun ? Math.max(0, 700 - (performance.now() - startedAt)) : 0;
+          window.setTimeout(() => {
+            if (generation === requestGeneration.current) setPhase("workspace");
+          }, wait);
+        }
         return;
       }
-      cleanupRef.current?.();
       cleanupRef.current = streamRun(created.run_id, {
         onEvent: (e) => {
+          if (generation !== requestGeneration.current) return;
           setEvents((prev) => [...prev, e]);
           if (e.to_status) setStatus(e.to_status);
           if (e.stage) setStage(e.stage);
         },
-        onState: applyState,
+        onState: (s) => generation === requestGeneration.current && applyState(s),
         onDone: (s) => {
+          if (generation !== requestGeneration.current) return;
           applyState(s);
-          if (s.status === "completed") setTimeout(() => setPhase("workspace"), 350);
+          if (s.status === "completed") setPhase("workspace");
         },
-        onError: (err) => setError(err.message),
+        onError: (err) => generation === requestGeneration.current && setError(err.message),
       });
     } catch (err) {
       setError((err as Error).message);
@@ -110,6 +136,7 @@ export function DiscoverApp() {
   }, [runId]);
 
   const reset = useCallback(() => {
+    requestGeneration.current += 1;
     cleanupRef.current?.();
     cleanupRef.current = null;
     setPhase("objective");
@@ -123,7 +150,14 @@ export function DiscoverApp() {
     <SmoothScroll>
       {!booted && <Preloader onDone={() => setBooted(true)} />}
       <div className="discover">
-      <WorldCanvas />
+      <a className="skip-link" href="#main-content">skip to discovery workspace</a>
+      {booted && canUseWebGL() ? (
+        <VisualBoundary>
+          <Suspense fallback={<div className="world-fallback" aria-hidden />}>
+            <WorldCanvas />
+          </Suspense>
+        </VisualBoundary>
+      ) : <div className="world-fallback" aria-hidden />}
       <div className="disc-content">
       <header className="disc-top">
         <div className="disc-brand">
@@ -137,8 +171,12 @@ export function DiscoverApp() {
           )}
           <AmbientAudio />
           {health ? (
-            <span className={`hz ${health.offline ? "offline" : "live"}`}>
-              {health.offline ? "offline · fixtures" : "live · public APIs"}
+            <span className={`hz ${health.offline ? "offline" : health.status === "ok" ? "live" : "down"}`}>
+              {health.offline
+                ? "offline · public fixtures"
+                : health.status === "ok"
+                  ? "live · public APIs"
+                  : `${health.status} · public APIs`}
             </span>
           ) : (
             <span className="hz down">API unreachable</span>
@@ -146,6 +184,8 @@ export function DiscoverApp() {
         </div>
       </header>
 
+      <main id="main-content">
+      <ExperienceBoundary>
       <CinematicShell
         phase={phase}
         status={status}
@@ -158,6 +198,8 @@ export function DiscoverApp() {
         onCancel={cancel}
         onReset={reset}
       />
+      </ExperienceBoundary>
+      </main>
 
       <footer className="disc-foot">
         A candidate is a discovery to prove at the bench, not a proven sensor.

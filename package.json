@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "check:bundle": "node scripts/check_bundle_budget.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -20,10 +21,6 @@
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",
     "@react-three/postprocessing": "^2.19.1",
-    "@visx/axis": "^4.0.0",
-    "@visx/group": "^4.0.0",
-    "@visx/scale": "^4.0.0",
-    "@visx/shape": "^4.0.0",
     "3dmol": "^2.5.5",
     "fuse.js": "^7.4.2",
     "gsap": "^3.15.0",

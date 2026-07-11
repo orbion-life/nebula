@@ -32,7 +32,7 @@ class ExplorationReason(BaseModel):
 
 
 class DiscoveryScore(BaseModel):
-    """The seven dimensions + lane assignment for one candidate. No magic scalar."""
+    """Uncalibrated triage dimensions + lane assignment. No magic scalar or probability."""
     model_config = ConfigDict(extra="forbid", frozen=True)
     candidate_id: str
     P_plausibility: float = Field(ge=0.0, le=1.0)
@@ -47,8 +47,8 @@ class DiscoveryScore(BaseModel):
     pareto_rank: int = Field(description="1 = on the Pareto frontier for its lane's objectives")
     dominated_by: list[str] = Field(default_factory=list)
     rationale: str
-    # measurement is an OUTPUT: the best-matching registry instrument for THIS candidate,
-    # chosen by the app (never a user input). Set for every scored candidate, both lanes.
+    # Route-compatible registry scenario for this candidate. It is a handoff starting point,
+    # not a recommendation or proof that the instrument can resolve the biological effect.
     suggested_instrument_id: str | None = None
 
 

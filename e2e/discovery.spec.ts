@@ -41,7 +41,7 @@ function nonBackgroundFraction(buf: Buffer): number {
   return nonBg / n;
 }
 
-test("run returns a real accession, a non-blank structure, candidate-specific QM, and a suggested instrument", async ({ page }) => {
+test("run returns a real accession, a non-blank structure, candidate-specific QM, and a measurement scenario", async ({ page }) => {
   await runToResult(page);
 
   // a REAL UniProt accession appears in the search chapter (not a template family)
@@ -58,7 +58,7 @@ test("run returns a real accession, a non-blank structure, candidate-specific QM
 
   const narr = page.locator(".narr");
   await expect(narr).toContainText(/candidate specific/i); // physics computed on real coordinates
-  await expect(narr).toContainText(/Suggested instrument/i); // measurement surfaced as OUTPUT
+  await expect(narr).toContainText(/Route compatible measurement scenario/i); // measurement surfaced as OUTPUT
   await expect(narr).toContainText(/Falsification/i); // the decisive kill criterion
 
   const body = (await page.locator("body").innerText()).toLowerCase();
@@ -75,9 +75,11 @@ test("one result view: no workspace toggle, inline handoff download", async ({ p
 
 test("the unmade generative frontier is an honest preview", async ({ page }) => {
   await runToResult(page);
-  await page.locator(".narr-unmade").scrollIntoViewIfNeeded();
-  await expect(page.locator(".unmade-badge").first()).toContainText(/generative preview/i);
-  await expect(page.locator(".narr-unmade-note")).toContainText(/not wired in this build/i);
+  const details = page.locator(".narr-unmade-details");
+  await details.scrollIntoViewIfNeeded();
+  await details.locator("summary").click();
+  await expect(details).toContainText(/No sequence or orderable construct is produced/i);
+  await expect(details.locator(".unmade-card")).toHaveCount(3);
 });
 
 test("measurement is never asked as an input", async ({ page }) => {
@@ -95,6 +97,22 @@ test("persistent world canvas exists and is sized", async ({ page }) => {
   await expect(wc).toBeVisible();
   const box = await wc.boundingBox();
   expect(box && box.width > 200 && box.height > 100, "world canvas should be rendered and sized").toBeTruthy();
+});
+
+test("WebGL failure keeps the objective usable through a non-canvas fallback", async ({ browser }) => {
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (type: string, ...args: unknown[]) {
+      if (type === "webgl" || type === "webgl2" || type === "experimental-webgl") return null;
+      return original.call(this, type as never, ...(args as []));
+    } as typeof HTMLCanvasElement.prototype.getContext;
+  });
+  await boot(page);
+  await expect(page.locator(".world-fallback")).toBeVisible();
+  await expect(page.locator(".mb .btn-run")).toBeEnabled();
+  await ctx.close();
 });
 
 test("completes with prefers-reduced-motion (no motion-only meaning)", async ({ browser }) => {

@@ -7,7 +7,8 @@
  *     synthetic assumption sweep, NOT a prediction of this protein.
  *  2. This candidate's OWN computed number — the max Mulliken spin from the UHF calculation
  *     on its extracted isoalloxazine — drawn as a point with its ±range interval on a
- *     unitless 0–1 scale, direct-labeled "computed on real coordinates, not a prediction".
+ *     dynamically scaled axis. Mulliken populations are basis dependent and are not
+ *     probabilities, so they must never be clamped to a 0–1 interval.
  * Only rendered for spin-dynamics-eligible candidates (the caller gates it).
  */
 import artifact from "../../data/generated/radical_pair_mary.v1.json";
@@ -56,7 +57,7 @@ export function Traces({ spin, candidateSpecific, candidateLabel }: Props) {
 
   return (
     <figure className="traces">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="reference radical-pair MARY trace with uncertainty band">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="reference radical pair MARY trace with uncertainty band">
         <line x1={M.left} x2={M.left + IW} y1={y(0)} y2={y(0)} stroke={PALETTE.line2} strokeWidth={1} />
         <path d={band} fill={`${PALETTE.gold}22`} stroke="none" />
         <path d={line} fill="none" stroke={PALETTE.gold} strokeWidth={1.8} />
@@ -88,21 +89,22 @@ const SM = { top: 22, right: 150, bottom: 26, left: 52 };
 const SIW = SW - SM.left - SM.right;
 
 function SpinPanel({ spin, candidateSpecific }: { spin: SpinParam; candidateSpecific?: boolean }) {
-  const lo = spin.range ? Math.max(0, Math.min(spin.range[0], spin.range[1])) : spin.value;
+  const lo = spin.range ? Math.min(spin.range[0], spin.range[1]) : spin.value;
   const hi = spin.range ? Math.max(spin.range[0], spin.range[1]) : spin.value;
-  const px = (v: number) => SM.left + Math.max(0, Math.min(1, v)) * SIW;
+  const domainMax = Math.max(0.25, Math.ceil(Math.max(spin.value, hi) * 5) / 5);
+  const px = (v: number) => SM.left + (Math.max(0, Math.min(domainMax, v)) / domainMax) * SIW;
   const cy = SM.top + 14;
   return (
-    <svg viewBox={`0 0 ${SW} ${SH}`} role="img" aria-label="candidate computed spin with uncertainty interval" className="tr-spin">
+    <svg viewBox={`0 0 ${SW} ${SH}`} role="img" aria-label="basis dependent Mulliken spin population from the candidate cluster calculation" className="tr-spin">
       <line x1={SM.left} x2={SM.left + SIW} y1={cy} y2={cy} stroke={PALETTE.line2} strokeWidth={1} />
       {spin.range && <line x1={px(lo)} x2={px(hi)} y1={cy} y2={cy} stroke={PALETTE.steel} strokeWidth={3} />}
       <circle cx={px(spin.value)} cy={cy} r={4.5} fill={PALETTE.steel} />
       <text x={px(spin.value)} y={cy - 12} className="tr-ax" textAnchor="middle">{spin.value.toFixed(2)}</text>
       <text x={SM.left} y={SH - 6} className="tr-ax">0</text>
-      <text x={SM.left + SIW} y={SH - 6} className="tr-ax" textAnchor="end">1</text>
-      <text x={SM.left + SIW + 8} y={cy} className="tr-lab" dominantBaseline="middle">computed spin</text>
+      <text x={SM.left + SIW} y={SH - 6} className="tr-ax" textAnchor="end">{domainMax.toFixed(1)}</text>
+      <text x={SM.left + SIW + 8} y={cy} className="tr-lab" dominantBaseline="middle">Mulliken population</text>
       <text x={SM.left + SIW + 8} y={cy + 14} className="tr-sub" dominantBaseline="middle">
-        {candidateSpecific ? "real coords (UHF)" : "template"}, not a prediction
+        {candidateSpecific ? "structure extracted cluster" : "template"}, basis dependent
       </text>
     </svg>
   );

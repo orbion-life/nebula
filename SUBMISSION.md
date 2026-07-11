@@ -1,63 +1,74 @@
-# Nebula Discover — Hackathon Submission Pack
+# Nebula Discover: hackathon submission pack
 
-**Built with Claude: Life Sciences** · Public open-source discovery module
+**Built with Claude: Life Sciences**
 
 ## One-line pitch
 
-Turn a messy protein-sensor objective into ranked public construct hypotheses,
-synthetic assumption sweeps, falsification criteria, and a claim-safe measurement
-handoff — with a deterministic 10-lens release audit gating every run.
+Turn a sensing objective into annotation-checked public protein hypotheses and one
+falsifiable measurement handoff, with every physics assumption exposed.
 
 ## Problem
 
-Protein sensor teams generate ideas faster than they can measure them. Nebula
-Discover shows **what deserves measurement first**, with controls, confounders,
-and explicit kill rules — without claiming validation.
+Protein and biomaterial teams can generate candidate ideas faster than they can
+measure them. Familiar sequence and structure tools do not answer whether a proposed
+spin-linked mechanism will create a control-surviving readout. Nebula Discover narrows
+the public search and makes the next experiment auditable without claiming the sensor
+works.
 
-## Claude use (verifiable)
+## What the demo proves
 
-| Layer | Owner | Proof in repo |
-| --- | --- | --- |
-| Schemas, simulator, ranking, firewall, swarm | Deterministic TypeScript | `src/core/`, `tests/` |
-| Objective parsing, rationale prose, red-teaming | Claude agents/skills | `.claude/agents/`, `.claude/skills/` |
-| Mandatory swarm architecture | Code + Claude mirror | `src/core/swarm/`, `docs/SWARM_ARCHITECTURE.md` |
+- Beginner and expert objectives compile into the same editable contract.
+- The sensed quantity drives mechanism-specific public-protein search.
+- Public family and cofactor annotations prevent route relabeling.
+- A real public structure can support a bounded cofactor-cluster UHF diagnostic.
+- Reference spin dynamics, candidate diagnostics, and uncalibrated triage axes remain
+  visibly separate.
+- The output carries a route-compatible measurement scenario, controls, uncertainty,
+  and a falsifier.
+- Unsupported objectives, missing evidence, and unavailable WebGL fail honestly.
 
-See [`CLAUDE_TRANSPARENCY.md`](./CLAUDE_TRANSPARENCY.md) for the full agent→artifact map.
+## What it does not prove
+
+- No working or validated sensor.
+- No arbitrary sequence-to-spin-response prediction.
+- No calibrated probability of success or predicted performance.
+- No complete protein-environment quantum calculation.
+- No private Nebula logic, partner target, mutation list, or bench data.
+
+## Claude use
+
+The repository contains the project agents, skills, commands, dated Claude artifacts,
+and transparency report used to plan, build, red-team, and document the project. The
+scientific execution path is deterministic and inspectable. Claude is not presented as
+having run inside the product or produced experimental evidence.
+
+See [`CLAUDE_TRANSPARENCY.md`](./CLAUDE_TRANSPARENCY.md).
 
 ## Demo
 
-- **Script:** [`DEMO_SCRIPT.md`](./DEMO_SCRIPT.md)
-- **Run locally:** `npm install && npm run dev`
-- **Flow:** four screens — Ask · Explain · Simulate · Measure next (demo objective pre-loaded; a stress-test objective is loadable on Ask). Deterministic seed `1337`.
+- Script: [`DEMO_SCRIPT.md`](./DEMO_SCRIPT.md)
+- Browser flow: Mission Bench -> live run -> seven-scene result narrative -> Markdown handoff
+- Offline judging mode: versioned public fixtures and cached public-structure cluster result
+- Seed: `1337`
 
-## Verify before submit
+## Verify before submission
 
 ```bash
 npm test
 npm run build
+cd backend && python3 -m pytest -q
+cd .. && npm run e2e
+npm audit --omit=dev
 ```
 
-Run `/audit-submit` or `.claude/skills/audit-submit/SKILL.md`.
+Run `/audit-submit` and `/skeptic-pass` in Claude Code after the deterministic suite.
 
-## What we do NOT claim
+## Draft form fields
 
-- No validated sensor · no magnetic-response prediction · no private Nebula data
-- All traces: **synthetic assumption sweep, not prediction**
+**Title:** Nebula Discover: Decide What Deserves Measurement Next
 
-See [`IP_BOUNDARY.md`](./IP_BOUNDARY.md).
-
-## Submission form fields (draft)
-
-**Title:** Nebula Discover — Decide What Deserves Measurement First
-
-**Description:** A public discovery workflow for protein-sensor teams: objective →
-construct hypotheses → mechanism routes → synthetic traces (every candidate) →
-experiment-value ranking → falsification criteria → claim-safe handoff.
-Deterministic hierarchical map-reduce release audit on every result.
-Deterministic, offline, fully tested.
-
-**Claude:** A bounded, transparent set of 13 agents and 25+ skills as Claude's
-working method; deterministic code owns schemas, simulator, firewall, and swarm;
-Claude parses objectives and authors rationale under structured constraints.
-
-**Try it:** Clone repo → `npm test` → `npm run dev` → walk Ask → Explain → Simulate → Measure next; on Simulate, switch the instrument (or toggle the fast-relaxation counterfactual) and watch the ranking move.
+**Description:** Nebula Discover converts a supported sensing objective into a
+mechanism-specific public protein search, enriches real accessions with public domain,
+cofactor, and structure evidence, exposes bounded physics assumptions, and returns an
+unvalidated measurement hypothesis with controls and a kill criterion. It separates
+evidence from exploration and abstains rather than manufacturing a winner.

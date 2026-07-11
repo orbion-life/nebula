@@ -995,17 +995,24 @@
         "properties": {
           "objective_text": {
             "type": "string",
+            "maxLength": 5000,
+            "minLength": 10,
             "title": "Objective Text"
           },
           "user_mode": {
             "type": "string",
+            "enum": [
+              "novice",
+              "expert"
+            ],
             "title": "User Mode",
             "default": "novice"
           },
           "instrument_id": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "maxLength": 100
               },
               {
                 "type": "null"
@@ -1015,6 +1022,8 @@
           },
           "seed": {
             "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
             "title": "Seed",
             "default": 1337
           }
@@ -1132,7 +1141,7 @@
           "rationale"
         ],
         "title": "DiscoveryScore",
-        "description": "The seven dimensions + lane assignment for one candidate. No magic scalar."
+        "description": "Uncalibrated triage dimensions + lane assignment. No magic scalar or probability."
       },
       "DiscriminatingExperiment": {
         "properties": {
@@ -1833,6 +1842,8 @@
           },
           "objective_text": {
             "type": "string",
+            "maxLength": 5000,
+            "minLength": 10,
             "title": "Objective Text"
           },
           "user_mode": {
@@ -2142,7 +2153,8 @@
           "seed_query": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "maxLength": 500
               },
               {
                 "type": "null"
@@ -2156,6 +2168,7 @@
               "type": "string"
             },
             "type": "array",
+            "maxItems": 25,
             "title": "Seed Accessions"
           },
           "target_scaffold_families": {
@@ -2226,6 +2239,35 @@
             "type": "array",
             "title": "Field Provenance"
           },
+          "objective_support": {
+            "type": "string",
+            "enum": [
+              "supported",
+              "unsupported",
+              "needs_clarification"
+            ],
+            "title": "Objective Support",
+            "default": "needs_clarification"
+          },
+          "objective_support_note": {
+            "type": "string",
+            "title": "Objective Support Note",
+            "default": "State the physical quantity the protein should sense."
+          },
+          "decision_active_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Decision Active Fields"
+          },
+          "handoff_only_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Handoff Only Fields"
+          },
           "confidential_sequence_provided": {
             "type": "boolean",
             "const": false,
@@ -2234,6 +2276,8 @@
           },
           "seed": {
             "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
             "title": "Seed",
             "default": 1337
           }
@@ -2269,17 +2313,24 @@
             "title": "Unit"
           },
           "range": {
-            "prefixItems": [
+            "anyOf": [
               {
-                "type": "number"
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 2,
+                "minItems": 2
               },
               {
-                "type": "number"
+                "type": "null"
               }
             ],
-            "type": "array",
-            "maxItems": 2,
-            "minItems": 2,
             "title": "Range"
           },
           "uncertainty": {
@@ -2303,7 +2354,6 @@
           "name",
           "value",
           "unit",
-          "range",
           "uncertainty",
           "source_type",
           "citation_or_assumption",
@@ -2981,6 +3031,12 @@
           "input_fingerprint": {
             "type": "string",
             "title": "Input Fingerprint"
+          },
+          "attempt": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Attempt",
+            "default": 0
           },
           "status": {
             "$ref": "#/components/schemas/RunStatus",

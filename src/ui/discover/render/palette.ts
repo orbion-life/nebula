@@ -12,9 +12,10 @@
  */
 export const PALETTE = {
   navy: "#070c18", // deepest background: 3Dmol viewer bg + WebGL clear
-  gold: "#c6ccd6", // PLATINUM primary accent + evidence lane (was gold)
+  gold: "#c6ccd6", // PLATINUM primary brand accent (was gold)
   goldBright: "#e9edf3", // bright platinum: selected node / candidate-specific-QM highlight
-  violet: "#a78bd0", // frontier lane (distinct hue from platinum; colourblind-safe pairing)
+  evidence: "#9bcbd1", // evidence lane = cool teal, distinct from the brand accent (mirrors --d-evi)
+  violet: "#a78bd0", // frontier lane (distinct hue; colourblind-safe pairing)
   steel: "#7f9bc0", // cool secondary (links, candidate-spin marker, fill light)
   gray: "#55617a", // excluded candidates
   grayPending: "#6b7a94", // pending (still-searching) candidates

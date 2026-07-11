@@ -43,8 +43,8 @@ def _rp_peak_signature() -> float:
 # signature, and it is derived from the versioned, provenance-tagged RadicalPy artifact
 # (not a hand-typed constant). Proxy routes have NO candidate-specific, provenance-backed
 # amplitude, so they never receive a fabricated ΔF/F — they get a coarse binary
-# observability gate instead (see _measurability). This keeps the repo's "every numeric
-# parameter carries provenance" rule intact for anything that can move the ranking.
+# observability gate instead (see _measurability). The gate is an openly declared
+# heuristic used for triage, not a measured signal magnitude or calibrated probability.
 _RP_SIGNATURE = _rp_peak_signature()
 _PROXY_GATE = 0.5  # observable-in-principle under a compatible instrument (unitless gate, not an SNR)
 _CLAIM_POTENTIAL = {ClaimLevel.partner_ready_dossier: 1.0, ClaimLevel.measurement_triage: 0.8, ClaimLevel.diagnostic_only: 0.55}
@@ -152,13 +152,26 @@ def _objective_alignment(inp: ScoreInputs, desired: set[ReadoutMode]) -> float:
 
 
 def best_instrument(inp: ScoreInputs, instruments: list[dict]) -> dict:
-    """The registry instrument that makes THIS candidate most measurable — the app's
-    proposed measurement, chosen per candidate (never a user input). Tie-break toward the
-    more sensitive rig (lower min-detectable ΔF/F)."""
-    return max(
-        instruments,
-        key=lambda ins: (_measurability(inp, ins), -ins.get("min_detectable_delta_f_over_f", 1.0)),
-    )
+    """A route-compatible registry scenario, not an equipment recommendation.
+
+    Prefer the least-specialized bench that can execute the route. This avoids the
+    previous sensitivity-only collapse where every candidate pointed to the same rig.
+    """
+    preferred = {
+        RouteClass.cryptochrome_fad_radical_pair: "benchtop_field_fluorimeter",
+        RouteClass.lov_flavin_radical_pair: "benchtop_field_fluorimeter",
+        RouteClass.triplet_fp: "odmr_confocal",
+        RouteClass.rfp_flavin_photochemical: "plate_reader_screen",
+        RouteClass.redox_electrochemical: "potentiostat_optical_bench",
+    }.get(inp.candidate.route_class)
+    compatible = [ins for ins in instruments if _measurability(inp, ins) > 0]
+    if preferred:
+        match = next((ins for ins in compatible if ins["id"] == preferred), None)
+        if match is not None:
+            return match
+    if compatible:
+        return max(compatible, key=lambda ins: -ins.get("min_detectable_delta_f_over_f", 1.0))
+    return instruments[0]
 
 
 def score_one(inp: ScoreInputs, instrument: dict, desired: set[ReadoutMode]) -> DiscoveryScore:

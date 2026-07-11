@@ -83,7 +83,7 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
             return store.get(run_id)
 
         # retrieve + enrich
-        run = _advance(run, RunStatus.retrieving_evidence, "retrieving_evidence", "planning mechanism-route queries and retrieving public proteins")
+        run = _advance(run, RunStatus.retrieving_evidence, "retrieving_evidence", "planning mechanism route queries and retrieving public proteins")
         store.put(run)
         plans = plan_queries(run.objective, per_route=per_route)
 
@@ -111,14 +111,14 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
             "candidates": candidates,
             "provider_calls": provider_calls,
             "updated_at": datetime.now(timezone.utc),
-            "events": [*run.events, RunEvent(at=datetime.now(timezone.utc), from_status=RunStatus.retrieving_evidence, to_status=RunStatus.retrieving_evidence, stage="retrieving_evidence", note=f"assembled {len(candidates)} real-accession candidate(s) across {len(plans)} route plan(s)", progress=progress_fraction(RunStatus.retrieving_evidence))],
+            "events": [*run.events, RunEvent(at=datetime.now(timezone.utc), from_status=RunStatus.retrieving_evidence, to_status=RunStatus.retrieving_evidence, stage="retrieving_evidence", note=f"assembled {len(candidates)} real accession candidate(s) across {len(plans)} route plan(s)", progress=progress_fraction(RunStatus.retrieving_evidence))],
         })
         store.put(run)
         if _cancelled(store, run_id):
             return store.get(run_id)
 
         # physics eligibility gate + partial dossiers
-        run = _advance(run, RunStatus.assessing_physics, "assessing_physics", "computing per-candidate physics eligibility (gate, not prediction)")
+        run = _advance(run, RunStatus.assessing_physics, "assessing_physics", "computing per candidate physics eligibility (gate, not prediction)")
         eligs = {c.candidate_id: assess_eligibility(c) for c in candidates}
 
         # candidate-specific QM: extract THIS protein's isoalloxazine from its best
@@ -147,9 +147,17 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
             store.put(run)
             try:
                 cif_text, _prov = rcsb.coordinates(pdb_id)
-                qm = run_candidate_qm(pdb_id, cif_text, basis=_QM_BASIS, timeout=_QM_TIMEOUT_S)
+                qm = run_candidate_qm(
+                    pdb_id,
+                    cif_text,
+                    basis=_QM_BASIS,
+                    timeout=_QM_TIMEOUT_S,
+                    cancel_check=lambda: _cancelled(store, run_id),
+                )
             except Exception:
                 qm = None
+            if _cancelled(store, run_id):
+                return store.get(run_id)
             if qm is not None:
                 eligs[cand_id] = upgrade_with_candidate_qm(eligs[cand_id], qm)
 
@@ -173,8 +181,14 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
         if _cancelled(store, run_id):
             return store.get(run_id)
 
-        # simulate (measurability under the instrument) — the artifact-backed signature
-        run = _advance(run, RunStatus.simulating, "simulating", "computing measurability of each candidate under the chosen instrument")
+        # Route-level measurement compatibility only. The reference artifact is shared by
+        # a mechanism class and must never be described as a candidate response prediction.
+        run = _advance(
+            run,
+            RunStatus.simulating,
+            "simulating",
+            "evaluating route-level measurement compatibility and controls; no candidate response is predicted",
+        )
         store.put(run)
 
         # rank: two-lane discovery (evidence vs frontier), Pareto + quality-diversity
@@ -214,7 +228,14 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
             "current_stage": "failed",
             "updated_at": now,
             "errors": [*cur.errors, f"{type(exc).__name__}: {exc}"],
-            "events": [*cur.events, RunEvent(at=now, from_status=cur.status, to_status=RunStatus.failed, stage="failed", note=str(exc)[:200], progress=1.0)],
+            "events": [*cur.events, RunEvent(
+                at=now,
+                from_status=cur.status,
+                to_status=RunStatus.failed,
+                stage="failed",
+                note=str(exc)[:200],
+                progress=next((e.progress for e in reversed(cur.events) if e.progress is not None), 0.0),
+            )],
         })
         store.put(failed)
         return failed

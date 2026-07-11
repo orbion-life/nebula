@@ -36,7 +36,7 @@ def test_spa_fallback_and_env_cors(tmp_path, monkeypatch) -> None:
 
         # the API is NOT shadowed by the SPA fallback
         health = client.get("/api/health")
-        assert health.status_code == 200 and health.json()["status"] == "ok"
+        assert health.status_code == 200 and health.json()["status"] == "offline"
         assert client.get("/api/does-not-exist").status_code == 404  # unknown /api → 404, not index.html
 
         # CORS comes from the env, not the hardcoded localhost list

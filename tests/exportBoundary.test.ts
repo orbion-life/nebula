@@ -68,4 +68,11 @@ describe("shipped dossier export boundary", () => {
     expect(md).not.toContain("partner_ready_dossier");
     expect(md).toContain("measurement collaborator handoff");
   });
+
+  it("sanitizes unsafe text arriving from a public record before export", () => {
+    const hostile = { ...candidate, title: "A validated sensor" } as CandidateRecord;
+    const exported = dossierMarkdown(hostile, { ...dossier, candidate: hostile } as CandidateDossier, run);
+    expect(exported).not.toContain("validated sensor");
+    expect(exportAffirmativeViolations(exported)).toEqual([]);
+  });
 });

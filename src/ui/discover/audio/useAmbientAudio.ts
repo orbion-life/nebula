@@ -215,7 +215,13 @@ export function useAmbientAudio() {
     return () => window.removeEventListener("scroll", onScroll);
   }, [enabled]);
 
-  useEffect(() => () => graphRef.current?.stop(), []);
+  useEffect(() => () => {
+    const graph = graphRef.current;
+    if (!graph) return;
+    graph.stop();
+    void graph.ctx.close();
+    graphRef.current = null;
+  }, []);
 
   return { enabled, toggle };
 }

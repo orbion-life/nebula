@@ -10,7 +10,7 @@
  * frame loop paused when the tab is hidden, GL disposed on unmount (R3F). If WebGL is
  * unavailable the parent renders a DOM fallback instead of this module.
  */
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Text } from "@react-three/drei";
 import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -37,7 +37,7 @@ interface Props {
 }
 
 const COLORS = {
-  evidence: PALETTE.gold,
+  evidence: PALETTE.evidence,
   frontier: PALETTE.violet,
   excluded: PALETTE.gray,
   pending: PALETTE.grayPending,
@@ -132,15 +132,12 @@ function Node({ node, target, selected, onSelect, reducedMotion }: {
 
 function Scene({ nodes, selectedId, onSelect, reducedMotion, fieldProgress = 0.45, effects = false }: Props) {
   const targets = useMemo(() => targetPositions(nodes), [nodes]);
-  const { gl } = useThree();
-  // pause rendering when the tab is hidden (perf)
-  useFrame(() => { if (document.hidden) gl.setAnimationLoop(null); });
   return (
     <>
       <ambientLight intensity={0.6} />
       <pointLight position={[6, 8, 8]} intensity={80} />
       <pointLight position={[-8, -4, 4]} intensity={30} color={PALETTE.steel} />
-      <QuantumField progress={fieldProgress} />
+      <QuantumField progress={fieldProgress} reducedMotion={reducedMotion} />
       {nodes.map((n) => (
         <Node key={n.id} node={n} target={targets.get(n.id) ?? [0, 0, 0]} selected={n.id === selectedId} onSelect={onSelect} reducedMotion={reducedMotion} />
       ))}
@@ -156,6 +153,7 @@ export default function CandidateUniverse(props: Props) {
   return (
     <Canvas
       dpr={[1, 1.5]}
+      frameloop={props.reducedMotion ? "demand" : "always"}
       camera={{ position: [0, 0.5, 12], fov: 45 }}
       gl={{ antialias: true, powerPreference: "high-performance" }}
       style={{ background: "transparent" }}

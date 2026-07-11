@@ -407,8 +407,9 @@ export interface components {
             /**
              * User Mode
              * @default novice
+             * @enum {string}
              */
-            user_mode: string;
+            user_mode: "novice" | "expert";
             /** Instrument Id */
             instrument_id?: string | null;
             /**
@@ -424,7 +425,7 @@ export interface components {
         DiscoveryLane: "evidence" | "frontier";
         /**
          * DiscoveryScore
-         * @description The seven dimensions + lane assignment for one candidate. No magic scalar.
+         * @description Uncalibrated triage dimensions + lane assignment. No magic scalar or probability.
          */
         DiscoveryScore: {
             /** Candidate Id */
@@ -819,6 +820,21 @@ export interface components {
             /** Field Provenance */
             field_provenance?: components["schemas"]["FieldProvenance"][];
             /**
+             * Objective Support
+             * @default needs_clarification
+             * @enum {string}
+             */
+            objective_support: "supported" | "unsupported" | "needs_clarification";
+            /**
+             * Objective Support Note
+             * @default State the physical quantity the protein should sense.
+             */
+            objective_support_note: string;
+            /** Decision Active Fields */
+            decision_active_fields?: string[];
+            /** Handoff Only Fields */
+            handoff_only_fields?: string[];
+            /**
              * Confidential Sequence Provided
              * @default false
              * @constant
@@ -842,10 +858,10 @@ export interface components {
             /** Unit */
             unit: string;
             /** Range */
-            range: [
+            range?: [
                 number,
                 number
-            ];
+            ] | null;
             uncertainty: components["schemas"]["Uncertainty"];
             source_type: components["schemas"]["ParameterSourceType"];
             /** Citation Or Assumption */
@@ -1107,6 +1123,11 @@ export interface components {
             run_id: string;
             /** Input Fingerprint */
             input_fingerprint: string;
+            /**
+             * Attempt
+             * @default 0
+             */
+            attempt: number;
             /** @default queued */
             status: components["schemas"]["RunStatus"];
             /**

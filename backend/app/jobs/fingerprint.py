@@ -13,7 +13,22 @@ from pathlib import Path
 
 from ..contracts.objective import ObjectiveSpec
 
-CONFIG_VERSION = "phase3.5"
+CONFIG_VERSION = "discover-2026-07-11"
+
+_PIPELINE_SOURCES = (
+    "objective/compile.py",
+    "retrieval/plan.py",
+    "retrieval/assemble.py",
+    "physics/eligibility.py",
+    "physics/candidate_specific.py",
+    "discovery/capability.py",
+    "discovery/mechanism.py",
+    "discovery/ladder.py",
+    "discovery/lanes.py",
+    "discovery/scoring.py",
+    "physics/cluster.py",
+    "jobs/orchestrator.py",
+)
 
 
 def _artifact_hash() -> str:
@@ -24,11 +39,26 @@ def _artifact_hash() -> str:
         return "noartifact"
 
 
+def _pipeline_hash() -> str:
+    """Hash decision-bearing source so code changes cannot replay stale results."""
+    app_root = Path(__file__).resolve().parents[1]
+    digest = hashlib.sha256()
+    try:
+        for rel in _PIPELINE_SOURCES:
+            path = app_root / rel
+            digest.update(rel.encode())
+            digest.update(path.read_bytes())
+        return digest.hexdigest()[:16]
+    except Exception:
+        return "source-unavailable"
+
+
 # Model / provider / config versions folded into the immutable run identity, so a
 # provider-API bump or a physics-artifact change yields a different run_id.
 def component_versions() -> dict[str, str]:
     return {
         "config": CONFIG_VERSION,
+        "pipeline_source": _pipeline_hash(),
         "radical_pair_artifact": _artifact_hash(),
         "esm2_model": "esm2_t6_8M_UR50D",
         "provider_apis": "uniprot=2026_02;interpro;rcsb-v1/v2;alphafold-v4;fpbase",
@@ -51,5 +81,6 @@ def input_fingerprint(objective: ObjectiveSpec, seed: int, instrument_id: str | 
     return hashlib.sha256(blob.encode()).hexdigest()
 
 
-def run_id_for(fingerprint: str) -> str:
-    return f"run_{fingerprint[:16]}"
+def run_id_for(fingerprint: str, attempt: int = 0) -> str:
+    base = f"run_{fingerprint[:16]}"
+    return base if attempt == 0 else f"{base}_a{attempt}"

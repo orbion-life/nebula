@@ -53,7 +53,7 @@ def test_health_offline(client: TestClient) -> None:
 
 
 def test_registries(client: TestClient) -> None:
-    assert len(client.get("/api/instruments").json()["instruments"]) == 3
+    assert len(client.get("/api/instruments").json()["instruments"]) == 4
     assert len(client.get("/api/routes").json()["routes"]) == 7
 
 
@@ -65,6 +65,9 @@ def test_compile_demo_objective(client: TestClient) -> None:
     assert spec["material_context"] == "hydrogel"
     assert spec["expression_host"] == "bacteria"
     assert spec["sensed_quantity_or_state"]  # the SENSED quantity is captured
+    assert spec["objective_support"] == "supported"
+    assert "sensed_quantity_or_state" in spec["decision_active_fields"]
+    assert "temperature_range_C" in spec["handoff_only_fields"]
     assert spec["confidential_sequence_provided"] is False
     # measurement is an OUTPUT the app proposes — sensitivity/LoD and excitation are NO LONGER
     # demanded as missing user input (the customer states only what to sense + the environment)
@@ -93,10 +96,65 @@ def test_run_lifecycle_and_idempotency(client: TestClient) -> None:
     assert "text/event-stream" in sse.headers["content-type"]
     assert "data:" in sse.text
 
+    # Retrying an identical cancelled run creates a fresh attempt id. The cancelled
+    # worker can no longer overwrite the retry because the two attempts do not share a key.
+    retry = client.post("/api/runs", json={"objective_text": DEMO})
+    assert retry.status_code == 201
+    assert retry.json()["run_id"] != run_id
+    assert retry.json()["run_id"].endswith("_a1")
+    assert client.get(f"/api/runs/{run_id}").json()["status"] == "cancelled"
+
 
 def test_invalid_objective_surfaces_422(client: TestClient) -> None:
     r = client.post("/api/runs", json={"objective_text": ""})
     assert r.status_code == 422
+
+
+def test_unsupported_sensing_target_is_explicit(client: TestClient) -> None:
+    r = client.post("/api/runs", json={"objective_text": "Build a protein reporter for ambient temperature"})
+    assert r.status_code == 422
+    assert "Supported sensing targets" in r.json()["detail"]
+
+
+def test_seed_count_is_bounded(client: TestClient) -> None:
+    spec = client.post("/api/objectives/compile", json={"objective_text": DEMO}).json()
+    spec["seed_accessions"] = [f"P{i:05d}" for i in range(26)]
+    r = client.post("/api/runs", json=spec)
+    assert r.status_code == 422
+
+
+def test_request_body_and_response_headers_are_hardened(client: TestClient) -> None:
+    too_large = client.post("/api/runs", content="x" * 70_000, headers={"content-type": "application/json"})
+    assert too_large.status_code == 413
+    health = client.get("/api/health")
+    assert health.headers["cache-control"] == "no-store"
+    assert health.headers["x-content-type-options"] == "nosniff"
+    assert "frame-ancestors 'none'" in health.headers["content-security-policy"]
+
+
+def test_terminal_run_cannot_be_revived_by_stale_worker() -> None:
+    from datetime import datetime, timezone
+    from app.contracts.objective import ObjectiveSpec
+    from app.contracts.run import RunEvent, RunState
+
+    now = datetime.now(timezone.utc)
+    objective = ObjectiveSpec(
+        objective_id="race",
+        objective_text="Explore a magnetic field reporter",
+        sensed_quantity_or_state="magnetic field",
+    )
+    queued = RunState(
+        run_id="race", input_fingerprint="fp", objective=objective,
+        created_at=now, updated_at=now,
+        events=[RunEvent(at=now, to_status=RunStatus.queued, stage="queued")],
+    )
+    store = RunStore(":memory:")
+    assert store.put_new(queued)
+    cancelled = queued.model_copy(update={"status": RunStatus.cancelled, "current_stage": "cancelled"})
+    assert store.put(cancelled)
+    stale = queued.model_copy(update={"status": RunStatus.compiling_objective, "current_stage": "compiling_objective"})
+    assert store.put(stale) is False
+    assert store.get("race").status == RunStatus.cancelled
 
 
 def test_missing_run_404(client: TestClient) -> None:
@@ -109,13 +167,17 @@ def test_generative_frontier_preview_is_honest() -> None:
     from app.contracts.objective import ObjectiveSpec
     from app.design import generate_previews
 
-    spec = ObjectiveSpec(objective_id="o", objective_text="x", sensed_quantity_or_state="a weak magnetic field")
+    spec = ObjectiveSpec(
+        objective_id="o",
+        objective_text="Explore a weak magnetic field reporter",
+        sensed_quantity_or_state="magnetic field",
+    )
     previews = generate_previews(spec)
     assert len(previews) == 3
     for p in previews:
         assert p.found_in_nature is False
         assert p.sequence_provided is False
-        assert "a weak magnetic field" in p.invented_for
+        assert "magnetic field" in p.invented_for
         assert "not validated" in p.note.lower() and "not an orderable sequence" in p.note.lower()
         # a preview carries no sequence/coordinate fields at all
         assert not hasattr(p, "sequence") and not hasattr(p, "coordinates")

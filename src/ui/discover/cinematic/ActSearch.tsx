@@ -20,7 +20,7 @@ interface Props {
 
 export function ActSearch({ status, stage, events, run, error, onCancel, onReset }: Props) {
   const progress = progressOf(events, stage);
-  const cands = run?.candidates?.length ?? 0;
+  const cands = new Set((run?.candidates ?? []).map((candidate) => candidate.uniprot?.primary_accession ?? candidate.candidate_id)).size;
   const terminalBad = status === "failed" || status === "cancelled";
   const note = events[events.length - 1]?.note ?? "compiling objective…";
 
@@ -28,7 +28,7 @@ export function ActSearch({ status, stage, events, run, error, onCancel, onReset
     <section className="act act-search">
       {run && cands > 0 && (
         <div className="act-search-bg" aria-hidden>
-          <UniverseHero run={run} settled={status === "completed"} selectedId={null} onSelect={() => {}} fieldProgress={progress} />
+          <UniverseHero run={run} settled={status === "completed"} selectedId={null} onSelect={() => {}} fieldProgress={progress} interactive={false} />
         </div>
       )}
       <div className="act-inner act-search-inner">
@@ -40,7 +40,7 @@ export function ActSearch({ status, stage, events, run, error, onCancel, onReset
         )}
         {terminalBad && (
           <div className="act-terminal">
-            run {status}{error ? ` — ${error}` : ""}. <button className="btn-ghost" onClick={onReset}>← new objective</button>
+            run {status}{error ? `: ${error}` : ""}. <button className="btn-ghost" onClick={onReset}>← new objective</button>
           </div>
         )}
       </div>

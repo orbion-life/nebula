@@ -57,6 +57,22 @@ export const INSTRUMENT_PROFILES: InstrumentProfile[] = [
     notes:
       "Fast and cheap but noisy, with no oxygen/temperature control and a narrow field range. Small spin-linked signals fall below its noise floor.",
   },
+  {
+    id: "potentiostat_optical_bench",
+    label: "Potentiostat with optical control channel",
+    readoutModes: ["redox_electrochemical", "fluorescence"],
+    minDetectableDeltaFOverF: 1e-3,
+    integrationTimeS: 1,
+    staticFieldRange_mT: [0, 0],
+    rfAvailable: false,
+    rfFreqRange_MHz: [0, 0],
+    rfB1_mT: 0,
+    illuminationControllable: true,
+    oxygenControl: true,
+    temperatureControl: true,
+    notes:
+      "Route-compatible redox measurement scenario with simultaneous optical controls. Its fluorescence threshold is illustrative; electrochemical sensitivity must be specified by the collaborator.",
+  },
 ];
 
 export const DEFAULT_INSTRUMENT_ID = "benchtop_field_fluorimeter";

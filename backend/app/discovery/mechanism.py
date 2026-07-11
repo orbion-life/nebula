@@ -1,7 +1,7 @@
 """Mechanism composition.
 
 Compose a typed MechanismGraph for a candidate from its CapabilityVector. The
-known LOV/cryptochrome/FP-triplet/redox routes are VALIDATED TEMPLATES; the
+known LOV/cryptochrome/FP-triplet/redox routes are public mechanism templates; the
 composer marks each step known/assumed/unknown from public evidence, so the
 honest gap (e.g. the spin→optical transduction step) is explicit rather than
 hidden. A graph is `complete` only if every step from energy-in to readout is
@@ -75,7 +75,14 @@ def compose_graph(candidate_id: str, route_class: RouteClass, cap: CapabilityVec
             MechanismPrimitive(kind=PrimitiveKind.biological_transduction, detail="NO established optical spin-transduction path", knowledge=_k(KnowledgeStateKind.unknown),
                                unknowns=[UnknownParameter(name="transduction_path", why_unknown="presence of a paramagnetic centre is not a readout mechanism", how_to_resolve="supply an explicit optical/electrical spin-transduction path before any claim")]),
         ]
-    else:  # redox / photochemical / material
+    elif route_class == RouteClass.rfp_flavin_photochemical:  # light history: a flavin photocycle, not an electrochemical redox drive
+        observable = ReadoutMode.fluorescence
+        prims = [
+            MechanismPrimitive(kind=PrimitiveKind.energy_input, detail="blue light photoexcitation of the flavin", knowledge=_known_if(cap.has_flavin, "flavin blue light photochemistry (public)")),
+            MechanismPrimitive(kind=PrimitiveKind.biological_transduction, detail="a reversible flavin photoproduct records illumination history", knowledge=_k(KnowledgeStateKind.assumed)),
+            MechanismPrimitive(kind=PrimitiveKind.fluorescence_readout, detail="optical or lifetime readout", knowledge=_known_if(cap.optical, "optical readout supported")),
+        ]
+    else:  # redox / material
         observable = ReadoutMode.redox_electrochemical if cap.electrochemical else ReadoutMode.fluorescence
         prims = [
             MechanismPrimitive(kind=PrimitiveKind.energy_input, detail="chemical/electrochemical drive", knowledge=_known_if(cap.redox_active, "redox-active cofactor")),

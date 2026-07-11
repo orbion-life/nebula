@@ -21,6 +21,11 @@ export function useRunScroll(actKey: string) {
       } catch {
         /* ScrollTrigger not registered (reduced-motion) — fine */
       }
+      const heading = document.querySelector<HTMLElement>("#main-content h1, #main-content h2");
+      if (heading) {
+        heading.setAttribute("tabindex", "-1");
+        heading.focus({ preventScroll: true });
+      }
     }, 60);
     return () => window.clearTimeout(id);
   }, [actKey, lenis]);

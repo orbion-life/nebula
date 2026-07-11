@@ -29,6 +29,7 @@ class RunState(BaseModel):
     run_id: str
     # content address over (objective + provider versions + config + seed) — same inputs reproduce the run
     input_fingerprint: str
+    attempt: int = Field(default=0, ge=0)
     status: RunStatus = RunStatus.queued
     seed: int = 1337
     objective: ObjectiveSpec

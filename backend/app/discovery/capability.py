@@ -13,6 +13,10 @@ from ..contracts.mechanism import CapabilityVector
 _FLAVIN = ("fad", "fmn", "flavin", "riboflavin")
 _METALS = ("iron", "heme", "fe-s", "iron-sulfur", "[2fe-2s]", "[4fe-4s]", "copper", "cu ", "zinc", "zn ",
            "manganese", "mn ", "nickel", "cobalt", "cobalamin", "molybdenum", "magnesium")
+# A generic metal annotation does not establish an open-shell state. Restrict this flag
+# to annotations that explicitly encode a paramagnetic oxidation state or Fe-S cluster.
+_EXPLICIT_OPEN_SHELL = ("[2fe-2s]", "[4fe-4s]", "fe-s", "iron-sulfur", "cu(ii)", "copper(ii)",
+                        "mn(ii)", "manganese(ii)", "fe(iii)", "iron(iii)", "paramagnetic")
 _CHROMO_KW = ("chromophore", "gfp", "fluorescent")
 
 
@@ -31,10 +35,11 @@ def extract_capability(candidate: CandidateRecord) -> CapabilityVector:
     has_flavin = any(f in cof_blob for f in _FLAVIN)
     metals = [c.name for c in candidate.cofactors if any(m in (c.name or "").lower() for m in _METALS)]
     metals += [m for m in _METALS if m.strip() in kw_blob and m.strip() not in cof_blob][:0]  # keep from cofactors only
-    has_metal = bool(metals) or any(m in kw_blob for m in ("iron-sulfur", "heme", "metal"))
-    redox = has_flavin or has_metal or any(k in fn_blob for k in ("redox", "electron transfer", "oxidoreductase", "electron transport"))
+    metal_blob = f"{cof_blob} {kw_blob} {fn_blob}"
+    has_metal = any(marker in metal_blob for marker in _EXPLICIT_OPEN_SHELL)
+    redox = has_flavin or any(k in fn_blob for k in ("redox", "electron transfer", "oxidoreductase", "electron transport"))
     chromo = any(k in kw_blob or k in fn_blob for k in _CHROMO_KW) or candidate.scaffold_family.value in ("fluorescent_protein", "RFP_plus_flavin")
-    triplet = chromo  # triplet/dark states are a chromophore property (public photophysics)
+    triplet = chromo and any(k in f"{fn_blob} {kw_blob}" for k in ("triplet", "intersystem crossing", "dark state"))
 
     # structure confidence: prefer experimental resolution; else AlphaFold pLDDT/100
     has_exp = bool(candidate.pdb_entries)
@@ -73,5 +78,7 @@ def extract_capability(candidate: CandidateRecord) -> CapabilityVector:
         magnetic_candidate=magnetic,
         electrochemical=electro,
         evidence_confidence=evidence_conf,
-        notes=[] if (has_flavin or has_metal or chromo) else ["no obvious spin-bearing centre from public evidence"],
+        notes=([] if (has_flavin or has_metal or chromo) else ["no obvious spin-bearing centre from public evidence"])
+        + (["metal annotation present, but oxidation and spin state are not established"] if metals and not has_metal else [])
+        + (["chromophore present, but a populated triplet state is not established for this accession"] if chromo and not triplet else []),
     )

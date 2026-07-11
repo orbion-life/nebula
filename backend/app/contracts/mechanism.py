@@ -5,7 +5,7 @@ Replaces the closed 5-route vocabulary with a typed, composable graph:
   energy input → spin-forming event → spin-bearing state → quantum evolution
   → biological transduction → observable readout → material/cellular context
 
-The known LOV/cryptochrome/FP-triplet/redox routes are retained as VALIDATED
+The known LOV/cryptochrome/FP-triplet/redox routes are retained as public
 graph templates, not the limits of the search. A CapabilityVector is what a real
 protein can physically offer, extracted from public evidence — the substrate the
 frontier search composes mechanisms from.

@@ -12,7 +12,7 @@
  * Guardrails: reduced motion renders a single static frame (no animation); bloom self disables
  * on software GL / reduced motion / small viewports (reused from render/effects).
  */
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Sparkles } from "@react-three/drei";
 import * as THREE from "three";
@@ -99,13 +99,21 @@ function Mandala({ reduced }: { reduced: boolean }) {
     [],
   );
   const sT = useRef(0);
+  const scrollTarget = useRef(0);
+  useEffect(() => {
+    if (reduced) return;
+    const update = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      scrollTarget.current = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, [reduced]);
   useFrame((state) => {
     if (!reduced) {
       uniforms.uTime.value = state.clock.elapsedTime;
-      // descent: the page scroll fraction pulls the world darker + cooler as you sink
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      const raw = max > 0 ? Math.min(1, window.scrollY / max) : 0;
-      sT.current += (raw - sT.current) * 0.05;
+      sT.current += (scrollTarget.current - sT.current) * 0.05;
       uniforms.uProgress.value = sT.current;
     }
     uniforms.uAspect.value = state.size.width / Math.max(1, state.size.height);

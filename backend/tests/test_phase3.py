@@ -19,6 +19,7 @@ from app.jobs.orchestrator import orchestrate
 from app.jobs.store import RunStore
 from app.physics.eligibility import assess_eligibility
 from app.retrieval.plan import plan_queries
+from app.retrieval.assemble import assemble_candidates
 
 
 def _cand(route: RouteClass, cofactors: list[CofactorRef]) -> CandidateRecord:
@@ -57,6 +58,48 @@ def test_query_planning_selects_rp_routes_for_magnetic() -> None:
     assert RouteClass.lov_flavin_radical_pair in classes
     for p in plans:
         assert p.lucene_query and "reviewed:true" in p.lucene_query  # reviewed-first
+
+
+def test_seed_accessions_are_not_relabelled_across_routes() -> None:
+    obj = ObjectiveSpec(
+        objective_id="routes",
+        objective_text="Explore a magnetic field reporter",
+        sensed_quantity_or_state="magnetic field",
+        desired_modalities=[ReadoutMode.rf_magnetic, ReadoutMode.fluorescence],
+        seed_accessions=["Q8LPD9", "Q43125"],
+    )
+    candidates = assemble_candidates(plan_queries(obj), offline=True)
+    pairs = {(c.uniprot.primary_accession, c.route_class) for c in candidates if c.uniprot}
+    assert pairs == {
+        ("Q8LPD9", RouteClass.lov_flavin_radical_pair),
+        ("Q43125", RouteClass.cryptochrome_fad_radical_pair),
+    }
+
+
+def test_every_supported_offline_target_has_route_consistent_public_candidates() -> None:
+    expected = {
+        "magnetic field": {
+            ("Q8LPD9", RouteClass.lov_flavin_radical_pair),
+            ("Q43125", RouteClass.cryptochrome_fad_radical_pair),
+        },
+        "radio-frequency field": {
+            ("Q8LPD9", RouteClass.lov_flavin_radical_pair),
+            ("Q43125", RouteClass.cryptochrome_fad_radical_pair),
+        },
+        "redox potential": {("P28861", RouteClass.redox_electrochemical)},
+        "light history": {("Q8LPD9", RouteClass.rfp_flavin_photochemical)},
+    }
+    seeds = ["Q8LPD9", "Q43125", "P28861"]
+    for sensed, wanted in expected.items():
+        obj = ObjectiveSpec(
+            objective_id=f"matrix_{sensed}",
+            objective_text=f"Explore a protein reporter for {sensed}",
+            sensed_quantity_or_state=sensed,
+            seed_accessions=seeds,
+        )
+        candidates = assemble_candidates(plan_queries(obj), offline=True)
+        observed = {(c.uniprot.primary_accession, c.route_class) for c in candidates if c.uniprot}
+        assert observed == wanted
 
 
 def _queued_run(objective: ObjectiveSpec) -> RunState:
@@ -98,7 +141,12 @@ def test_offline_run_yields_real_accession_candidate() -> None:
 
 def test_orchestrate_respects_cancellation() -> None:
     store = RunStore(":memory:")
-    run = _queued_run(ObjectiveSpec(objective_id="o3", objective_text="x", seed_accessions=["Q43125"]))
+    run = _queued_run(ObjectiveSpec(
+        objective_id="o3",
+        objective_text="Explore a magnetic field reporter",
+        sensed_quantity_or_state="magnetic field",
+        seed_accessions=["Q43125"],
+    ))
     cancelled = run.model_copy(update={"status": RunStatus.cancelled})
     store.put(cancelled)
     result = orchestrate("run_test1", store, offline=True)  # queued check fails -> no-op

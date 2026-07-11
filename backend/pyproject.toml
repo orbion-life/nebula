@@ -4,23 +4,26 @@ version = "2.0.0"
 description = "Nebula Discover — public-protein discovery API (retrieve → enrich → gate → simulate → rank)."
 requires-python = ">=3.11"
 dependencies = [
-  "fastapi>=0.115",
-  "pydantic>=2.7",
-  "httpx>=0.27",
-  "tenacity>=8.2",
-  "uvicorn[standard]>=0.30",
-  "biopython>=1.83",
-  "gemmi>=0.6",
-  "numpy>=1.26",
-  "scipy>=1.11",
-  "radicalpy>=1.0.9",
+  "fastapi==0.138.2",
+  "pydantic==2.13.4",
+  "httpx==0.28.1",
+  "tenacity==9.1.4",
+  "uvicorn[standard]==0.35.0",
+  "biopython==1.85",
+  "gemmi==0.7.5",
+  "numpy==2.4.6",
+  "scipy==1.16.0",
 ]
 
 [project.optional-dependencies]
 # heavy / isolated (run in subprocesses; NOT imported in the API process)
-physics = ["pyscf>=2.6"]
+physics = ["pyscf==2.12.1"]
 retrieval = ["torch>=2.2", "fair-esm>=2.0", "scikit-learn>=1.4"]
-dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "respx>=0.21"]
+dev = ["pytest==8.4.2"]
+# artifact generation ONLY: scripts/physics/radical_pair_mary.py builds the committed MARY
+# reference. radicalpy pulls MDAnalysis (needs a C toolchain to compile) and is NOT imported by
+# the API process or the tests, so it is kept out of the slim runtime image.
+artifact-gen = ["radicalpy==1.0.9"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -30,7 +30,12 @@ _ROUTE_TEMPLATES: dict[RouteClass, tuple[ScaffoldFamily, str | None, str | None,
     RouteClass.cryptochrome_fad_radical_pair: (ScaffoldFamily.cryptochrome_fad, "FAD", "CHEBI:57692", "cryptochrome"),
     RouteClass.lov_flavin_radical_pair: (ScaffoldFamily.lov_flavin, "FMN", "CHEBI:57618", '("LOV domain" OR phototropin OR "blue light" flavin)'),
     RouteClass.triplet_fp: (ScaffoldFamily.fluorescent_protein, "intrinsic chromophore", None, '("fluorescent protein" OR GFP)'),
-    RouteClass.rfp_flavin_photochemical: (ScaffoldFamily.rfp_plus_flavin, "FMN", "CHEBI:57618", '(flavin AND fluorescent)'),
+    RouteClass.rfp_flavin_photochemical: (
+        ScaffoldFamily.lov_flavin,
+        "FMN",
+        "CHEBI:57618",
+        '("LOV domain" OR phototropin OR "blue light" flavin)',
+    ),
     RouteClass.redox_electrochemical: (ScaffoldFamily.redox_flavoprotein, "FAD", "CHEBI:57692", '(flavodoxin OR "flavin" AND redox)'),
 }
 
@@ -59,17 +64,36 @@ def _routes_for_readouts(readouts: list[ReadoutMode]) -> list[RouteClass]:
     return [r for r in want if not (r in seen or seen.add(r))]
 
 
+def _routes_for_objective(objective: ObjectiveSpec) -> list[RouteClass]:
+    """Use the requested sensed quantity as the primary route selector.
+
+    Readout modes are a legacy fallback for expert specs created before the support
+    contract existed. This prevents deployment context words such as "film" from
+    silently selecting the biology while the user's actual sensing target is ignored.
+    """
+    sensed = (objective.sensed_quantity_or_state or "").strip().lower()
+    if sensed in {"magnetic field", "radio-frequency field"}:
+        return [RouteClass.cryptochrome_fad_radical_pair, RouteClass.lov_flavin_radical_pair]
+    if sensed == "redox potential":
+        return [RouteClass.redox_electrochemical]
+    if sensed == "light history":
+        return [RouteClass.rfp_flavin_photochemical]
+    if objective.objective_support == "unsupported":
+        return []
+    return _routes_for_readouts(objective.desired_modalities or objective.acceptable_readouts)
+
+
 def plan_queries(objective: ObjectiveSpec, *, per_route: int = 6) -> list[QueryPlan]:
     reviewed = "" if objective.include_unreviewed else " AND reviewed:true"
 
-    # expert override: explicit scaffold families and/or a raw query
+    # Expert controls may narrow the routes implied by the sensing target, never replace
+    # it with an unrelated mechanism family.
     families = objective.target_scaffold_families
-    route_classes: list[RouteClass]
+    route_classes = _routes_for_objective(objective)
     if families:
         fam_to_route = {v[0]: k for k, v in _ROUTE_TEMPLATES.items()}
-        route_classes = [fam_to_route[f] for f in families if f in fam_to_route]
-    else:
-        route_classes = _routes_for_readouts(objective.desired_modalities or objective.acceptable_readouts)
+        requested = {fam_to_route[f] for f in families if f in fam_to_route}
+        route_classes = [route for route in route_classes if route in requested]
 
     plans: list[QueryPlan] = []
     for rc in route_classes:
@@ -89,7 +113,7 @@ def plan_queries(objective: ObjectiveSpec, *, per_route: int = 6) -> list[QueryP
             required_cofactor_name=cofactor,
             required_cofactor_chebi=chebi,
             seed_accessions=tuple(objective.seed_accessions),
-            rationale=f"{scaffold.value} route selected for readouts {[m.value for m in objective.desired_modalities]}",
+            rationale=f"{scaffold.value} route selected for sensed quantity {objective.sensed_quantity_or_state!r}",
         ))
     # material_state is a non-protein-retrieval route; handled separately downstream.
     return plans

@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { StructureResponse } from "../../api/client";
 import { PALETTE, hex0x } from "./render/palette";
+import { canUseWebGL } from "./render/webgl";
 
 interface Props {
   structure: StructureResponse | null;
@@ -20,13 +21,19 @@ interface Props {
 
 export function StructureViewer({ structure, loading, cofactorLabel }: Props) {
   const hostRef = useRef<HTMLDivElement | null>(null);
-  const viewerRef = useRef<{ clear: () => void; render: () => void; resize?: () => void } | null>(null);
+  const viewerRef = useRef<{ clear: () => void; render: () => void; resize?: () => void; stopAnimate?: () => void } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let disposed = false;
     if (!structure || !hostRef.current) return;
+    if (!canUseWebGL()) {
+      setReady(false);
+      setError("interactive WebGL rendering is unavailable in this browser");
+      return;
+    }
+    const controller = new AbortController();
     setReady(false);
     setError(null);
 
@@ -41,7 +48,12 @@ export function StructureViewer({ structure, loading, cofactorLabel }: Props) {
         const viewer = create(hostRef.current, { backgroundColor: hex0x(PALETTE.navy) });
         viewerRef.current = viewer;
 
-        const cif = structure.inline_cif ?? (await (await fetch(structure.provider_url)).text());
+        let cif = structure.inline_cif;
+        if (!cif) {
+          const response = await fetch(structure.provider_url, { signal: controller.signal, cache: "no-store" });
+          if (!response.ok) throw new Error(`structure source returned ${response.status}`);
+          cif = await response.text();
+        }
         if (disposed) return;
         viewer.addModel(cif, "cif");
         // muted protein cartoon
@@ -68,8 +80,10 @@ export function StructureViewer({ structure, loading, cofactorLabel }: Props) {
 
     return () => {
       disposed = true;
+      controller.abort();
       document.removeEventListener("visibilitychange", onVisibility);
       try {
+        viewerRef.current?.stopAnimate?.();
         viewerRef.current?.clear();
       } catch {
         /* viewer already torn down */
@@ -94,7 +108,7 @@ export function StructureViewer({ structure, loading, cofactorLabel }: Props) {
       {loading && <div className="struct-overlay">loading structure…</div>}
       {error && (
         <div className="struct-overlay struct-error">
-          structure unavailable — {error}
+          structure unavailable: {error}
           {structure && (
             <>
               {" "}

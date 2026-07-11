@@ -56,6 +56,32 @@ _FAMILY_RULES: list[tuple[ScaffoldFamily, re.Pattern[str]]] = [
     (ScaffoldFamily.fluorescent_protein, re.compile(r"\bgfp|yfp|fluorescent protein\b", re.I)),
 ]
 
+_SUPPORTED_SENSES = {
+    "magnetic field",
+    "radio-frequency field",
+    "redox potential",
+    "light history",
+}
+
+_DECISION_ACTIVE_FIELDS = [
+    "sensed_quantity_or_state",
+    "desired_modalities",
+    "target_scaffold_families",
+    "seed_query",
+    "seed_accessions",
+    "include_unreviewed",
+    "instrument_id",
+]
+
+_HANDOFF_ONLY_FIELDS = [
+    "material_context",
+    "immobilization_or_integration",
+    "expression_host",
+    "temperature_range_C",
+    "pH_range",
+    "oxygen_condition",
+]
+
 
 def compile_objective(raw: RawObjective) -> ObjectiveSpec:
     text = raw.objective_text
@@ -104,6 +130,16 @@ def compile_objective(raw: RawObjective) -> ObjectiveSpec:
     # Measurement is an OUTPUT the app proposes, not user input: excitation wavelength and
     # sensitivity/limit-of-detection are no longer treated as "missing user info".
 
+    if sensed is None:
+        support = "needs_clarification"
+        support_note = "State the physical quantity the protein should sense before running discovery."
+    elif sensed in _SUPPORTED_SENSES:
+        support = "supported"
+        support_note = "The sensing target drives mechanism route retrieval in this build."
+    else:
+        support = "unsupported"
+        support_note = f"{sensed} is recorded as context but has no validated mechanism route in this build."
+
     return ObjectiveSpec(
         schema_version=OBJECTIVE_SCHEMA_VERSION,
         objective_id=f"obj_{uuid.uuid4().hex[:12]}",
@@ -126,5 +162,9 @@ def compile_objective(raw: RawObjective) -> ObjectiveSpec:
             "do not assume simulated traces are measured data",
         ],
         field_provenance=fp,
+        objective_support=support,
+        objective_support_note=support_note,
+        decision_active_fields=_DECISION_ACTIVE_FIELDS,
+        handoff_only_fields=_HANDOFF_ONLY_FIELDS,
         seed=raw.seed,
     )

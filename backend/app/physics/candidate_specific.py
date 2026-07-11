@@ -16,8 +16,10 @@ import json
 import os
 import subprocess
 import sys
+import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Callable
 
 from ..contracts.enums import ParameterSourceType, Uncertainty
 from ..contracts.provenance import ParameterProvenance
@@ -50,12 +52,16 @@ class CandidateQm:
         return ParameterProvenance(
             name="candidate_isoalloxazine_max_spin_density",
             value=self.max_abs_spin,
-            unit="electron spin (Mulliken)",
-            range=(0.0, 1.0),
+            unit="Mulliken spin population (basis dependent)",
+            range=None,
             uncertainty=Uncertainty.high,
             source_type=ParameterSourceType.computed,
-            citation_or_assumption=f"UHF/{self.basis} on the isoalloxazine core extracted from {self.pdb_id} {self.ligand} (chain {self.chain}); converged={self.converged}",
-            applicability_limits=self.note,
+            citation_or_assumption=f"UHF/{self.basis} on an isolated neutral-doublet isoalloxazine cluster extracted from {self.pdb_id} {self.ligand} (chain {self.chain}); converged={self.converged}",
+            applicability_limits=(
+                f"{self.note} Mulliken populations are basis and partitioning dependent; the protein environment, "
+                "radical partner, protonation alternatives and dynamics are omitted. This value is neither a probability "
+                "nor a magnetic-response prediction."
+            ),
         )
 
 
@@ -78,7 +84,8 @@ def _cache_load(key: str) -> CandidateQm | None:
     if not p.exists():
         return None
     try:
-        return CandidateQm(**json.loads(p.read_text()))
+        cached = CandidateQm(**json.loads(p.read_text()))
+        return cached if cached.converged else None
     except Exception:
         return None
 
@@ -91,7 +98,15 @@ def _cache_store(key: str, qm: CandidateQm) -> None:
         pass  # cache is best-effort; a write failure never breaks the run
 
 
-def run_candidate_qm(pdb_id: str, cif_text: str, *, basis: str = "6-31g", timeout: float = 150.0, use_cache: bool = True) -> CandidateQm | None:
+def run_candidate_qm(
+    pdb_id: str,
+    cif_text: str,
+    *,
+    basis: str = "6-31g",
+    timeout: float = 150.0,
+    use_cache: bool = True,
+    cancel_check: Callable[[], bool] | None = None,
+) -> CandidateQm | None:
     extracted = extract_isoalloxazine(cif_text)
     if extracted is None:
         return None
@@ -112,18 +127,39 @@ def run_candidate_qm(pdb_id: str, cif_text: str, *, basis: str = "6-31g", timeou
         "KMP_DUPLICATE_LIB_OK": "TRUE",  # isolate the OpenMP conflict in this child only
     }
     try:
-        proc = subprocess.run(
+        proc = subprocess.Popen(
             [sys.executable, str(_WORKER)],
-            input=json.dumps(req),
-            capture_output=True,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
-            timeout=timeout,
             env=env,
         )
-        if proc.returncode != 0 or not proc.stdout.strip():
+        assert proc.stdin is not None
+        proc.stdin.write(json.dumps(req))
+        proc.stdin.close()
+        proc.stdin = None
+        deadline = time.monotonic() + timeout
+        while proc.poll() is None:
+            if cancel_check is not None and cancel_check():
+                proc.terminate()
+                try:
+                    proc.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                return None
+            if time.monotonic() >= deadline:
+                proc.kill()
+                proc.wait()
+                return None
+            time.sleep(0.1)
+        stdout, _stderr = proc.communicate()
+        if proc.returncode != 0 or not stdout.strip():
             return None
-        out = json.loads(proc.stdout)
+        out = json.loads(stdout)
     except Exception:
+        return None
+    if not out.get("converged", False):
         return None
     qm = CandidateQm(
         pdb_id=pdb_id, ligand=ligand, chain=chain, n_atoms=out["natm"], n_heavy=n_heavy,
