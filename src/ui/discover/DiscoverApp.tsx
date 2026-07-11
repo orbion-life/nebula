@@ -6,7 +6,7 @@
  * its immutable result is shown in the workspace. All data is real: the objective is
  * compiled server-side, candidates are real public accessions, physics is computed.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import {
   cancelRun,
   createRun,
@@ -23,6 +23,9 @@ import { RunProgress } from "./RunProgress";
 import { Workspace } from "./Workspace";
 import { UniverseHero } from "./universe/UniverseHero";
 
+// opt-in cinematic replay — lazy so its gsap/ScrollTrigger code stays out of the initial bundle
+const NarrativeReplay = lazy(() => import("./narrative/NarrativeReplay").then((m) => ({ default: m.NarrativeReplay })));
+
 type Phase = "objective" | "running" | "workspace";
 
 export function DiscoverApp() {
@@ -34,6 +37,7 @@ export function DiscoverApp() {
   const [events, setEvents] = useState<RunEvent[]>([]);
   const [run, setRun] = useState<RunState | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [cinematic, setCinematic] = useState(false); // scroll-narrative replay of the workspace run
   const cleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -115,6 +119,7 @@ export function DiscoverApp() {
     setRunId(null);
     setEvents([]);
     setError(null);
+    setCinematic(false);
   }, []);
 
   return (
@@ -162,7 +167,13 @@ export function DiscoverApp() {
 
       {phase === "workspace" && run && (
         <div className="disc-stage disc-workspace">
-          <Workspace run={run} onReset={reset} />
+          {cinematic ? (
+            <Suspense fallback={<div className="disc-loading">loading discovery story…</div>}>
+              <NarrativeReplay run={run} onEnterWorkspace={() => setCinematic(false)} />
+            </Suspense>
+          ) : (
+            <Workspace run={run} onReset={reset} onPlayStory={() => setCinematic(true)} />
+          )}
         </div>
       )}
 

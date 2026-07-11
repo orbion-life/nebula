@@ -87,6 +87,22 @@ test("objective is keyboard-operable", async ({ page }) => {
   await expect(page.locator(".obj-sheet")).toBeVisible();
 });
 
+test("cinematic scroll narrative replays the run and returns to the workspace", async ({ page }) => {
+  await runToWorkspace(page);
+  await page.locator(".ws-story").click();
+  // wait for the lazy narrative chunk to mount, then assert chapter 1 (real objective)
+  await expect(page.locator(".narr-kicker").first()).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator(".narr-chapter").first()).toContainText(/report/i);
+  // scroll through and confirm a real accession chapter + the measure-next chapter render
+  await expect(page.locator(".narr-acc").first()).toHaveText(/^[A-Z][A-Z0-9]{5,9}$/);
+  const measure = page.locator(".narr-chapter").last();
+  await measure.scrollIntoViewIfNeeded();
+  await expect(measure).toContainText(/Falsification/i);
+  // return to the calm workspace
+  await page.locator(".narr-chapter .btn-run").click();
+  await expect(page.locator(".ws")).toBeVisible();
+});
+
 test("zero horizontal overflow at every target viewport", async ({ page }) => {
   for (const vp of [
     { width: 390, height: 844 },

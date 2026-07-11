@@ -36,13 +36,14 @@ import {
 interface Props {
   run: RunState;
   onReset: () => void;
+  onPlayStory?: () => void;
 }
 
 function eligibilityOf(d: CandidateDossier | undefined): PhysicsEligibility | undefined {
   return d?.physics_eligibility;
 }
 
-export function Workspace({ run, onReset }: Props) {
+export function Workspace({ run, onReset, onPlayStory }: Props) {
   const evidence = run.evidence_shortlist ?? [];
   const frontier = run.frontier_experiments ?? [];
   const scoreById = useMemo(() => new Map((run.discovery_scores ?? []).map((s) => [s.candidate_id, s])), [run]);
@@ -68,7 +69,10 @@ export function Workspace({ run, onReset }: Props) {
             <span>{run.offline ? "offline (fixtures)" : "live retrieval"}</span>
             <span>fp <code>{run.input_fingerprint.slice(0, 10)}</code></span>
           </div>
-          <button className="btn-ghost" onClick={onReset}>← new objective</button>
+          <div className="ws-actions">
+            <button className="btn-ghost" onClick={onReset}>← new objective</button>
+            {onPlayStory && !abstained && <button className="btn-ghost ws-story" onClick={onPlayStory}>▶ discovery story</button>}
+          </div>
         </div>
 
         {abstained ? (
