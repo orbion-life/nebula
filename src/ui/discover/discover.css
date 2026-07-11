@@ -5,22 +5,25 @@
  * Scoped under .discover so it never fights the light studio fixture.
  */
 :root {
-  --d-bg: #0a0e16;
-  --d-bg2: #0e1420;
-  --d-panel: #121a28;
-  --d-panel2: #0f1622;
-  --d-line: #1e2a3d;
-  --d-line2: #2a3a52;
-  --d-ink: #e8edf5;
-  --d-mut: #9fb0c6;
-  /* lightened from #64748b (~4.06:1) to meet WCAG AA 4.5:1 for the small 10-11px labels
-     (axis ticks, hints, captions, footer) that use it */
-  --d-faint: #8a99b0;
-  --d-amber: #f6c945;
-  --d-teal: #45c8c0;
-  --d-evi: #7fd18b;
-  --d-fro: #c79be8;
-  --d-red: #f0798a;
+  /* Navy + gold. Mirrors src/ui/discover/render/palette.ts (WebGL/canvas side).
+     Token NAMES are unchanged so no class churn — only values shift. */
+  --d-bg: #070c18;      /* deep navy */
+  --d-bg2: #0a1122;
+  --d-panel: #0e1830;
+  --d-panel2: #0b1324;
+  --d-line: #1b2a45;
+  --d-line2: #2a3d5c;
+  --d-ink: #ece6d8;     /* warm off-white */
+  --d-mut: #a9b3c4;
+  /* meets WCAG AA 4.5:1 on the deep-navy bg for the small 10-11px labels */
+  --d-faint: #8b93a6;
+  --d-amber: #d9b45a;   /* GOLD — primary accent (was neon amber) */
+  --d-gold-bright: #eccd82;
+  --d-bronze: #9a6f3a;
+  --d-teal: #7f9bc0;    /* cool steel secondary — links, accession mono (was teal) */
+  --d-evi: #d9b45a;     /* evidence lane = gold family */
+  --d-fro: #a78bd0;     /* frontier lane = cool violet (distinct + colourblind-safe) */
+  --d-red: #ef8a7a;
   --d-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   --d-mono: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
 }
@@ -128,8 +131,8 @@ body:has(.discover) { background: var(--d-bg); }
 .runp-stage.done { color: var(--d-mut); }
 .runp-stage.done .runp-dot { background: var(--d-evi); border-color: var(--d-evi); }
 .runp-stage.active { color: var(--d-amber); }
-.runp-stage.active .runp-dot { background: var(--d-amber); border-color: var(--d-amber); box-shadow: 0 0 0 4px #f6c94522; animation: pulse 1.4s infinite; }
-@keyframes pulse { 0%,100% { box-shadow: 0 0 0 3px #f6c94520; } 50% { box-shadow: 0 0 0 7px #f6c94510; } }
+.runp-stage.active .runp-dot { background: var(--d-amber); border-color: var(--d-amber); box-shadow: 0 0 0 4px #d9b45a22; animation: pulse 1.4s infinite; }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 0 3px #d9b45a20; } 50% { box-shadow: 0 0 0 7px #d9b45a10; } }
 .runp-field { margin-top: 22px; min-height: 90px; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start;
   padding: 16px; background: var(--d-panel2); border: 1px solid var(--d-line); border-radius: 10px; }
 .runp-node {
@@ -305,7 +308,7 @@ body:has(.discover) { background: var(--d-bg); }
 .udom-node.on { border-color: var(--d-amber); color: var(--d-amber); }
 
 /* ---- structure viewer ---- */
-.struct { position: relative; width: 100%; height: 340px; background: #0b0f17; border: 1px solid var(--d-line); border-radius: 10px; overflow: hidden; }
+.struct { position: relative; width: 100%; height: 340px; background: var(--d-bg); border: 1px solid var(--d-line); border-radius: 10px; overflow: hidden; }
 .struct-canvas { position: absolute; inset: 0; }
 .struct-canvas canvas { border-radius: 10px; }
 .struct-overlay { position: absolute; inset: 0; display: grid; place-items: center; color: var(--d-faint); font-size: 12.5px; pointer-events: none; }

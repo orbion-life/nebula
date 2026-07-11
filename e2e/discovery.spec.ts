@@ -9,7 +9,7 @@
 import { expect, test } from "@playwright/test";
 import { PNG } from "pngjs";
 
-const BG = { r: 11, g: 15, b: 23 }; // --d-bg / 3Dmol background 0x0b0f17
+const BG = { r: 7, g: 12, b: 24 }; // --d-bg / 3Dmol background 0x070c18 (navy+gold palette)
 
 async function runToWorkspace(page: import("@playwright/test").Page) {
   await page.goto("/");

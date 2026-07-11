@@ -10,6 +10,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import type { StructureResponse } from "../../api/client";
+import { PALETTE, hex0x } from "./render/palette";
 
 interface Props {
   structure: StructureResponse | null;
@@ -37,17 +38,17 @@ export function StructureViewer({ structure, loading, cofactorLabel }: Props) {
         const create = ($3Dmol as any).createViewer as (el: HTMLElement, cfg: unknown) => any;
         if (!hostRef.current || disposed) return;
         hostRef.current.innerHTML = "";
-        const viewer = create(hostRef.current, { backgroundColor: "0x0b0f17" });
+        const viewer = create(hostRef.current, { backgroundColor: hex0x(PALETTE.navy) });
         viewerRef.current = viewer;
 
         const cif = structure.inline_cif ?? (await (await fetch(structure.provider_url)).text());
         if (disposed) return;
         viewer.addModel(cif, "cif");
         // muted protein cartoon
-        viewer.setStyle({}, { cartoon: { color: "0x3b5b7a", opacity: 0.9 } });
+        viewer.setStyle({}, { cartoon: { color: hex0x(PALETTE.structProtein), opacity: 0.9 } });
         // emphasise the cofactor / hetero groups (the proposed spin center)
         viewer.setStyle({ hetflag: true }, { stick: { colorscheme: "yellowCarbon", radius: 0.22 } });
-        viewer.addSurface?.(2 /* VDW */, { opacity: 0.28, color: "0xf6c945" }, { hetflag: true });
+        viewer.addSurface?.(2 /* VDW */, { opacity: 0.28, color: hex0x(PALETTE.gold) }, { hetflag: true });
         const hasHet = (viewer.selectedAtoms?.({ hetflag: true }) ?? []).length > 0;
         viewer.zoomTo(hasHet ? { hetflag: true } : {});
         viewer.zoom(0.85);

@@ -14,6 +14,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Text } from "@react-three/drei";
 import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { PALETTE } from "../render/palette";
 
 export interface UNode {
   id: string;
@@ -32,11 +33,11 @@ interface Props {
 }
 
 const COLORS = {
-  evidence: "#45c8c0",
-  frontier: "#c79be8",
-  excluded: "#54617a",
-  pending: "#6b7a94",
-  selected: "#f6c945",
+  evidence: PALETTE.gold,
+  frontier: PALETTE.violet,
+  excluded: PALETTE.gray,
+  pending: PALETTE.grayPending,
+  selected: PALETTE.goldBright,
 };
 
 function targetPositions(nodes: UNode[]): Map<string, [number, number, number]> {
@@ -117,7 +118,7 @@ function Node({ node, target, selected, onSelect, reducedMotion }: {
         </mesh>
       )}
       {(selected || hovered) && (
-        <Text position={[0, size + 0.32, 0]} fontSize={0.34} color="#e8edf5" anchorX="center" anchorY="bottom" outlineWidth={0.01} outlineColor="#0a0e16">
+        <Text position={[0, size + 0.32, 0]} fontSize={0.34} color={PALETTE.ink} anchorX="center" anchorY="bottom" outlineWidth={0.01} outlineColor={PALETTE.navy}>
           {node.accession}
         </Text>
       )}
@@ -134,12 +135,12 @@ function Scene({ nodes, selectedId, onSelect, reducedMotion }: Props) {
     <>
       <ambientLight intensity={0.6} />
       <pointLight position={[6, 8, 8]} intensity={80} />
-      <pointLight position={[-8, -4, 4]} intensity={30} color="#45c8c0" />
+      <pointLight position={[-8, -4, 4]} intensity={30} color={PALETTE.steel} />
       {nodes.map((n) => (
         <Node key={n.id} node={n} target={targets.get(n.id) ?? [0, 0, 0]} selected={n.id === selectedId} onSelect={onSelect} reducedMotion={reducedMotion} />
       ))}
       {/* faint lane axis references */}
-      <gridHelper args={[16, 16, "#1e2a3d", "#141d2c"]} position={[0, -4.5, 0]} rotation={[0, 0, 0]} />
+      <gridHelper args={[16, 16, PALETTE.line2, PALETTE.line]} position={[0, -4.5, 0]} rotation={[0, 0, 0]} />
       <OrbitControls enablePan={false} enableZoom autoRotate={!reducedMotion} autoRotateSpeed={0.5} minDistance={6} maxDistance={20} />
     </>
   );

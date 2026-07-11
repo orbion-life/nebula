@@ -11,6 +11,7 @@
  * Only rendered for spin-dynamics-eligible candidates (the caller gates it).
  */
 import artifact from "../../data/generated/radical_pair_mary.v1.json";
+import { PALETTE } from "./render/palette";
 
 type SpinParam = { value: number; range: [number, number] | null; uncertainty: string | null };
 
@@ -56,9 +57,9 @@ export function Traces({ spin, candidateSpecific, candidateLabel }: Props) {
   return (
     <figure className="traces">
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="reference radical-pair MARY trace with uncertainty band">
-        <line x1={M.left} x2={M.left + IW} y1={y(0)} y2={y(0)} stroke="#3a4763" strokeWidth={1} />
-        <path d={band} fill="#f6c94522" stroke="none" />
-        <path d={line} fill="none" stroke="#f6c945" strokeWidth={1.8} />
+        <line x1={M.left} x2={M.left + IW} y1={y(0)} y2={y(0)} stroke={PALETTE.line2} strokeWidth={1} />
+        <path d={band} fill={`${PALETTE.gold}22`} stroke="none" />
+        <path d={line} fill="none" stroke={PALETTE.gold} strokeWidth={1.8} />
         <text x={lastX + 8} y={lastY} className="tr-lab" dominantBaseline="middle">reference MARY</text>
         <text x={lastX + 8} y={lastY + 14} className="tr-sub" dominantBaseline="middle">±1σ ensemble</text>
         <text x={M.left} y={H - 12} className="tr-ax">0</text>
@@ -93,9 +94,9 @@ function SpinPanel({ spin, candidateSpecific }: { spin: SpinParam; candidateSpec
   const cy = SM.top + 14;
   return (
     <svg viewBox={`0 0 ${SW} ${SH}`} role="img" aria-label="candidate computed spin with uncertainty interval" className="tr-spin">
-      <line x1={SM.left} x2={SM.left + SIW} y1={cy} y2={cy} stroke="#3a4763" strokeWidth={1} />
-      {spin.range && <line x1={px(lo)} x2={px(hi)} y1={cy} y2={cy} stroke="#45c8c0" strokeWidth={3} />}
-      <circle cx={px(spin.value)} cy={cy} r={4.5} fill="#45c8c0" />
+      <line x1={SM.left} x2={SM.left + SIW} y1={cy} y2={cy} stroke={PALETTE.line2} strokeWidth={1} />
+      {spin.range && <line x1={px(lo)} x2={px(hi)} y1={cy} y2={cy} stroke={PALETTE.steel} strokeWidth={3} />}
+      <circle cx={px(spin.value)} cy={cy} r={4.5} fill={PALETTE.steel} />
       <text x={px(spin.value)} y={cy - 12} className="tr-ax" textAnchor="middle">{spin.value.toFixed(2)}</text>
       <text x={SM.left} y={SH - 6} className="tr-ax">0</text>
       <text x={SM.left + SIW} y={SH - 6} className="tr-ax" textAnchor="end">1</text>
