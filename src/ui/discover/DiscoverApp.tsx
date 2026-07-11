@@ -6,7 +6,7 @@
  * its immutable result is shown in the workspace. All data is real: the objective is
  * compiled server-side, candidates are real public accessions, physics is computed.
  */
-import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   cancelRun,
   createRun,
@@ -18,18 +18,13 @@ import {
   type RunEvent,
   type RunState,
 } from "../../api/client";
-import { ObjectivePanel } from "./ObjectivePanel";
-import { RunProgress } from "./RunProgress";
-import { Workspace } from "./Workspace";
-import { UniverseHero } from "./universe/UniverseHero";
 import { SmoothScroll } from "./scroll/SmoothScroll";
 import { Preloader } from "./Preloader";
 import { AmbientAudio } from "./audio/AmbientAudio";
-
-// opt-in cinematic replay — lazy so its gsap/ScrollTrigger code stays out of the initial bundle
-const NarrativeReplay = lazy(() => import("./narrative/NarrativeReplay").then((m) => ({ default: m.NarrativeReplay })));
+import { CinematicShell } from "./cinematic/CinematicShell";
 
 type Phase = "objective" | "running" | "workspace";
+type View = "cinematic" | "workspace";
 
 export function DiscoverApp() {
   const [phase, setPhase] = useState<Phase>("objective");
@@ -40,7 +35,7 @@ export function DiscoverApp() {
   const [events, setEvents] = useState<RunEvent[]>([]);
   const [run, setRun] = useState<RunState | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [cinematic, setCinematic] = useState(false); // scroll-narrative replay of the workspace run
+  const [view, setView] = useState<View>("cinematic"); // workspace phase: Act III (default) vs calm workspace
   const [booted, setBooted] = useState(false); // dismissed once the entry preloader completes
   const cleanupRef = useRef<(() => void) | null>(null);
 
@@ -123,7 +118,7 @@ export function DiscoverApp() {
     setRunId(null);
     setEvents([]);
     setError(null);
-    setCinematic(false);
+    setView("cinematic");
   }, []);
 
   return (
@@ -137,6 +132,14 @@ export function DiscoverApp() {
           <span className="disc-tag">public-protein counterfactual discovery</span>
         </div>
         <div className="disc-health">
+          {phase === "workspace" && (
+            <button
+              className="view-toggle btn-ghost"
+              onClick={() => setView((v) => (v === "cinematic" ? "workspace" : "cinematic"))}
+            >
+              {view === "cinematic" ? "workspace ⇄" : "⇄ story"}
+            </button>
+          )}
           <AmbientAudio />
           {health ? (
             <span className={`hz ${health.offline ? "offline" : "live"}`}>
@@ -148,41 +151,20 @@ export function DiscoverApp() {
         </div>
       </header>
 
-      {phase === "objective" && (
-        <div className="disc-stage disc-objective">
-          <ObjectivePanel onRun={start} offline={health?.offline ?? false} />
-        </div>
-      )}
-
-      {phase === "running" && (
-        <div className="disc-stage disc-running">
-          {run && (run.candidates?.length ?? 0) > 0 && (
-            <UniverseHero run={run} settled={status === "completed"} selectedId={null} onSelect={() => {}} />
-          )}
-          <RunProgress status={status} stage={stage} events={events} run={run} onCancel={cancel} />
-          {status === "completed" && run && (
-            <button className="btn-run" onClick={() => setPhase("workspace")}>open results →</button>
-          )}
-          {(status === "failed" || status === "cancelled") && (
-            <div className="disc-error">
-              run {status}. <button className="btn-ghost" onClick={reset}>← new objective</button>
-            </div>
-          )}
-          {error && <div className="disc-error">error: {error} <button className="btn-ghost" onClick={reset}>reset</button></div>}
-        </div>
-      )}
-
-      {phase === "workspace" && run && (
-        <div className="disc-stage disc-workspace">
-          {cinematic ? (
-            <Suspense fallback={<div className="disc-loading">loading discovery story…</div>}>
-              <NarrativeReplay run={run} onEnterWorkspace={() => setCinematic(false)} />
-            </Suspense>
-          ) : (
-            <Workspace run={run} onReset={reset} onPlayStory={() => setCinematic(true)} />
-          )}
-        </div>
-      )}
+      <CinematicShell
+        phase={phase}
+        view={view}
+        status={status}
+        stage={stage}
+        events={events}
+        run={run}
+        error={error}
+        offline={health?.offline ?? false}
+        onRun={start}
+        onCancel={cancel}
+        onReset={reset}
+        setView={setView}
+      />
 
       <footer className="disc-foot">
         Outputs are <strong>unvalidated public-protein candidate hypotheses</strong>. Computation is not validation; no

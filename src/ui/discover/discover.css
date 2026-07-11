@@ -91,6 +91,36 @@ body:has(.discover) { background: var(--d-bg); }
 .disc-foot strong { color: var(--d-mut); }
 .disc-error { margin: 14px 22px; color: var(--d-red); }
 .disc-loading { padding: 80px; text-align: center; color: var(--d-faint); font-size: 13px; }
+.view-toggle { font-size: 11px; padding: 4px 11px; }
+
+/* ---- cinematic Acts ---- */
+.act { width: 100%; }
+.act-objective, .act-search { min-height: calc(100vh - 54px); display: flex; align-items: center; justify-content: center; }
+.act-inner { width: 100%; max-width: 860px; padding: 6vh 28px; }
+.act-kicker { display: flex; align-items: center; gap: 10px; font-size: 12px; text-transform: uppercase;
+  letter-spacing: 0.14em; color: var(--d-amber); margin-bottom: 18px; }
+.act-kicker .act-n { font-family: var(--d-mono); color: var(--d-faint); }
+.act-h { font-size: clamp(26px, 4.2vw, 46px); font-weight: 650; line-height: 1.12; margin: 0 0 26px; color: var(--d-ink); max-width: 16ch; }
+
+/* Act II — the run-driven descent */
+.act-search { position: relative; overflow: hidden; }
+.act-search-bg { position: absolute; inset: 0; z-index: 0; opacity: 0.5; pointer-events: none; }
+.act-search-bg .universe { position: absolute; inset: 0; height: 100%; max-width: none; margin: 0; border: none; border-radius: 0; background: transparent; }
+.act-search-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; }
+.act-search-note { color: var(--d-mut); font-size: 13.5px; max-width: 560px; min-height: 1.4em; }
+.act-cancel { margin-top: 4px; }
+.act-terminal { color: var(--d-red); font-size: 13px; }
+
+/* run counter (Act II hero) */
+.runcounter { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.rc-ring { position: relative; width: 180px; height: 180px; display: grid; place-items: center; }
+.rc-ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.rc-track { fill: none; stroke: var(--d-line); stroke-width: 2.5; }
+.rc-fill { fill: none; stroke: var(--d-amber); stroke-width: 2.5; stroke-linecap: round; filter: drop-shadow(0 0 8px #d9b45a66); }
+.rc-pct { font-family: var(--d-mono); font-size: 44px; color: var(--d-ink); font-weight: 300; }
+.rc-unit { font-size: 20px; color: var(--d-amber); margin-left: 2px; }
+.rc-stage { font-size: 12px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--d-amber); }
+.rc-cands { font-family: var(--d-mono); font-size: 12px; color: var(--d-teal); }
 
 /* buttons */
 .btn-primary, .btn-run, .btn-ghost {

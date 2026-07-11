@@ -17,14 +17,21 @@ async function boot(page: import("@playwright/test").Page) {
   await page.waitForSelector(".preloader", { state: "detached", timeout: 15_000 });
 }
 
-async function runToWorkspace(page: import("@playwright/test").Page) {
+// Act I → compile → run → Act III (the scroll narrative is the default result).
+async function runToResult(page: import("@playwright/test").Page) {
   await boot(page);
   await expect(page.locator(".disc-brand")).toContainText("Nebula Discover");
-  // offline health badge → compile auto-seeds the curated fixtured accessions
-  await page.locator("button.btn-primary").click();
+  await page.locator("button.btn-primary").click(); // compile (Act I)
   await expect(page.locator(".obj-sheet")).toBeVisible();
-  await page.locator("button.btn-run").click();
-  // run completes (QM cache hit → fast) and auto-advances to the workspace
+  await page.locator("button.btn-run").click(); // run (Act II, self-advancing)
+  // on completion the shell enters Act III (phase=workspace) — the header view-toggle appears
+  await expect(page.locator(".view-toggle")).toBeVisible({ timeout: 40_000 });
+}
+
+// …then switch to the calm workspace (expert surface).
+async function runToWorkspace(page: import("@playwright/test").Page) {
+  await runToResult(page);
+  await page.locator(".view-toggle").click();
   await expect(page.locator(".ws")).toBeVisible({ timeout: 30_000 });
 }
 
@@ -100,18 +107,17 @@ test("objective is keyboard-operable", async ({ page }) => {
   await expect(page.locator(".obj-sheet")).toBeVisible();
 });
 
-test("cinematic scroll narrative replays the run and returns to the workspace", async ({ page }) => {
-  await runToWorkspace(page);
-  await page.locator(".ws-story").click();
-  // wait for the lazy narrative chunk to mount, then assert chapter 1 (real objective)
+test("the scroll narrative is the default result and opens the workspace", async ({ page }) => {
+  await runToResult(page); // Act III is the default landing after a run
+  // the lazy narrative chunk mounts; chapter 1 carries the real objective
   await expect(page.locator(".narr-kicker").first()).toBeVisible({ timeout: 20_000 });
   await expect(page.locator(".narr-chapter").first()).toContainText(/report/i);
-  // scroll through and confirm a real accession chapter + the measure-next chapter render
+  // a real accession chapter + the measure-next falsifier render
   await expect(page.locator(".narr-acc").first()).toHaveText(/^[A-Z][A-Z0-9]{5,9}$/);
   const measure = page.locator(".narr-chapter").last();
   await measure.scrollIntoViewIfNeeded();
   await expect(measure).toContainText(/Falsification/i);
-  // return to the calm workspace
+  // the final CTA opens the calm workspace
   await page.locator(".narr-chapter .btn-run").click();
   await expect(page.locator(".ws")).toBeVisible();
 });
