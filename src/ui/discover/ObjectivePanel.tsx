@@ -25,10 +25,11 @@ interface Props {
   disabled?: boolean;
 }
 
-// Curated real accessions with committed offline fixtures — used to seed the demo when
-// the backend is offline (no network retrieval), so the default flow shows real
-// candidates instead of an abstention. Q8LPD9 carries the candidate-specific-QM path.
-const OFFLINE_DEMO_SEEDS = ["Q8LPD9", "Q43125"];
+// Test/CI seed only. The product runs ONLINE (live retrieval); offline is not a
+// product feature. When the backend is in its deterministic offline test mode
+// (NEBULA_OFFLINE=1, no network), these committed-fixture accessions seed the run so the
+// E2E suite is deterministic. In production (online) this never fires.
+const OFFLINE_TEST_SEEDS = ["Q8LPD9", "Q43125"];
 
 type Instrument = { id: string; label?: string; readout_modes?: string[]; rf_available?: boolean };
 
@@ -63,10 +64,10 @@ export function ObjectivePanel({ onRun, offline, disabled }: Props) {
     setErr(null);
     try {
       const s = await compileObjective(text, mode);
-      // offline has no live retrieval — seed the curated demo accessions so the default
-      // flow returns real candidates instead of abstaining. Shown + editable in the sheet.
+      // Deterministic test mode only: the offline test backend has no live retrieval, so
+      // seed the committed-fixture accessions. Never fires in the online product.
       if (offline && (!s.seed_accessions || s.seed_accessions.length === 0)) {
-        s.seed_accessions = [...OFFLINE_DEMO_SEEDS];
+        s.seed_accessions = [...OFFLINE_TEST_SEEDS];
       }
       setSpec(s);
     } catch (e) {

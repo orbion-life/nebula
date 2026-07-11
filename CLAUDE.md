@@ -86,19 +86,28 @@ candidate hypotheses** — computation is not validation.
 
 ## Commands
 
+The product runs **online** against live public APIs — that is the shipped mode.
+`NEBULA_OFFLINE=1` and the committed provider fixtures / QM cache exist ONLY to make
+the test suite and CI deterministic; offline is **not a product feature** and is not
+presented to users as a mode. (A cold online run completes in ~30 s — real accessions
+stream in during retrieval and the candidate-specific QM is served from the
+content-addressed cache; a genuinely novel flavin structure pays the one-time UHF cost.)
+
 ```bash
 npm install
-# --- run the app (two servers) ---
-(cd backend && python3 -m uvicorn app.api.main:app --port 8000)   # discovery API (NEBULA_OFFLINE=1 for fixtures)
+# --- run the app (two servers) — ONLINE, live public APIs ---
+(cd backend && python3 -m uvicorn app.api.main:app --port 8000)   # discovery API (live)
 npm run dev             # React app on :5173, proxies /api → :8000
 # --- verify ---
 npm test                # TS: deterministic + boundary + client + acceptance (vitest)
-npm run e2e             # Playwright E2E: offline run → real accession → non-blank 3Dmol canvas
+npm run e2e             # Playwright E2E (uses NEBULA_OFFLINE=1 fixtures for determinism):
+                        #   run → real accession → non-blank 3Dmol + universe canvas
                         #   across 390/768/1280/1920 + reduced-motion + keyboard (chrome + swiftshader)
 npm run build           # tsc --noEmit + vite build
 npm audit               # FULL audit must be 0 high/critical (currently 0 total)
 npm run gen:contracts   # regenerate src/contracts/api.ts from the FastAPI OpenAPI
 (cd backend && python3 -m pytest)   # backend: providers, endpoints, physics, discovery
+python3 scripts/index/build_offline_index.py   # refresh the CI test fixtures (needs network)
 python3 scripts/physics/radical_pair_mary.py   # OPTIONAL: regenerate the reference artifact
 ```
 
