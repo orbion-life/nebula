@@ -85,7 +85,26 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
         run = _advance(run, RunStatus.retrieving_evidence, "retrieving_evidence", "planning mechanism-route queries and retrieving public proteins")
         store.put(run)
         plans = plan_queries(run.objective, per_route=per_route)
-        candidates = assemble_candidates(plans, offline=offline, per_route=per_route)
+
+        # stream each real accession into the run as it is assembled, so the UI (and the
+        # candidate universe) fills in live during retrieval rather than in one batch.
+        streamed: list = []
+
+        def _on_candidate(cand) -> None:
+            streamed.append(cand)
+            acc = cand.uniprot.primary_accession if cand.uniprot else cand.candidate_id
+            now = datetime.now(timezone.utc)
+            cur = store.get(run_id)
+            if cur is None or cur.status != RunStatus.retrieving_evidence:
+                return
+            store.put(cur.model_copy(update={
+                "candidates": list(streamed),
+                "updated_at": now,
+                "events": [*cur.events, RunEvent(at=now, from_status=RunStatus.retrieving_evidence, to_status=RunStatus.retrieving_evidence, stage="retrieving_evidence", note=f"retrieved {acc} ({cand.route_class.value})", progress=progress_fraction(RunStatus.retrieving_evidence))],
+            }))
+
+        candidates = assemble_candidates(plans, offline=offline, per_route=per_route, on_candidate=_on_candidate)
+        run = store.get(run_id) or run  # pick up the streamed candidates/events
         provider_calls = [p for c in candidates for p in c.provenance]
         run = run.model_copy(update={
             "candidates": candidates,

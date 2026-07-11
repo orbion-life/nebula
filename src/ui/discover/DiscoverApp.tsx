@@ -21,6 +21,7 @@ import {
 import { ObjectivePanel } from "./ObjectivePanel";
 import { RunProgress } from "./RunProgress";
 import { Workspace } from "./Workspace";
+import { UniverseHero } from "./universe/UniverseHero";
 
 type Phase = "objective" | "running" | "workspace";
 
@@ -39,6 +40,17 @@ export function DiscoverApp() {
     getHealth().then(setHealth).catch(() => setHealth(null));
     return () => cleanupRef.current?.();
   }, []);
+
+  // During a live run, poll the FULL run state so the universe fills in as real
+  // accessions arrive (SSE only carries stage events, not the growing candidate list).
+  useEffect(() => {
+    if (phase !== "running" || !runId) return;
+    if (["completed", "failed", "cancelled"].includes(status)) return;
+    const id = window.setInterval(() => {
+      getRun(runId).then(setRun).catch(() => {});
+    }, 700);
+    return () => window.clearInterval(id);
+  }, [phase, runId, status]);
 
   const start = useCallback(async (spec: ObjectiveSpec) => {
     setError(null);
@@ -132,6 +144,9 @@ export function DiscoverApp() {
 
       {phase === "running" && (
         <div className="disc-stage disc-running">
+          {run && (run.candidates?.length ?? 0) > 0 && (
+            <UniverseHero run={run} settled={status === "completed"} selectedId={null} onSelect={() => {}} />
+          )}
           <RunProgress status={status} stage={stage} events={events} run={run} onCancel={cancel} />
           {status === "completed" && run && (
             <button className="btn-run" onClick={() => setPhase("workspace")}>open results →</button>

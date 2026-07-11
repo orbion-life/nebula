@@ -241,14 +241,18 @@ body:has(.discover) { background: var(--d-bg); }
 .prov-calls li { font-size: 11px; color: var(--d-faint); }
 
 /* ---- candidate universe (R3F hero) ---- */
-.universe { position: relative; height: 300px; margin: 0 0 8px; border-bottom: 1px solid var(--d-line);
+.universe { position: relative; width: 100%; max-width: 1100px; margin: 0 auto 8px; height: 300px;
+  border-bottom: 1px solid var(--d-line);
   background: radial-gradient(600px 300px at 50% 120%, #12203a 0%, transparent 70%); overflow: hidden; }
+.disc-running .universe { border: 1px solid var(--d-line); border-radius: 14px; height: 320px; }
 .universe canvas { display: block; }
 .universe-legend { position: absolute; top: 10px; left: 16px; z-index: 2; display: flex; gap: 14px;
   font-size: 11px; color: var(--d-mut); pointer-events: none; }
 .universe-legend .ul-ev { color: var(--d-evi); }
 .universe-legend .ul-fr { color: var(--d-fro); }
 .universe-legend .ul-qm { color: var(--d-amber); }
+.universe-legend .ul-searching { color: var(--d-teal); }
+.udom-pending .udom-lane-title { color: var(--d-mut); }
 .universe-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--d-faint); font-size: 12.5px; }
 .universe-dom { display: flex; gap: 20px; padding: 34px 18px 14px; height: 100%; align-items: flex-start; overflow-x: auto; }
 .udom-lane { display: flex; flex-direction: column; gap: 6px; }

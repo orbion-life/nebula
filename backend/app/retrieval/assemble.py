@@ -8,6 +8,8 @@ enrichment is recorded as an explicit `degradation`, never imputed.
 """
 from __future__ import annotations
 
+from typing import Callable
+
 from ..contracts.candidate import CandidateRecord
 from ..contracts.enums import ArchitectureKind, ClaimLevel, ReadoutMode, RouteClass, ScaffoldFamily
 from ..contracts.providers import UniProtRecord
@@ -173,7 +175,17 @@ def _build_candidate(
     )
 
 
-def assemble_candidates(plans: list[QueryPlan], *, offline: bool, per_route: int = 6, record: bool = False) -> list[CandidateRecord]:
+def assemble_candidates(
+    plans: list[QueryPlan],
+    *,
+    offline: bool,
+    per_route: int = 6,
+    record: bool = False,
+    on_candidate: Callable[[CandidateRecord], None] | None = None,
+) -> list[CandidateRecord]:
+    """Assemble candidates. `on_candidate` (if given) is called for each candidate as it
+    is built — the orchestrator uses it to stream real accessions into the run/universe as
+    they arrive, rather than in one atomic batch at the end of retrieval."""
     up = UniProtProvider(offline=offline, record=record)
     ip = InterProProvider(offline=offline, record=record)
     rc = RcsbProvider(offline=offline, record=record)
@@ -199,5 +211,8 @@ def assemble_candidates(plans: list[QueryPlan], *, offline: bool, per_route: int
             if key in seen:
                 continue
             seen.add(key)
-            out.append(_build_candidate(rec, prov, plan, ip, rc, af))
+            cand = _build_candidate(rec, prov, plan, ip, rc, af)
+            out.append(cand)
+            if on_candidate is not None:
+                on_candidate(cand)
     return out

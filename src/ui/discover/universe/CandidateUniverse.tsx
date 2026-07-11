@@ -18,7 +18,7 @@ import * as THREE from "three";
 export interface UNode {
   id: string;
   accession: string;
-  lane: "evidence" | "frontier" | "excluded";
+  lane: "evidence" | "frontier" | "excluded" | "pending";
   rank: number; // 0 = best in lane
   score: number; // 0..1 (drives size)
   candidateSpecific: boolean;
@@ -35,12 +35,13 @@ const COLORS = {
   evidence: "#45c8c0",
   frontier: "#c79be8",
   excluded: "#54617a",
+  pending: "#6b7a94",
   selected: "#f6c945",
 };
 
 function targetPositions(nodes: UNode[]): Map<string, [number, number, number]> {
   const m = new Map<string, [number, number, number]>();
-  const lanes: Record<UNode["lane"], UNode[]> = { evidence: [], frontier: [], excluded: [] };
+  const lanes: Record<UNode["lane"], UNode[]> = { evidence: [], frontier: [], excluded: [], pending: [] };
   for (const n of nodes) lanes[n.lane].push(n);
   (Object.keys(lanes) as UNode["lane"][]).forEach((k) => lanes[k].sort((a, b) => a.rank - b.rank));
   const column = (arr: UNode[], x: number, z: number) => {
@@ -54,6 +55,15 @@ function targetPositions(nodes: UNode[]): Map<string, [number, number, number]> 
     const a = (i / Math.max(1, lanes.excluded.length - 1) - 0.5) * Math.PI * 0.8;
     m.set(n.id, [Math.sin(a) * 2.2, Math.cos(a) * 1.6 - 0.5, -4]);
   });
+  // pending (still searching — lanes not assigned yet): a loose spherical cloud that the
+  // nodes will later fly out of into the lane columns (the "search → rank" beat).
+  const N = lanes.pending.length;
+  lanes.pending.forEach((n, i) => {
+    const phi = Math.acos(1 - (2 * (i + 0.5)) / Math.max(1, N)); // even sphere distribution
+    const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+    const r = 2.6;
+    m.set(n.id, [r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta) * 0.7, r * Math.cos(phi)]);
+  });
   return m;
 }
 
@@ -66,12 +76,18 @@ function Node({ node, target, selected, onSelect, reducedMotion }: {
   const tvec = useMemo(() => new THREE.Vector3(...target), [target[0], target[1], target[2]]);
   // selected node lifts toward the camera
   const goal = useMemo(() => tvec.clone().add(new THREE.Vector3(0, 0, selected ? 2.2 : 0)), [tvec, selected]);
+  const ONE = useMemo(() => new THREE.Vector3(1, 1, 1), []);
 
   useFrame(() => {
     const g = ref.current;
     if (!g) return;
-    if (reducedMotion) g.position.copy(goal);
-    else g.position.lerp(goal, 0.09);
+    if (reducedMotion) {
+      g.position.copy(goal);
+      g.scale.copy(ONE);
+    } else {
+      g.position.lerp(goal, 0.09);
+      g.scale.lerp(ONE, 0.14); // scale-in entrance from 0 when a node arrives
+    }
   });
 
   const color = selected ? COLORS.selected : COLORS[node.lane];
@@ -79,6 +95,7 @@ function Node({ node, target, selected, onSelect, reducedMotion }: {
   return (
     <group
       ref={ref}
+      scale={reducedMotion ? 1 : 0}
       onClick={(e) => { e.stopPropagation(); onSelect(node.id); }}
       onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
       onPointerOut={() => setHovered(false)}

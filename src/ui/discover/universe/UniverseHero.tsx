@@ -13,20 +13,22 @@ function prefersReducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
 }
 
-/** Project the run into universe nodes: lane, rank, score, candidate-specific flag. */
-export function buildNodes(run: RunState): UNode[] {
+/** Project the run into universe nodes: lane, rank, score, candidate-specific flag.
+ * Until the run has ranked (settled), every retrieved candidate is `pending` — a loose
+ * cloud — so the run phase reads as "searching the universe" before the lanes resolve. */
+export function buildNodes(run: RunState, settled: boolean): UNode[] {
   const evidence = run.evidence_shortlist ?? [];
   const frontier = run.frontier_experiments ?? [];
   const scoreById = new Map<string, DiscoveryScore>((run.discovery_scores ?? []).map((s) => [s.candidate_id, s]));
   const dossierById = new Map((run.dossiers ?? []).map((d) => [d.candidate.candidate_id, d]));
   const laneOf = (id: string): UNode["lane"] =>
-    evidence.includes(id) ? "evidence" : frontier.some((f) => f.candidate_id === id) ? "frontier" : "excluded";
+    !settled ? "pending" : evidence.includes(id) ? "evidence" : frontier.some((f) => f.candidate_id === id) ? "frontier" : "excluded";
   const rankIn = (id: string, lane: UNode["lane"]): number =>
     lane === "evidence" ? evidence.indexOf(id) : lane === "frontier" ? frontier.findIndex((f) => f.candidate_id === id) : 0;
   return (run.candidates ?? []).map((c) => {
     const lane = laneOf(c.candidate_id);
     const s = scoreById.get(c.candidate_id);
-    const score = lane === "frontier" ? s?.IG_information_gain ?? 0.3 : s?.P_plausibility ?? 0.3;
+    const score = lane === "frontier" ? s?.IG_information_gain ?? 0.3 : s?.P_plausibility ?? 0.35;
     return {
       id: c.candidate_id,
       accession: c.uniprot?.primary_accession ?? c.candidate_id.slice(0, 8),
@@ -48,10 +50,11 @@ interface Props {
   run: RunState;
   selectedId: string | null;
   onSelect: (id: string) => void;
+  settled?: boolean; // default true (workspace); pass false during a live run
 }
 
-export function UniverseHero({ run, selectedId, onSelect }: Props) {
-  const nodes = useMemo(() => buildNodes(run), [run]);
+export function UniverseHero({ run, selectedId, onSelect, settled = true }: Props) {
+  const nodes = useMemo(() => buildNodes(run, settled), [run, settled]);
   const reduced = prefersReducedMotion();
   if (nodes.length === 0) return null;
 
@@ -59,9 +62,15 @@ export function UniverseHero({ run, selectedId, onSelect }: Props) {
   return (
     <div className="universe" aria-label="candidate universe — proteins positioned by discovery lane and rank">
       <div className="universe-legend">
-        <span className="ul-ev">● evidence</span>
-        <span className="ul-fr">● frontier</span>
-        <span className="ul-qm">◎ candidate-specific QM</span>
+        {settled ? (
+          <>
+            <span className="ul-ev">● evidence</span>
+            <span className="ul-fr">● frontier</span>
+            <span className="ul-qm">◎ candidate-specific QM</span>
+          </>
+        ) : (
+          <span className="ul-searching">searching the protein universe — {nodes.length} retrieved</span>
+        )}
       </div>
       <WebGLBoundary fallback={fallback}>
         <Suspense fallback={<div className="universe-loading">assembling candidate universe…</div>}>
@@ -74,7 +83,7 @@ export function UniverseHero({ run, selectedId, onSelect }: Props) {
 
 /** Accessible, WebGL-free equivalent: the same nodes as a labelled, selectable list. */
 function DomFallback({ nodes, selectedId, onSelect }: { nodes: UNode[]; selectedId: string | null; onSelect: (id: string) => void }) {
-  const lanes: UNode["lane"][] = ["evidence", "frontier", "excluded"];
+  const lanes: UNode["lane"][] = ["pending", "evidence", "frontier", "excluded"];
   return (
     <div className="universe-dom" role="list">
       {lanes.map((lane) => {
