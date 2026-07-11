@@ -129,7 +129,7 @@ export function NarrativeReplay({ run }: Props) {
         <p className="narr-obj">{run.objective.objective_text}</p>
         <div className="narr-chips">
           {run.objective.sensed_quantity_or_state && <span className="chip">sense: {run.objective.sensed_quantity_or_state.replace(/-/g, " ")}</span>}
-          {(run.objective.desired_modalities ?? []).map((m) => <span className="chip" key={m}>{m.replace(/_/g, " ")}</span>)}
+          {(run.objective.desired_modalities ?? []).length > 0 && <span className="chip">readout modes: {(run.objective.desired_modalities ?? []).map((m) => m.replace(/_/g, " ")).join(" + ")}</span>}
         </div>
       </Chapter>
 
@@ -211,7 +211,7 @@ export function NarrativeReplay({ run }: Props) {
         {candidate ? (
           <>
             <h2 className="narr-h">Best supported next measurement under these assumptions: {acc}.</h2>
-            <p className="narr-plan-line"><strong>Route compatible measurement scenario:</strong> {(score?.suggested_instrument_id ?? frontier?.discriminating_experiment?.instrument_id ?? run.instrument_id ?? "benchtop_field_fluorimeter").replace(/_/g, " ")}</p>
+            <p className="narr-plan-line"><strong>Route compatible measurement scenario:</strong> {(score?.suggested_instrument_id ?? frontier?.discriminating_experiment?.instrument_id ?? run.instrument_id ?? "a route compatible instrument").replace(/_/g, " ")}</p>
             <p className="narr-plan-line"><strong>{claimLabel(candidate.claim_ceiling)}</strong></p>
             {candidate.why_it_might_work?.[0] && <p className="narr-plan-line"><strong>Why it remains:</strong> {candidate.why_it_might_work[0]}</p>}
             <p className="narr-plan-line narr-fals">

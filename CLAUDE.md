@@ -1,13 +1,16 @@
 # CLAUDE.md: operating guide for Nebula Discover
 
 Nebula Discover is the public, open-source discovery module for deciding which
-public protein and mechanism hypotheses deserve measurement next. It retrieves and
+public protein and mechanism hypotheses deserve measurement next, across multiple
+sensing modalities (fluorescence, lifetime, magnetic/RF, and redox-electrochemical
+readouts). It retrieves and
 enriches public protein records, applies explicit mechanism and physics-eligibility
 gates, separates evidence from exploration, and produces a measurement handoff with
 controls and falsifiers.
 
-It does not discover or validate working sensors, predict arbitrary protein magnetic
-responses, or claim that sequence or structure determines spin behavior.
+It does not discover or validate working sensors of any modality, predict arbitrary
+protein responses (magnetic, optical, redox, or otherwise), or claim that sequence or
+structure determines mechanism behavior.
 
 ## Shipped execution path
 

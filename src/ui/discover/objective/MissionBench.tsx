@@ -219,7 +219,7 @@ export function MissionBench({
 
         <section className="mb-job">
           <div className="mb-block">
-            <span className="mb-eyebrow">sense · drives the mechanism search</span>
+            <span className="mb-eyebrow">sensing modality · picks the mechanism route and readout family</span>
             <div className="mb-chips" role="group" aria-label="sensing target that drives the search">
               {SENSES.map((s) => (
                 <button
@@ -264,8 +264,10 @@ export function MissionBench({
           </div>
 
           <div className="mb-measure">
-            <span className="mb-eyebrow">measure</span>
-            <span className="mb-measure-text">proposed by Nebula, not by you</span>
+            <span className="mb-eyebrow">measure · proposed by Nebula, not by you</span>
+            <span className="mb-measure-text">
+              readout modes to test: {readoutsForSense(sense).map((m) => m.replace(/_/g, " ")).join(" + ")}
+            </span>
           </div>
         </section>
       </div>

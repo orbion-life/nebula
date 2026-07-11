@@ -6,9 +6,12 @@
 > pretending to know the mechanism or instrument. The target drives the search;
 > deployment conditions are preserved for the experiment handoff."
 
-Show the Mission Bench. Point out that the supported sensing targets are explicit and
+Show the Mission Bench. Point out that the supported sensing targets are explicit,
+span several readout modalities (magnetic/RF, redox-electrochemical, and optical), and
 that the product and survival fields say they are handoff context in this build. Choose
-the wearable magnetic-field example and start the run.
+the wearable magnetic-field example, one of several supported targets, to show the
+radical-pair route and, where a cofactor-bound structure is available, its
+candidate-specific quantum-chemistry diagnostic; start the run.
 
 ## 0:25-0:50 | The search
 

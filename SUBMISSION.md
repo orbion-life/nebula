@@ -4,14 +4,15 @@
 
 ## One-line pitch
 
-Turn a sensing objective into annotation-checked public protein hypotheses and one
-falsifiable measurement handoff, with every physics assumption exposed.
+Turn a sensing objective into annotation-checked public protein hypotheses across
+multiple sensing modalities and one falsifiable measurement handoff, with every
+physics assumption exposed.
 
 ## Problem
 
 Protein and biomaterial teams can generate candidate ideas faster than they can
 measure them. Familiar sequence and structure tools do not answer whether a proposed
-spin-linked mechanism will create a control-surviving readout. Nebula Discover narrows
+transduction mechanism (radical-pair, redox, or photochemical) will create a control-surviving readout. Nebula Discover narrows
 the public search and makes the next experiment auditable without claiming the sensor
 works.
 
@@ -68,7 +69,7 @@ Run `/audit-submit` and `/skeptic-pass` in Claude Code after the deterministic s
 **Title:** Nebula Discover: Decide What Deserves Measurement Next
 
 **Description:** Nebula Discover converts a supported sensing objective into a
-mechanism-specific public protein search, enriches real accessions with public domain,
+mechanism-specific public protein search across multiple readout modalities, enriches real accessions with public domain,
 cofactor, and structure evidence, exposes bounded physics assumptions, and returns an
 unvalidated measurement hypothesis with controls and a kill criterion. It separates
 evidence from exploration and abstains rather than manufacturing a winner.

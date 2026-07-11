@@ -2,8 +2,9 @@
 
 **Built with Claude: Life Sciences**
 
-Nebula Discover turns a supported sensing objective into a public protein search,
-mechanism hypotheses, explicit physics assumptions, and a measurement handoff.
+Nebula Discover turns a supported sensing objective into a public protein search
+across multiple sensing modalities, returning mechanism hypotheses, explicit physics
+assumptions, and a measurement handoff.
 It helps decide what deserves measurement next. It does not claim that any protein
 is a working sensor.
 
@@ -22,12 +23,13 @@ sensing target
   -> controls, falsifier, uncertainty, and measurement handoff
 ```
 
-The beginner Mission Bench supports four sensing targets in this build:
+The beginner Mission Bench supports four sensing targets in this build, each routing
+to distinct readout modalities:
 
-- magnetic field
-- radio frequency field
-- redox potential
-- light history
+- magnetic field (magnetic and fluorescence readouts)
+- radio frequency field (magnetic and fluorescence readouts)
+- redox potential (electrochemical and fluorescence readouts)
+- light history (fluorescence and lifetime readouts)
 
 Product form, temperature, oxygen, host, and immobilization are retained for the
 experiment handoff. The interface states when a field does not affect retrieval or

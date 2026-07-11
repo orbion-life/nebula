@@ -62,7 +62,7 @@ export function Preloader({ onDone }: { onDone: () => void }) {
         <span className="pre-pct">{pct}%</span>
       </div>
       <div className="pre-word">NEBULA DISCOVER</div>
-      <div className="pre-sub">entering the quantum within</div>
+      <div className="pre-sub">reading the sensing frontier within</div>
     </div>
   );
 }
