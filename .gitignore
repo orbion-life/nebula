@@ -22,6 +22,8 @@ backend/**/*.sqlite
 backend/**/*.db
 artifacts/runs/
 backend/artifacts/
+backend/build/
+backend/*.egg-info/
 
 # Playwright
 test-results/

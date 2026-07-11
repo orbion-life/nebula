@@ -91,6 +91,25 @@ test("completes with prefers-reduced-motion (no motion-only meaning)", async ({ 
   await ctx.close();
 });
 
+test("wheel / trackpad scroll actually moves the page", async ({ page }) => {
+  // Guards the P0 bug: Lenis with autoRaf:false captured the wheel but never advanced the
+  // page. Programmatic scroll hid it; a real wheel event exposes it. Act III is a tall page.
+  await runToResult(page);
+  await expect(page.locator(".narr-kicker").first()).toBeVisible({ timeout: 20_000 }); // narrative laid out
+  await page.waitForTimeout(700);
+  const scrollable = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight);
+  expect(scrollable, "result page should be taller than the viewport").toBeGreaterThan(300);
+  const before = await page.evaluate(() => window.scrollY);
+  await page.mouse.move(700, 400);
+  for (let i = 0; i < 3; i++) {
+    await page.mouse.wheel(0, 900);
+    await page.waitForTimeout(150);
+  }
+  await page.waitForTimeout(1500); // let Lenis settle
+  const after = await page.evaluate(() => window.scrollY);
+  expect(after, `wheel should move the page (before=${before} after=${after} scrollable=${scrollable})`).toBeGreaterThan(before + 30);
+});
+
 test("ambient audio is muted by default", async ({ page }) => {
   await boot(page);
   const toggle = page.locator(".audio-toggle");
