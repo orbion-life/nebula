@@ -40,9 +40,12 @@ app = modal.App("nebula-rfdiffusion")
 rfdiffusion_image = (
     modal.Image.from_registry("nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04", add_python="3.10")
     .apt_install("git", "wget", "aria2")
+    # torch + dgl must be the CUDA 11.8 builds (matching the base image). The default PyPI dgl wheel
+    # is CPU-only and fails RFdiffusion's SE3 graph ops on GPU ("Operator Range does not support
+    # cuda device"); torch from the cu118 index keeps CUDA consistent.
+    .pip_install("torch==2.1.2", index_url="https://download.pytorch.org/whl/cu118")
+    .pip_install("dgl==1.1.3", find_links="https://data.dgl.ai/wheels/cu118/repo.html")
     .pip_install(
-        "torch==2.1.2",
-        "dgl==1.1.3",
         "hydra-core==1.3.2",
         "omegaconf==2.3.0",
         "e3nn==0.5.1",
@@ -60,6 +63,9 @@ rfdiffusion_image = (
         "wget -q http://files.ipd.uw.edu/pub/RFdiffusion/6f5902ac237024bdd0c176cb93063dc4/Base_ckpt.pt "
         "-O /opt/RFdiffusion/models/Base_ckpt.pt",
     )
+    # RFdiffusion runtime deps not pulled transitively (kept in a trailing layer so the heavy
+    # torch/clone/weights layers above stay cached across fixes). pyrsistent: inference/symmetry.py.
+    .pip_install("pyrsistent")
 )
 
 with rfdiffusion_image.imports():

@@ -33,7 +33,7 @@ class ModalRFdiffusionAdapter:
 
     name = "rfdiffusion@modal"
 
-    def __init__(self, url: str, token: str, *, timeout: float = 180.0) -> None:
+    def __init__(self, url: str, token: str, *, timeout: float = 300.0) -> None:
         self._url = url
         self._token = token
         self._timeout = timeout
