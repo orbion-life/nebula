@@ -64,6 +64,7 @@ rfdiffusion_image = (
 
 with rfdiffusion_image.imports():
     import glob
+    import re
     import subprocess
     import uuid
 
@@ -74,10 +75,21 @@ with rfdiffusion_image.imports():
     timeout=600,
     # bills YOUR account; only the endpoint (below) can trigger it, and only with your token.
 )
-def _run_rfdiffusion(n: int, length: int) -> list[dict]:
-    """Unconditional monomer backbones. Returns [{backbone_pdb, n_residues, run_ref, params}]."""
+def _run_rfdiffusion(n: int, length: int, contig: str | None = None) -> list[dict]:
+    """RFdiffusion monomer backbones. Returns [{backbone_pdb, n_residues, run_ref, params}].
+
+    Unconditional by default. If `contig` is provided (an RFdiffusion contigmap string derived from
+    a candidate's cofactor motif — see docs/DESIGN_ADAPTERS.md 'Per-protein motif conditioning'),
+    the backbone is scaffolded around that motif instead. A safe, minimal allowlist keeps a rogue
+    payload from injecting shell/hydra args: only length-range, digits, chain letters, '/', '-', ',',
+    and spaces are accepted; anything else falls back to unconditional."""
     n = max(1, min(int(n), 8))
     length = max(40, min(int(length), 260))
+    contigs = f"{length}-{length}"
+    conditioned = False
+    if contig and re.fullmatch(r"[A-Za-z0-9/,\- ]{1,120}", contig.strip()):
+        contigs = contig.strip()
+        conditioned = True
     run_ref = uuid.uuid4().hex[:12]
     out_prefix = f"/tmp/{run_ref}/design"
     os.makedirs(f"/tmp/{run_ref}", exist_ok=True)
@@ -87,7 +99,7 @@ def _run_rfdiffusion(n: int, length: int) -> list[dict]:
             "/opt/RFdiffusion/scripts/run_inference.py",
             f"inference.output_prefix={out_prefix}",
             "inference.model_directory_path=/opt/RFdiffusion/models",
-            f"contigmap.contigs=[{length}-{length}]",
+            f"contigmap.contigs=[{contigs}]",
             f"inference.num_designs={n}",
         ],
         check=True,
@@ -100,7 +112,7 @@ def _run_rfdiffusion(n: int, length: int) -> list[dict]:
         n_res = len({ln[22:26] for ln in pdb.splitlines() if ln.startswith("ATOM") and ln[12:16].strip() == "CA"})
         designs.append(
             {"backbone_pdb": pdb, "n_residues": n_res, "run_ref": run_ref,
-             "params": {"length": length, "unconditional": "true"}}
+             "params": {"length": length, "unconditional": "false" if conditioned else "true"}}
         )
     return designs
 
@@ -122,5 +134,8 @@ def generate(payload: dict):
         raise HTTPException(status_code=401, detail="missing or invalid token")
     n = int(payload.get("n", 3))
     length = int(payload.get("length", 100))
-    designs = _run_rfdiffusion.remote(n, length)
+    # optional per-protein motif conditioning (see docs/DESIGN_ADAPTERS.md). The backend adapter may
+    # forward a `contig` derived from the target candidate's cofactor site; None → unconditional.
+    contig = payload.get("contig")
+    designs = _run_rfdiffusion.remote(n, length, contig if isinstance(contig, str) else None)
     return {"model": "rfdiffusion-base", "designs": designs}

@@ -60,3 +60,27 @@ unvalidated, non-orderable **design hypothesis**: `sequence_provided=False`, `fo
 and the same claim ceilings as any other frontier candidate. Adding a sequence designer
 (ProteinMPNN/LigandMPNN) behind the same seam is possible, but a designed **sequence** must never be
 presented as orderable or validated — that is exactly what the claim firewall forbids.
+
+## Per-protein motif conditioning
+
+Each generative brief is now **linked to a top-ranked retrieved candidate**: the orchestrator passes
+the ranked shortlist into `generate_previews`, and every `GenerativePreview` carries
+`invented_from_accession`, `mechanism_route_id`, `motif_note` (e.g. "FMN flavin radical-pair site"),
+and a `design_rationale`. This is a design **intent** — the brief names the protein and cofactor
+motif it would target; it is never a claim that a backbone was scaffolded or validated for that
+protein. The deterministic preview keeps `backbone_pdb=null` (a brief, not coordinates).
+
+To produce a backbone genuinely **scaffolded around that motif** (not the default unconditional
+monomer), two pieces cooperate:
+
+1. **The recipe honors a `contig`.** `_run_rfdiffusion(n, length, contig)` (and the `generate`
+   endpoint) accept an optional RFdiffusion contigmap string; when present the backbone is
+   conditioned on it (`params.unconditional="false"`), else it stays unconditional. The input is
+   allowlisted (chain letters, digits, `/ , -`, spaces) so a rogue payload cannot inject hydra/shell
+   args. The `ModalRFdiffusionAdapter` already forwards the target accession, route, and `motif_note`
+   in its payload.
+2. **Deriving the `contig` from the candidate's structure** — mapping the cofactor-coordinating
+   residues of the linked candidate (AlphaFold/RCSB coordinates) to a contigmap/hotspot spec — is the
+   remaining wire-up. It is intentionally left to enable on a live Modal deploy (it needs a GPU and
+   real structures to validate the contigs); until then the adapter forwards `contig=None` and the
+   endpoint runs unconditional. No fabricated or unvalidated motif ever ships from the offline build.
