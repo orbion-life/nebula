@@ -6,14 +6,18 @@
  * select a candidate, inspect its evidence, compare the generated frontier, then
  * leave with one falsifiable measurement handoff.
  */
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { Suspense, lazy, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { getStructure, type CandidateDossier, type CandidateRecord, type DiscoveryScore, type RunState, type StructureResponse } from "../../../api/client";
 import { GeneratedBackboneViewer } from "../GeneratedBackboneViewer";
 import { StructureViewer } from "../StructureViewer";
-import { claimLabel, dossierMarkdown } from "../dossierExport";
+import { claimLabel, computedSpinParam, dossierMarkdown, isCandidateSpecific, isSpinDynamics, routeLabel } from "../dossierExport";
+
+// the physics trace is heavy (raw SVG + the versioned RadicalPy artifact); lazy-load it so it
+// only enters the bundle when a completed run actually reaches the compute scene.
+const Traces = lazy(() => import("../Traces").then((m) => ({ default: m.Traces })));
 
 interface Props { run: RunState }
 
@@ -39,6 +43,12 @@ export function NarrativeReplay({ run }: Props) {
   const frontier = (run.frontier_experiments ?? []).find((f) => f.candidate_id === selected?.candidate_id);
   const design = designs[designIndex] ?? designs[0] ?? null;
   const realBackbones = designs.filter((d) => Boolean(d.backbone_pdb)).length;
+  // physics scene: only radical-pair routes carry a spin-dynamics reference; everything else
+  // shows the honest "no candidate-specific quantum chemistry" note (never physics theater).
+  const spinParam = computedSpinParam(dossier);
+  const spinEligible = isSpinDynamics(dossier);
+  const candidateSpecificPhysics = isCandidateSpecific(dossier);
+  const selectedLabel = selected?.uniprot?.primary_accession ?? selected?.title ?? "this protein";
   const uniqueAccessions = new Set(candidates.map((c) => c.uniprot?.primary_accession ?? c.candidate_id)).size;
   const shortlistIds = new Set([...(run.evidence_shortlist ?? []), ...(run.frontier_experiments ?? []).map((f) => f.candidate_id)]);
   const shortlist = candidates
@@ -117,6 +127,7 @@ export function NarrativeReplay({ run }: Props) {
       <nav className="atlas-nav" aria-label="discovery result sections">
         <button onClick={() => jumpTo("atlas-outcome")}>outcome</button>
         <button onClick={() => jumpTo("atlas-nature")}>discover</button>
+        <button onClick={() => jumpTo("atlas-compute")}>physics</button>
         <button onClick={() => jumpTo("atlas-generate")}>generate</button>
         <button onClick={() => jumpTo("atlas-decision")}>measure</button>
       </nav>
@@ -172,10 +183,35 @@ export function NarrativeReplay({ run }: Props) {
         </div>
       </section>
 
+      <section className="atlas-scene atlas-compute" id="atlas-compute">
+        <div className="atlas-reveal">
+          <header className="atlas-section-head">
+            <div><span className="atlas-eyebrow">02 · physics</span><h2>The spin physics, laid bare.</h2></div>
+            <p>A reference radical-pair spin-dynamics calculation with its counterfactual controls and every assumption it rests on. A synthetic assumption sweep, not a prediction of this protein.</p>
+          </header>
+          {spinEligible ? (
+            <div className="atlas-compute-body">
+              <Suspense fallback={<div className="atlas-compute-loading" aria-live="polite">composing the spin dynamics trace…</div>}>
+                <Traces spin={spinParam} candidateSpecific={candidateSpecificPhysics} candidateLabel={selectedLabel} />
+              </Suspense>
+              <p className="atlas-compute-foot">
+                {spinParam
+                  ? `${selectedLabel} carries a candidate-specific max Mulliken spin population (isolated neutral-doublet cluster, ${candidateSpecificPhysics ? "structure-extracted" : "generic template"}), shown on its own axis — basis-dependent, HIGH uncertainty, not a probability and not a response prediction.`
+                  : `No candidate-specific spin value was produced for this flavin radical-pair candidate; a generic isoalloxazine template applies. The reference sweep above stands as mechanism context, not a prediction.`}
+              </p>
+            </div>
+          ) : (
+            <div className="atlas-compute-none">
+              <p>No candidate-specific quantum chemistry for this route. {routeLabel(selected?.route_class ?? "")} is a frontier hypothesis; only the flavin radical-pair route computes candidate-specific spin in this build. This candidate is scored on public annotation and measurement value alone.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
       <section className="atlas-scene atlas-generate" id="atlas-generate">
         <div className="atlas-reveal">
           <header className="atlas-section-head">
-            <div><span className="atlas-eyebrow">02 · generate</span><h2>Then search beyond nature.</h2></div>
+            <div><span className="atlas-eyebrow">03 · generate</span><h2>Then search beyond nature.</h2></div>
             <p>RFdiffusion proposes new backbone geometry for the same sensing mission. Coordinates are a starting point, not a finished construct.</p>
           </header>
           <div className="atlas-generator">
@@ -206,7 +242,7 @@ export function NarrativeReplay({ run }: Props) {
       <section className="atlas-scene atlas-decision" id="atlas-decision">
         <div className="atlas-reveal">
           <header className="atlas-section-head">
-            <div><span className="atlas-eyebrow">03 · measure</span><h2>Choose what earns bench time.</h2></div>
+            <div><span className="atlas-eyebrow">04 · measure</span><h2>Choose what earns bench time.</h2></div>
             <p>Nebula does not choose a winner by one score. It exposes the trade: support, measurability, developability, and uncertainty.</p>
           </header>
           {selected ? (
