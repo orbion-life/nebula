@@ -143,7 +143,7 @@ def build_discovery(
         inp = ScoreInputs(candidate=cand, capability=cap, graph=graph, eligibility=elig, reason=reason, novelty=novelty)
         score, lane = score_one(inp, instrument, desired)
         # measurement as OUTPUT: attach a sensed-target-aware instrument for THIS candidate (both lanes)
-        score = score.model_copy(update={"suggested_instrument_id": _instrument_for(sensed, inp)})
+        score = score.model_copy(update={"suggested_instrument_id": _instrument_for(sensed, inp), "mechanism_graph": inp.graph})
         primitive_of[cand.candidate_id] = _SPIN_PRIMITIVE.get(cand.route_class, PrimitiveKind.metal_open_shell if cap.has_metal_open_shell else PrimitiveKind.spin_evolution)
         scored.append((inp, score, lane))
 

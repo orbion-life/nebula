@@ -21,6 +21,7 @@ from ..providers import (
     RcsbProvider,
     UniProtProvider,
 )
+from .evidence_cards import card_ids_for_route
 from .plan import QueryPlan
 
 DEFAULT_FIELDS = (
@@ -206,6 +207,7 @@ def _build_candidate(
         why_it_might_fail=fail,
         required_controls=meta["controls"],
         confounders=meta["confounders"],
+        evidence_card_ids=card_ids_for_route(meta["route_id"]),
         claim_ceiling=meta["claim"],
         generated_by=f"generated from UniProt {rec.primary_accession} via {plan.route_class.value}",
         provenance=provenance,

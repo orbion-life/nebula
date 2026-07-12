@@ -15,6 +15,7 @@ from ..contracts.candidate import CandidateDossier, CandidateRecord, StructuralE
 from ..contracts.enums import PhysicsEligibilityKind, RunStatus
 from ..contracts.run import RunEvent, RunState
 from ..design import generate_previews
+from ..retrieval.evidence_cards import citations_for_route
 from ..discovery import build_discovery
 from ..physics.candidate_specific import run_candidate_qm
 from ..physics.eligibility import assess_eligibility, upgrade_with_candidate_qm
@@ -182,6 +183,7 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
                 candidate=cand,
                 physics_eligibility=eligs[cand.candidate_id],
                 structural_evidence=StructuralEvidence(pdb_entries=cand.pdb_entries, alphafold_model=cand.alphafold_model),
+                evidence_citations=citations_for_route(cand.mechanism_route_id),
                 claim_ceiling=cand.claim_ceiling,
             ))
         computed = sum(1 for d in dossiers if d.physics_eligibility.enters_computed_ranking)

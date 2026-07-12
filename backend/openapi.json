@@ -1034,6 +1034,66 @@
         ],
         "title": "CompileRequest"
       },
+      "DesignProvenance": {
+        "properties": {
+          "adapter": {
+            "type": "string",
+            "title": "Adapter"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "run_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Ref"
+          },
+          "params": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Params"
+          }
+        },
+        "type": "object",
+        "required": [
+          "adapter"
+        ],
+        "title": "DesignProvenance",
+        "description": "Where an invented backbone came from \u2014 adapter + model, never any credential or endpoint URL."
+      },
       "DiscoveryLane": {
         "type": "string",
         "enum": [
@@ -1122,6 +1182,16 @@
               }
             ],
             "title": "Suggested Instrument Id"
+          },
+          "mechanism_graph": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MechanismGraph"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -1605,6 +1675,38 @@
           "note": {
             "type": "string",
             "title": "Note"
+          },
+          "backbone_pdb": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backbone Pdb"
+          },
+          "n_residues": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N Residues"
+          },
+          "provenance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DesignProvenance"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -1816,6 +1918,40 @@
         ],
         "title": "Keyword"
       },
+      "KnowledgeState": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/KnowledgeStateKind"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "state"
+        ],
+        "title": "KnowledgeState",
+        "description": "Per-step epistemic status \u2014 makes the honest gap explicit."
+      },
+      "KnowledgeStateKind": {
+        "type": "string",
+        "enum": [
+          "known",
+          "assumed",
+          "unknown"
+        ],
+        "title": "KnowledgeStateKind"
+      },
       "MaterialContext": {
         "type": "string",
         "enum": [
@@ -1828,6 +1964,87 @@
           "unknown"
         ],
         "title": "MaterialContext"
+      },
+      "MechanismGraph": {
+        "properties": {
+          "graph_id": {
+            "type": "string",
+            "title": "Graph Id"
+          },
+          "template_route_class": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RouteClass"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "primitives": {
+            "items": {
+              "$ref": "#/components/schemas/MechanismPrimitive"
+            },
+            "type": "array",
+            "title": "Primitives"
+          },
+          "observable": {
+            "$ref": "#/components/schemas/ReadoutMode"
+          },
+          "complete": {
+            "type": "boolean",
+            "title": "Complete",
+            "description": "true only if every step from energy in to readout is present"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "graph_id",
+          "primitives",
+          "observable",
+          "complete"
+        ],
+        "title": "MechanismGraph",
+        "description": "An ordered chain of primitives from energy input to readout/context."
+      },
+      "MechanismPrimitive": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/PrimitiveKind"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "knowledge": {
+            "$ref": "#/components/schemas/KnowledgeState"
+          },
+          "requires": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Requires",
+            "description": "capabilities this step needs (e.g. 'flavin', 'triplet-capable chromophore')"
+          },
+          "unknowns": {
+            "items": {
+              "$ref": "#/components/schemas/UnknownParameter"
+            },
+            "type": "array",
+            "title": "Unknowns"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "detail",
+          "knowledge"
+        ],
+        "title": "MechanismPrimitive",
+        "description": "One typed step in a mechanism graph."
       },
       "ObjectiveSpec": {
         "properties": {
@@ -2666,6 +2883,26 @@
           "ineligible"
         ],
         "title": "PhysicsEligibilityKind"
+      },
+      "PrimitiveKind": {
+        "type": "string",
+        "enum": [
+          "energy_input",
+          "excitation",
+          "radical_pair_formation",
+          "triplet_formation",
+          "metal_open_shell",
+          "spin_evolution",
+          "recombination",
+          "relaxation",
+          "fluorescence_readout",
+          "lifetime_readout",
+          "electrochemical_readout",
+          "hybrid_transduction",
+          "biological_transduction",
+          "material_context"
+        ],
+        "title": "PrimitiveKind"
       },
       "Provenance": {
         "properties": {
@@ -3528,6 +3765,31 @@
           "primary_accession"
         ],
         "title": "UniProtRecord"
+      },
+      "UnknownParameter": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "why_unknown": {
+            "type": "string",
+            "title": "Why Unknown"
+          },
+          "how_to_resolve": {
+            "type": "string",
+            "title": "How To Resolve"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "why_unknown",
+          "how_to_resolve"
+        ],
+        "title": "UnknownParameter",
+        "description": "A parameter the mechanism needs but that public evidence does not fix."
       },
       "ValidationError": {
         "properties": {

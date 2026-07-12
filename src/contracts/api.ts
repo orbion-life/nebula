@@ -473,6 +473,7 @@ export interface components {
             rationale: string;
             /** Suggested Instrument Id */
             suggested_instrument_id?: string | null;
+            mechanism_graph?: components["schemas"]["MechanismGraph"] | null;
         };
         /**
          * DiscriminatingExperiment
@@ -699,10 +700,58 @@ export interface components {
             name: string;
         };
         /**
+         * KnowledgeState
+         * @description Per-step epistemic status — makes the honest gap explicit.
+         */
+        KnowledgeState: {
+            state: components["schemas"]["KnowledgeStateKind"];
+            /** Evidence */
+            evidence?: string | null;
+        };
+        /**
+         * KnowledgeStateKind
+         * @enum {string}
+         */
+        KnowledgeStateKind: "known" | "assumed" | "unknown";
+        /**
          * MaterialContext
          * @enum {string}
          */
         MaterialContext: "hydrogel" | "film" | "chip" | "cell" | "solution" | "wearable" | "unknown";
+        /**
+         * MechanismGraph
+         * @description An ordered chain of primitives from energy input to readout/context.
+         */
+        MechanismGraph: {
+            /** Graph Id */
+            graph_id: string;
+            template_route_class?: components["schemas"]["RouteClass"] | null;
+            /** Primitives */
+            primitives: components["schemas"]["MechanismPrimitive"][];
+            observable: components["schemas"]["ReadoutMode"];
+            /**
+             * Complete
+             * @description true only if every step from energy in to readout is present
+             */
+            complete: boolean;
+        };
+        /**
+         * MechanismPrimitive
+         * @description One typed step in a mechanism graph.
+         */
+        MechanismPrimitive: {
+            kind: components["schemas"]["PrimitiveKind"];
+            /** Detail */
+            detail: string;
+            knowledge: components["schemas"]["KnowledgeState"];
+            /**
+             * Requires
+             * @description capabilities this step needs (e.g. 'flavin', 'triplet-capable chromophore')
+             */
+            requires?: string[];
+            /** Unknowns */
+            unknowns?: components["schemas"]["UnknownParameter"][];
+        };
         /**
          * ObjectiveSpec
          * @description Structured, editable objective. Superset of the TS `ObjectiveInput`.
@@ -975,6 +1024,11 @@ export interface components {
          * @enum {string}
          */
         PhysicsEligibilityKind: "real_spin_dynamics" | "qm_cluster_assumption" | "analytic_proxy_only" | "ineligible";
+        /**
+         * PrimitiveKind
+         * @enum {string}
+         */
+        PrimitiveKind: "energy_input" | "excitation" | "radical_pair_formation" | "triplet_formation" | "metal_open_shell" | "spin_evolution" | "recombination" | "relaxation" | "fluorescence_readout" | "lifetime_readout" | "electrochemical_readout" | "hybrid_transduction" | "biological_transduction" | "material_context";
         /**
          * Provenance
          * @description Retrieval-time provenance for one provider call.
@@ -1312,6 +1366,18 @@ export interface components {
             pdb_xrefs?: components["schemas"]["PdbXref"][];
             /** Alphafold Id */
             alphafold_id?: string | null;
+        };
+        /**
+         * UnknownParameter
+         * @description A parameter the mechanism needs but that public evidence does not fix.
+         */
+        UnknownParameter: {
+            /** Name */
+            name: string;
+            /** Why Unknown */
+            why_unknown: string;
+            /** How To Resolve */
+            how_to_resolve: string;
         };
         /** ValidationError */
         ValidationError: {

@@ -19,6 +19,7 @@ from __future__ import annotations
 from pydantic import BaseModel, ConfigDict, Field
 
 from .enums import ClaimLevel, DiscoveryLane, ExplorationLevel
+from .mechanism import MechanismGraph
 
 
 class ExplorationReason(BaseModel):
@@ -50,6 +51,9 @@ class DiscoveryScore(BaseModel):
     # Route-compatible registry scenario for this candidate. It is a handoff starting point,
     # not a recommendation or proof that the instrument can resolve the biological effect.
     suggested_instrument_id: str | None = None
+    # the composed mechanism graph for this candidate: an ordered causal chain whose per-step
+    # knowledge states (known/assumed/unknown) make the honest gaps explicit. Not a prediction.
+    mechanism_graph: MechanismGraph | None = None
 
 
 class DiscriminatingExperiment(BaseModel):
