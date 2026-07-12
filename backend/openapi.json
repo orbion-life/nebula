@@ -1676,6 +1676,61 @@
             "type": "string",
             "title": "Note"
           },
+          "invented_from_candidate_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invented From Candidate Id"
+          },
+          "invented_from_accession": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invented From Accession"
+          },
+          "mechanism_route_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mechanism Route Id"
+          },
+          "motif_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motif Note"
+          },
+          "design_rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Design Rationale"
+          },
           "backbone_pdb": {
             "anyOf": [
               {

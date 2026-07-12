@@ -6,8 +6,11 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
+from app.contracts.candidate import CandidateRecord
 from app.contracts.design import GenerativePreview
+from app.contracts.enums import ArchitectureKind, RouteClass, ScaffoldFamily
 from app.contracts.objective import ObjectiveSpec
+from app.contracts.providers import CofactorRef, UniProtRecord
 from app.design import PreviewDesigner, _select_adapter, generate_previews
 from app.design.modal_rfdiffusion import ModalRFdiffusionAdapter
 
@@ -16,6 +19,20 @@ OBJ = ObjectiveSpec(
     objective_text="optical spin contrast demo objective",
     sensed_quantity_or_state="optical spin contrast",
 )
+
+
+def _cand(accession: str, route: RouteClass, cofactor: str) -> CandidateRecord:
+    return CandidateRecord(
+        candidate_id=f"c_{accession}",
+        title=f"{accession} test candidate",
+        scaffold_family=ScaffoldFamily.cryptochrome_fad,
+        architecture_kind=ArchitectureKind.single_scaffold,
+        uniprot=UniProtRecord(primary_accession=accession),
+        cofactors=[CofactorRef(name=cofactor)],
+        mechanism_route_id=f"route_{route.value}",
+        route_class=route,
+        generated_by="test",
+    )
 
 _ENV = ("NEBULA_DESIGN_ADAPTER", "NEBULA_MODAL_RFDIFFUSION_URL", "NEBULA_MODAL_RFDIFFUSION_TOKEN")
 
@@ -32,6 +49,28 @@ def test_default_adapter_is_deterministic_preview(monkeypatch):
     assert len(out) == 3
     assert all(p.generator == "deterministic-preview" for p in out)
     assert all(p.backbone_pdb is None and p.sequence_provided is False for p in out)
+    # with no candidates, briefs stay unlinked (no fabricated protein target)
+    assert all(p.invented_from_accession is None and p.design_rationale is None for p in out)
+
+
+def test_previews_link_to_ranked_candidates_with_honest_rationale():
+    cands = [
+        _cand("Q8LPD9", RouteClass.lov_flavin_radical_pair, "FMN"),
+        _cand("Q43125", RouteClass.cryptochrome_fad_radical_pair, "FAD"),
+    ]
+    out = PreviewDesigner().invent(OBJ, cands, n=3)
+    assert len(out) == 3
+    # round-robin linkage over the ranked shortlist
+    assert [p.invented_from_accession for p in out] == ["Q8LPD9", "Q43125", "Q8LPD9"]
+    for p in out:
+        assert p.invented_from_candidate_id and p.mechanism_route_id
+        assert p.motif_note and p.invented_from_accession in p.design_rationale
+        assert "radical-pair site" in p.motif_note  # cofactor + route motif
+        assert p.backbone_pdb is None  # still a brief, no fabricated coordinates
+        # claim firewall: a design INTENT — no AFFIRMATIVE overclaim (negated "not ... validated" is fine)
+        low = f"{p.motif_note} {p.design_rationale}".lower()
+        assert "validated sensor" not in low and "predicts magnetic" not in low
+        assert "design intent" in low  # explicitly framed as an intent, not a produced construct
 
 
 def test_modal_selected_but_unconfigured_falls_back(monkeypatch):
@@ -78,7 +117,7 @@ def test_modal_adapter_maps_backbone_to_firewalled_preview(monkeypatch):
 
     monkeypatch.setattr("app.design.modal_rfdiffusion.httpx.post", fake_post)
     adapter = ModalRFdiffusionAdapter("https://you--nebula-rfdiffusion-generate.modal.run", "secret-token")
-    out = adapter.invent(OBJ, 1)
+    out = adapter.invent(OBJ, n=1)
     assert len(out) == 1
     p = out[0]
     assert p.generator == "rfdiffusion@modal"

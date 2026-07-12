@@ -633,6 +633,16 @@ export interface components {
             sequence_provided: false;
             /** Note */
             note: string;
+            /** Invented From Candidate Id */
+            invented_from_candidate_id?: string | null;
+            /** Invented From Accession */
+            invented_from_accession?: string | null;
+            /** Mechanism Route Id */
+            mechanism_route_id?: string | null;
+            /** Motif Note */
+            motif_note?: string | null;
+            /** Design Rationale */
+            design_rationale?: string | null;
             /** Backbone Pdb */
             backbone_pdb?: string | null;
             /** N Residues */

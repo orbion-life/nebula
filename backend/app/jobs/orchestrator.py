@@ -211,12 +211,17 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
         run = _advance(run, RunStatus.ranking, "ranking", "Discovery Frontier: separating evidence and frontier lanes")
         instrument = _scoring_instrument(run)
         scores, evidence_shortlist, frontier = build_discovery(candidates, dossiers, instrument=instrument, objective=run.objective)
+        # rank the candidates so each de novo brief can name the top protein + motif it targets
+        _by_id = {c.candidate_id: c for c in candidates}
+        _ranked = [_by_id[cid] for cid in evidence_shortlist if cid in _by_id]
+        _ranked += [c for c in candidates if c.candidate_id not in set(evidence_shortlist)]
         run = run.model_copy(update={
             "discovery_scores": scores,
             "evidence_shortlist": evidence_shortlist,
             "frontier_experiments": frontier,
-            # "the unmade": deterministic de novo previews (invented, labelled, never validated)
-            "generative_frontier": generate_previews(run.objective),
+            # "the unmade": deterministic de novo previews (invented, labelled, never validated),
+            # each linked to a top-ranked candidate + cofactor motif it would target
+            "generative_frontier": generate_previews(run.objective, _ranked),
             "updated_at": datetime.now(timezone.utc),
         })
         store.put(run)

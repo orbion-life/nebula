@@ -30,6 +30,14 @@ class GenerativePreview(BaseModel):
     found_in_nature: Literal[False] = False
     sequence_provided: Literal[False] = False
     note: str
+    # --- per-protein linkage: which retrieved candidate + cofactor motif this design brief TARGETS.
+    # A design intent, never a claim that a backbone was scaffolded/validated for that protein. The
+    # deterministic preview only names the target; a real adapter would scaffold around the motif. ---
+    invented_from_candidate_id: str | None = None
+    invented_from_accession: str | None = None
+    mechanism_route_id: str | None = None
+    motif_note: str | None = None       # honest target-site description, e.g. "FAD flavin radical-pair site"
+    design_rationale: str | None = None  # why this brief exists; names the target motif, not a backbone
     # --- optional real-adapter output (e.g. RFdiffusion via a bring-your-own Modal GPU) ---
     # A de novo BACKBONE only: coordinates with NO sequence. Absent for the deterministic preview.
     backbone_pdb: str | None = None
