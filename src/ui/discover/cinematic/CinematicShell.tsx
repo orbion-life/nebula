@@ -10,6 +10,7 @@
 import { ActObjective } from "./ActObjective";
 import { ActSearch } from "./ActSearch";
 import { ActResult } from "./ActResult";
+import { ActAbstention } from "./ActAbstention";
 import { useRunScroll } from "./useRunScroll";
 import type { ObjectiveSpec, RunEvent, RunState } from "../../../api/client";
 
@@ -42,6 +43,9 @@ export function CinematicShell(props: Props) {
     );
   }
   if (props.run) {
+    // a supported objective that completed with no candidate is an honest abstention, not a result.
+    const empty = props.run.status === "completed" && (props.run.candidates?.length ?? 0) === 0;
+    if (empty) return <ActAbstention kind="empty" run={props.run} onReset={props.onReset} />;
     return <ActResult run={props.run} />;
   }
   return null;

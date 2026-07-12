@@ -6,6 +6,8 @@
  */
 import { RunCounter, progressOf } from "./RunCounter";
 import { UniverseHero } from "../universe/UniverseHero";
+import { ScanningNature } from "./ScanningNature";
+import { ActAbstention } from "./ActAbstention";
 import type { RunEvent, RunState } from "../../../api/client";
 
 interface Props {
@@ -24,6 +26,10 @@ export function ActSearch({ status, stage, events, run, error, onCancel, onReset
   const terminalBad = status === "failed" || status === "cancelled";
   const note = events[events.length - 1]?.note ?? "compiling objective…";
 
+  // a 422 for an unsupported sensing target is an abstention, not a crash — hand it the elegant scene.
+  const unsupported = status === "failed" && /cannot search|supported sensing target/i.test(error ?? "");
+  if (unsupported) return <ActAbstention kind="unsupported" run={run} error={error} onReset={onReset} />;
+
   return (
     <section className="act act-search">
       {run && cands > 0 && (
@@ -34,7 +40,8 @@ export function ActSearch({ status, stage, events, run, error, onCancel, onReset
       <div className="act-inner act-search-inner">
         <div className="act-kicker"><span className="act-n">02</span>searching the protein universe</div>
         <RunCounter fraction={progress} stage={stage} candidateCount={cands} />
-        <p className="act-search-note">{note}</p>
+        <p className="act-search-note" aria-live="polite">{note}</p>
+        {!terminalBad && <ScanningNature stage={stage} run={run} />}
         {!terminalBad && status !== "completed" && (
           <button className="btn-ghost act-cancel" onClick={onCancel}>cancel run</button>
         )}
