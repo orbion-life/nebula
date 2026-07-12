@@ -59,6 +59,47 @@ def _motif_note(route_class: object, cofactor: str | None) -> str:
     return base
 
 
+def _same_ligand(ligand: str | None, cofactor: str) -> bool:
+    lo, co = (ligand or "").strip().lower(), cofactor.strip().lower()
+    return bool(lo) and (lo == co or lo in co or co in lo)
+
+
+def cofactor_residues(candidate: CandidateRecord) -> list[int]:
+    """The residues that coordinate the candidate's PRIMARY cofactor, from its real UniProt
+    binding-site annotation. This is the per-protein motif a real adapter would scaffold around."""
+    up = candidate.uniprot
+    cofs = candidate.cofactors or []
+    if not up or not up.binding_sites or not cofs:
+        return []
+    primary = cofs[0].name
+    res: list[int] = []
+    for b in up.binding_sites:
+        if _same_ligand(b.ligand_name, primary):
+            res.extend(range(int(b.start), int(b.end) + 1))
+    return sorted(set(res))
+
+
+def _residue_summary(res: list[int], limit: int = 8) -> str:
+    runs: list[list[int]] = []
+    for r in res:
+        if runs and r == runs[-1][1] + 1:
+            runs[-1][1] = r
+        else:
+            runs.append([r, r])
+    parts = [f"{a}" if a == b else f"{a}–{b}" for a, b in runs]
+    tail = "" if len(parts) <= limit else f" (+{len(parts) - limit} more)"
+    return ", ".join(parts[:limit]) + tail
+
+
+def candidate_motif_note(candidate: CandidateRecord) -> str:
+    """Concrete per-protein motif from real binding-site residues, or the route-level fallback."""
+    cofactor = candidate.cofactors[0].name if candidate.cofactors else None
+    residues = cofactor_residues(candidate)
+    if cofactor and residues:
+        return f"{cofactor} pocket · residues {_residue_summary(residues)}"
+    return _motif_note(candidate.route_class, cofactor)
+
+
 def _design_rationale(accession: str | None, motif: str) -> str:
     target = accession or "the top-ranked candidate"
     return (
@@ -83,8 +124,7 @@ class PreviewDesigner:
         for i in range(1, n + 1):
             cand = cands[(i - 1) % len(cands)] if cands else None
             accession = cand.uniprot.primary_accession if (cand and cand.uniprot) else None
-            cofactor = cand.cofactors[0].name if (cand and cand.cofactors) else None
-            motif = _motif_note(cand.route_class, cofactor) if cand else None
+            motif = candidate_motif_note(cand) if cand else None
             out.append(GenerativePreview(
                 label=f"de novo scaffold {i:02d}",
                 invented_for=sensed,

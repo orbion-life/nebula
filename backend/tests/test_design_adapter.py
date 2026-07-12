@@ -10,8 +10,8 @@ from app.contracts.candidate import CandidateRecord
 from app.contracts.design import GenerativePreview
 from app.contracts.enums import ArchitectureKind, RouteClass, ScaffoldFamily
 from app.contracts.objective import ObjectiveSpec
-from app.contracts.providers import CofactorRef, UniProtRecord
-from app.design import PreviewDesigner, _select_adapter, generate_previews
+from app.contracts.providers import BindingSite, CofactorRef, UniProtRecord
+from app.design import PreviewDesigner, _select_adapter, candidate_motif_note, cofactor_residues, generate_previews
 from app.design.modal_rfdiffusion import ModalRFdiffusionAdapter
 
 OBJ = ObjectiveSpec(
@@ -40,6 +40,18 @@ _ENV = ("NEBULA_DESIGN_ADAPTER", "NEBULA_MODAL_RFDIFFUSION_URL", "NEBULA_MODAL_R
 def _clear_env(mp):
     for k in _ENV:
         mp.delenv(k, raising=False)
+
+
+def test_motif_uses_real_cofactor_binding_residues():
+    c = _cand("Q43125", RouteClass.cryptochrome_fad_radical_pair, "FAD")
+    c.uniprot.binding_sites = [
+        BindingSite(start=235, end=235, ligand_name="FAD"),
+        BindingSite(start=247, end=251, ligand_name="FAD"),
+        BindingSite(start=238, end=238, ligand_name="Mg(2+)"),  # not the primary cofactor
+    ]
+    assert cofactor_residues(c) == [235, 247, 248, 249, 250, 251]  # Mg2+ site excluded
+    note = candidate_motif_note(c)
+    assert "FAD pocket" in note and "235" in note and "247–251" in note  # consecutive run compressed
 
 
 def test_default_adapter_is_deterministic_preview(monkeypatch):

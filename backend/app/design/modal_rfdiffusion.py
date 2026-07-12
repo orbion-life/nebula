@@ -40,21 +40,23 @@ class ModalRFdiffusionAdapter:
 
     def invent(self, objective: ObjectiveSpec, candidates: list[CandidateRecord] | None = None, n: int = 3) -> list[GenerativePreview]:
         # imported lazily-safe: this module is only imported after app.design.__init__ is loaded
-        from . import _design_rationale, _motif_note
+        from . import _design_rationale, candidate_motif_note, cofactor_residues
 
         sensed = objective.sensed_quantity_or_state or "the stated target"
         cands = candidates or []
-        # motif context for a motif-aware endpoint (WS1b); unknown keys are ignored by the current recipe
+        # motif context for a motif-aware endpoint: the REAL cofactor-binding residues + structure so
+        # the endpoint can scaffold around them. Unknown keys are ignored by the current recipe.
         top = cands[0] if cands else None
-        top_cofactor = top.cofactors[0].name if (top and top.cofactors) else None
-        top_motif = _motif_note(top.route_class, top_cofactor) if top else None
+        top_pdb = next((p.rcsb_id for p in (top.pdb_entries or []) if getattr(p, "rcsb_id", None)), None) if top else None
         payload = {
             "token": self._token,  # goes only to the deployer's own endpoint, over HTTPS
             "sensed_quantity": sensed,
             "material_context": objective.material_context,
             "n": max(1, min(int(n), 8)),
-            "motif_note": top_motif,
+            "motif_note": candidate_motif_note(top) if top else None,
+            "motif_residues": cofactor_residues(top) if top else [],
             "target_accession": (top.uniprot.primary_accession if (top and top.uniprot) else None),
+            "target_pdb_id": top_pdb,
             "mechanism_route_id": (top.mechanism_route_id if top else None),
         }
         resp = httpx.post(self._url, json=payload, timeout=self._timeout)
@@ -68,8 +70,7 @@ class ModalRFdiffusionAdapter:
                 continue
             cand = cands[(i - 1) % len(cands)] if cands else None
             accession = cand.uniprot.primary_accession if (cand and cand.uniprot) else None
-            cofactor = cand.cofactors[0].name if (cand and cand.cofactors) else None
-            motif = _motif_note(cand.route_class, cofactor) if cand else None
+            motif = candidate_motif_note(cand) if cand else None
             out.append(
                 GenerativePreview(
                     label=f"de novo backbone {i:02d}",
