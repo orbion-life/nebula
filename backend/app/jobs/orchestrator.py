@@ -41,6 +41,20 @@ def _instrument(instrument_id: str | None) -> dict:
     return INSTRUMENTS[0]  # default: benchtop field fluorimeter
 
 
+def _scoring_instrument(run: RunState) -> dict:
+    """The instrument the measurability score is evaluated against. Measurement is an
+    OUTPUT the app proposes, so when the user pins no instrument we score against the one
+    appropriate to the sensed quantity. Optical-spin-contrast (ODMR) maps to the triplet-FP
+    route, which needs an RF-capable bench; scoring it against the benchtop default (no RF)
+    would zero every candidate's measurability and drop the whole modality out of both lanes."""
+    if run.instrument_id:
+        return _instrument(run.instrument_id)
+    sensed = (run.objective.sensed_quantity_or_state or "").strip().lower()
+    if sensed == "optical spin contrast":
+        return _instrument("odmr_confocal")
+    return INSTRUMENTS[0]
+
+
 def _best_flavin_pdb(cand: CandidateRecord) -> str | None:
     """The experimental, flavin-bound PDB with the best (lowest) resolution — the
     only kind of structure that can donate real isoalloxazine coordinates."""
@@ -193,7 +207,7 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
 
         # rank: two-lane discovery (evidence vs frontier), Pareto + quality-diversity
         run = _advance(run, RunStatus.ranking, "ranking", "Discovery Frontier: separating evidence and frontier lanes")
-        instrument = _instrument(run.instrument_id)
+        instrument = _scoring_instrument(run)
         scores, evidence_shortlist, frontier = build_discovery(candidates, dossiers, instrument=instrument, objective=run.objective)
         run = run.model_copy(update={
             "discovery_scores": scores,

@@ -139,6 +139,23 @@ def test_offline_run_yields_real_accession_candidate() -> None:
     assert result.provider_calls and result.provider_calls[0].mode.value in ("fixture", "cached", "live")
 
 
+def test_odmr_sense_scores_against_rf_capable_instrument() -> None:
+    # measurement is an OUTPUT: with no pinned instrument, an optical-spin-contrast (ODMR)
+    # objective must score measurability against an RF-capable bench, or every triplet-FP
+    # candidate reads as unmeasurable and drops out of both lanes. Other senses keep the
+    # benchtop default so their ranking is unchanged.
+    from app.jobs.orchestrator import _scoring_instrument
+
+    odmr = _scoring_instrument(_queued_run(ObjectiveSpec(
+        objective_id="o", objective_text="optical spin contrast demo objective",
+        sensed_quantity_or_state="optical spin contrast")))
+    assert odmr["rf_available"] is True
+    mag = _scoring_instrument(_queued_run(ObjectiveSpec(
+        objective_id="o2", objective_text="magnetic field demo objective",
+        sensed_quantity_or_state="magnetic field")))
+    assert mag["id"] == "benchtop_field_fluorimeter"
+
+
 def test_orchestrate_respects_cancellation() -> None:
     store = RunStore(":memory:")
     run = _queued_run(ObjectiveSpec(
