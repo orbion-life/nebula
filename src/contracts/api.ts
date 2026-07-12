@@ -419,6 +419,22 @@ export interface components {
             seed: number;
         };
         /**
+         * DesignProvenance
+         * @description Where an invented backbone came from — adapter + model, never any credential or endpoint URL.
+         */
+        DesignProvenance: {
+            /** Adapter */
+            adapter: string;
+            /** Model */
+            model?: string | null;
+            /** Run Ref */
+            run_ref?: string | null;
+            /** Params */
+            params?: {
+                [key: string]: number | string;
+            } | null;
+        };
+        /**
          * DiscoveryLane
          * @enum {string}
          */
@@ -616,6 +632,11 @@ export interface components {
             sequence_provided: false;
             /** Note */
             note: string;
+            /** Backbone Pdb */
+            backbone_pdb?: string | null;
+            /** N Residues */
+            n_residues?: number | null;
+            provenance?: components["schemas"]["DesignProvenance"] | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {

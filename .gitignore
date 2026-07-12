@@ -9,6 +9,12 @@ coverage
 # (home paths, company domain, retired codenames) used only for local leak scans.
 .leak-terms.local.json
 
+# Local secrets — design-adapter GPU endpoints/tokens (bring-your-own-compute).
+# NEVER commit a real Modal URL or token; only .env.example (placeholders) is tracked.
+.env
+.env.*
+!.env.example
+
 # Python bytecode
 __pycache__/
 *.pyc

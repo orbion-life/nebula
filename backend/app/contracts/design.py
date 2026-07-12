@@ -1,15 +1,26 @@
 """De novo generative frontier — "the unmade".
 
 A GenerativePreview is an INVENTED candidate scaffold: not retrieved from any public database,
-carrying NO sequence and NO coordinates, never validated, never orderable. It is the honest
-placeholder produced by the deterministic preview designer until a real design adapter
-(RFdiffusion / ProteinMPNN / LigandMPNN) is wired in behind the same DesignAdapter seam.
+never validated, never orderable. The deterministic PreviewDesigner emits it with no coordinates
+at all. A real design adapter (RFdiffusion via a bring-your-own GPU, see backend/app/design/) may
+additionally attach a de novo BACKBONE — coordinates WITHOUT a sequence. A backbone is still
+invented, unvalidated, and NOT orderable (no sequence exists yet), so `sequence_provided` stays
+False and `found_in_nature` stays False no matter which adapter produced it.
 """
 from __future__ import annotations
 
 from typing import Literal
 
 from pydantic import BaseModel
+
+
+class DesignProvenance(BaseModel):
+    """Where an invented backbone came from — adapter + model, never any credential or endpoint URL."""
+
+    adapter: str
+    model: str | None = None
+    run_ref: str | None = None  # opaque run id from the deployer's own compute; not a URL or token
+    params: dict[str, float | int | str] | None = None
 
 
 class GenerativePreview(BaseModel):
@@ -19,3 +30,8 @@ class GenerativePreview(BaseModel):
     found_in_nature: Literal[False] = False
     sequence_provided: Literal[False] = False
     note: str
+    # --- optional real-adapter output (e.g. RFdiffusion via a bring-your-own Modal GPU) ---
+    # A de novo BACKBONE only: coordinates with NO sequence. Absent for the deterministic preview.
+    backbone_pdb: str | None = None
+    n_residues: int | None = None
+    provenance: DesignProvenance | None = None
