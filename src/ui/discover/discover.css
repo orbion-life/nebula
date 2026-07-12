@@ -576,6 +576,40 @@ body:has(.discover) { background: var(--d-bg); }
 .atlas-measurement dd { margin: 0; color: var(--d-mut); font-size: 12px; }
 .atlas-empty { color: var(--d-mut); }
 
+/* run-level honesty split: which objective inputs shaped the discovery vs handoff-only */
+.atlas-split { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: var(--space-5) 0 var(--space-6); background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; }
+.atlas-split-col { padding: var(--space-4) var(--space-5); background: rgba(4,9,15,0.6); display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+.atlas-split-col > span { font: 700 var(--fs-2xs)/1.3 var(--d-mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.atlas-split-active > span { color: var(--d-evi); }
+.atlas-split-handoff > span { color: var(--d-faint); }
+.atlas-split-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.atlas-split-chips span { font: 500 var(--fs-2xs)/1.2 var(--d-mono); color: var(--d-mut); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); border-radius: 999px; padding: 5px 10px; text-transform: capitalize; }
+.atlas-split-active .atlas-split-chips span { border-color: color-mix(in srgb, var(--d-evi) 40%, transparent); color: var(--d-ink); }
+.atlas-split-chips em { color: var(--d-faint); font-style: italic; font-size: var(--fs-2xs); }
+
+/* per-candidate applied-constraints report: 7 triage axes + physics tier + satisfied/remaining */
+.atlas-constraints { margin-top: var(--space-6); border: 1px solid rgba(255,255,255,0.09); border-radius: 14px; padding: clamp(20px, 3vw, 32px); background: rgba(4,9,15,0.5); }
+.atlas-constraints-head p { margin: var(--space-2) 0 0; color: var(--d-faint); font-size: var(--fs-xs); line-height: 1.5; max-width: 72ch; }
+.atlas-constraints-axes { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: var(--space-4) var(--space-5); margin-top: var(--space-5); }
+.atlas-constraints-ledger { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: var(--space-5); margin-top: var(--space-6); border-top: 1px solid rgba(255,255,255,0.08); padding-top: var(--space-5); }
+.acon-col { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.acon-head { color: var(--d-faint); font: 700 var(--fs-2xs)/1.3 var(--d-mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.acon-head.acon-ok { color: var(--d-evi); }
+.acon-head.acon-warn { color: var(--d-fro); }
+.acon-kind { align-self: flex-start; font: 700 var(--fs-2xs)/1 var(--d-mono); text-transform: uppercase; letter-spacing: 0.06em; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--d-evi); color: var(--d-evi); }
+.acon-kind-ineligible { border-color: var(--d-fro); color: var(--d-fro); }
+.acon-sub { color: var(--d-faint); font-size: var(--fs-2xs); line-height: 1.4; }
+.acon-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.acon-list li { color: var(--d-mut); font-size: var(--fs-xs); line-height: 1.45; padding-left: 16px; position: relative; }
+.acon-list-ok li::before { content: "✓"; position: absolute; left: 0; color: var(--d-evi); }
+.acon-list-warn li::before { content: "!"; position: absolute; left: 2px; color: var(--d-fro); font-weight: 800; }
+.acon-none { color: var(--d-faint); font-size: var(--fs-xs); line-height: 1.5; }
+@media (max-width: 900px) {
+  .atlas-split { grid-template-columns: 1fr; }
+  .atlas-constraints-axes { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .atlas-constraints-ledger { grid-template-columns: 1fr; }
+}
+
 .atlas-handoff { min-height: 82vh; text-align: center; background: radial-gradient(circle at 50% 62%, rgba(75,194,129,.16), transparent 27%); }
 .atlas-handoff .atlas-reveal { display: flex; flex-direction: column; align-items: center; }
 .atlas-handoff h2 { max-width: 11ch; margin: 24px auto 20px; font-family: var(--d-display); font-size: clamp(56px,8vw,112px); font-weight: 500; line-height: .82; }

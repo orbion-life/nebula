@@ -13,9 +13,10 @@ import { exportAffirmativeViolations } from "../src/core/claimFirewall";
 const FILES = [
   "src/ui/discover/DiscoverApp.tsx",
   "src/ui/discover/narrative/NarrativeReplay.tsx",
+  "src/ui/discover/narrative/AppliedConstraints.tsx",
+  "src/ui/discover/narrative/Metric.tsx",
   "src/ui/discover/objective/MissionBench.tsx",
   "src/ui/discover/cinematic/ActObjective.tsx",
-  "src/ui/discover/ObjectivePanel.tsx",
   "src/ui/discover/world/WorldCanvas.tsx",
   "src/ui/discover/Traces.tsx",
 ];

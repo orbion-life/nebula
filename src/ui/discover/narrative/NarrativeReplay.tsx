@@ -14,6 +14,8 @@ import { getStructure, type CandidateDossier, type CandidateRecord, type Discove
 import { GeneratedBackboneViewer } from "../GeneratedBackboneViewer";
 import { StructureViewer } from "../StructureViewer";
 import { claimLabel, computedSpinParam, dossierMarkdown, isCandidateSpecific, isSpinDynamics, routeLabel } from "../dossierExport";
+import { Metric } from "./Metric";
+import { AppliedConstraints, ObjectiveSplit } from "./AppliedConstraints";
 
 // the physics trace is heavy (raw SVG + the versioned RadicalPy artifact); lazy-load it so it
 // only enters the bundle when a completed run actually reaches the compute scene.
@@ -245,6 +247,7 @@ export function NarrativeReplay({ run }: Props) {
             <div><span className="atlas-eyebrow">04 · measure</span><h2>Choose what earns bench time.</h2></div>
             <p>Nebula does not choose a winner by one score. It exposes the trade: support, measurability, developability, and uncertainty.</p>
           </header>
+          <ObjectiveSplit run={run} />
           {selected ? (
             <div className="atlas-decision-grid">
               <div className="atlas-decision-candidate">
@@ -269,6 +272,7 @@ export function NarrativeReplay({ run }: Props) {
               </div>
             </div>
           ) : <p className="atlas-empty">No candidate passed into measurement planning.</p>}
+          {selected && <AppliedConstraints score={score} dossier={dossier} />}
           {selected && <EvidenceLedger candidate={selected} dossier={dossier} score={score} />}
         </div>
       </section>
@@ -341,16 +345,6 @@ function EvidenceLedger({ candidate, dossier, score }: { candidate?: CandidateRe
           <p className="ev-none">Retrieval and enrichment completed with no recorded gaps for this candidate.</p>
         )}
       </div>
-    </div>
-  );
-}
-
-function Metric({ label, value = 0, inverse = false }: { label: string; value?: number; inverse?: boolean }) {
-  const display = Math.round(Math.max(0, Math.min(1, value)) * 100);
-  return (
-    <div className="atlas-metric">
-      <span>{label}</span><strong>{display}</strong>
-      <i><b style={{ width: `${inverse ? 100 - display : display}%` }} /></i>
     </div>
   );
 }
