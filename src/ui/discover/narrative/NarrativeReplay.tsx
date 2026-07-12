@@ -1,27 +1,21 @@
 /**
- * Cinematic scroll narrative — a GSAP + ScrollTrigger replay of a completed run.
+ * Post-bench discovery experience.
  *
- * Seven scroll chapters replay the completed run: objective, retrieval, mechanism
- * routes, structure availability, explicitly bounded calculations, triage lanes, and
- * a measurement handoff. Public records, assumptions, and synthetic references remain
- * visually and verbally distinct.
- *
- * Reduced-motion: ScrollTrigger is not registered — the chapters render as a normal,
- * fully-visible tall scroll page with no scrubbed motion.
+ * A completed run opens two visible paths: public proteins found in nature and
+ * de novo backbones generated for the mission. The interface stays decision-led:
+ * select a candidate, inspect its evidence, compare the generated frontier, then
+ * leave with one falsifiable measurement handoff.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { getStructure, type RunState, type StructureResponse } from "../../../api/client";
+import { getStructure, type CandidateDossier, type CandidateRecord, type DiscoveryScore, type RunState, type StructureResponse } from "../../../api/client";
+import { GeneratedBackboneViewer } from "../GeneratedBackboneViewer";
 import { StructureViewer } from "../StructureViewer";
-import { Traces } from "../Traces";
-import { UniverseHero } from "../universe/UniverseHero";
-import { claimLabel, computedSpinParam, dossierMarkdown, isCandidateSpecific, isSpinDynamics } from "../dossierExport";
+import { claimLabel, dossierMarkdown } from "../dossierExport";
 
-interface Props {
-  run: RunState;
-}
+interface Props { run: RunState }
 
 function reducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
@@ -30,37 +24,30 @@ function reducedMotion(): boolean {
 export function NarrativeReplay({ run }: Props) {
   const scope = useRef<HTMLDivElement>(null);
   const reduced = reducedMotion();
-
-  const topId = run.selected_candidate_id ?? run.evidence_shortlist?.[0] ?? run.frontier_experiments?.[0]?.candidate_id ?? null;
-  const dossier = useMemo(() => (run.dossiers ?? []).find((d) => d.candidate.candidate_id === topId), [run, topId]);
-  const candidate = dossier?.candidate;
-  const score = (run.discovery_scores ?? []).find((s) => s.candidate_id === topId);
-  const frontier = (run.frontier_experiments ?? []).find((f) => f.candidate_id === topId);
-  const physicsDossier = useMemo(
-    () => (run.dossiers ?? []).find((d) => isCandidateSpecific(d)) ?? dossier,
-    [run, dossier],
-  );
-  const physicsCandidate = physicsDossier?.candidate;
-  const physicsId = physicsCandidate?.candidate_id ?? null;
-
-  const uniqueAccessions = useMemo(() => {
-    const seen = new Set<string>();
-    for (const c of run.candidates ?? []) seen.add(c.uniprot?.primary_accession ?? c.candidate_id);
-    return [...seen];
-  }, [run]);
-
-  const routeMix = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const c of run.candidates ?? []) m.set(c.route_class, (m.get(c.route_class) ?? 0) + 1);
-    return [...m.entries()].sort((a, b) => b[1] - a[1]);
-  }, [run]);
-  const maxRoute = Math.max(1, ...routeMix.map(([, n]) => n));
-
+  const initialId = run.selected_candidate_id ?? run.evidence_shortlist?.[0] ?? run.frontier_experiments?.[0]?.candidate_id ?? run.candidates?.[0]?.candidate_id ?? null;
+  const [selectedId, setSelectedId] = useState<string | null>(initialId);
+  const [designIndex, setDesignIndex] = useState(0);
   const [structure, setStructure] = useState<StructureResponse | null>(null);
   const [structureStatus, setStructureStatus] = useState<"loading" | "ready" | "unavailable">("loading");
-  const [universeSelected, setUniverseSelected] = useState<string | null>(topId);
+
+  const candidates = run.candidates ?? [];
+  const scores = run.discovery_scores ?? [];
+  const designs = run.generative_frontier ?? [];
+  const selected = useMemo(() => candidates.find((c) => c.candidate_id === selectedId) ?? candidates[0], [candidates, selectedId]);
+  const dossier = useMemo(() => (run.dossiers ?? []).find((d) => d.candidate.candidate_id === selected?.candidate_id), [run.dossiers, selected]);
+  const score = scores.find((s) => s.candidate_id === selected?.candidate_id);
+  const frontier = (run.frontier_experiments ?? []).find((f) => f.candidate_id === selected?.candidate_id);
+  const design = designs[designIndex] ?? designs[0] ?? null;
+  const realBackbones = designs.filter((d) => Boolean(d.backbone_pdb)).length;
+  const uniqueAccessions = new Set(candidates.map((c) => c.uniprot?.primary_accession ?? c.candidate_id)).size;
+  const shortlistIds = new Set([...(run.evidence_shortlist ?? []), ...(run.frontier_experiments ?? []).map((f) => f.candidate_id)]);
+  const shortlist = candidates
+    .filter((c) => shortlistIds.has(c.candidate_id))
+    .sort((a, b) => rankOf(a.candidate_id, run) - rankOf(b.candidate_id, run));
+  const visibleCandidates = shortlist.length ? shortlist : candidates.slice(0, 6);
+
   useEffect(() => {
-    if (!physicsId) {
+    if (!selected?.candidate_id) {
       setStructure(null);
       setStructureStatus("unavailable");
       return;
@@ -68,10 +55,10 @@ export function NarrativeReplay({ run }: Props) {
     let live = true;
     setStructure(null);
     setStructureStatus("loading");
-    getStructure(physicsId)
-      .then((s) => {
+    getStructure(selected.candidate_id)
+      .then((next) => {
         if (!live) return;
-        setStructure(s);
+        setStructure(next);
         setStructureStatus("ready");
       })
       .catch(() => {
@@ -80,196 +67,315 @@ export function NarrativeReplay({ run }: Props) {
         setStructureStatus("unavailable");
       });
     return () => { live = false; };
-  }, [physicsId]);
+  }, [selected?.candidate_id]);
 
   useGSAP(() => {
     if (reduced || !scope.current) return;
     gsap.registerPlugin(ScrollTrigger);
-    const chapters = gsap.utils.toArray<HTMLElement>(".narr-chapter", scope.current);
-    for (const [index, ch] of chapters.entries()) {
-      const reveal = ch.querySelector(".narr-reveal");
-      if (reveal) {
-        gsap.from(reveal, {
-          opacity: 0, x: index % 2 === 0 ? -24 : 24, y: 18,
-          scrollTrigger: { trigger: ch, start: "top 80%", end: "top 35%", scrub: 0.6 },
-        });
-      }
-    }
-    const fill = scope.current.querySelector(".narr-progress-fill");
+    const scenes = gsap.utils.toArray<HTMLElement>(".atlas-scene", scope.current);
+    scenes.forEach((scene) => {
+      const reveal = scene.querySelector(".atlas-reveal");
+      if (!reveal) return;
+      gsap.from(reveal, {
+        opacity: 0,
+        y: 42,
+        scale: 0.985,
+        scrollTrigger: { trigger: scene, start: "top 82%", end: "top 38%", scrub: 0.55 },
+      });
+    });
+    const fill = scope.current.querySelector(".atlas-progress-fill");
     if (fill) {
-      gsap.to(fill, { scaleY: 1, ease: "none", transformOrigin: "top",
-        scrollTrigger: { trigger: scope.current, start: "top top", end: "bottom bottom", scrub: true } });
+      gsap.to(fill, {
+        scaleX: 1,
+        ease: "none",
+        transformOrigin: "left",
+        scrollTrigger: { trigger: scope.current, start: "top top", end: "bottom bottom", scrub: true },
+      });
     }
   }, { scope, dependencies: [run.run_id] });
 
-  const acc = candidate?.uniprot?.primary_accession;
-  const physicsAcc = physicsCandidate?.uniprot?.primary_accession;
-  const spin = computedSpinParam(physicsDossier);
-  const cs = isCandidateSpecific(physicsDossier);
-  const abstained = (run.evidence_shortlist?.length ?? 0) === 0 && (run.frontier_experiments?.length ?? 0) === 0;
+  const jumpTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
 
   const downloadHandoff = () => {
-    if (!candidate) return;
-    const md = dossierMarkdown(candidate, dossier, run);
-    const blob = new Blob([md], { type: "text/markdown" });
+    if (!selected) return;
+    const base = dossierMarkdown(selected, dossier, run);
+    const generated = design
+      ? `\n\n## Generated design path\n\n- ${design.label}\n- Generator: ${design.generator}\n- Coordinates returned: ${design.backbone_pdb ? "yes" : "no"}\n- Sequence returned: no\n- Status: unvalidated design hypothesis\n`
+      : "";
+    const blob = new Blob([base + generated], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `nebula-handoff-${acc ?? topId ?? "candidate"}.md`;
+    a.download = `nebula-discovery-${selected.uniprot?.primary_accession ?? selected.candidate_id}.md`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="narr" ref={scope}>
-      <div className="narr-progress" aria-hidden><div className="narr-progress-fill" /></div>
+    <div className="atlas" ref={scope}>
+      <div className="atlas-progress" aria-hidden><div className="atlas-progress-fill" /></div>
+      <nav className="atlas-nav" aria-label="discovery result sections">
+        <button onClick={() => jumpTo("atlas-outcome")}>outcome</button>
+        <button onClick={() => jumpTo("atlas-nature")}>discover</button>
+        <button onClick={() => jumpTo("atlas-generate")}>generate</button>
+        <button onClick={() => jumpTo("atlas-decision")}>measure</button>
+      </nav>
 
-      <Chapter n="01" kicker="objective">
-        <h1 className="narr-h">You brought the goal. We went looking.</h1>
-        <p className="narr-obj">{run.objective.objective_text}</p>
-        <div className="narr-chips">
-          {run.objective.sensed_quantity_or_state && <span className="chip">sense: {run.objective.sensed_quantity_or_state.replace(/-/g, " ")}</span>}
-          {(run.objective.desired_modalities ?? []).length > 0 && <span className="chip">readout modes: {(run.objective.desired_modalities ?? []).map((m) => m.replace(/_/g, " ")).join(" + ")}</span>}
+      <section className="atlas-scene atlas-hero" id="atlas-outcome">
+        <div className="atlas-reveal">
+          <span className="atlas-eyebrow">mission resolved</span>
+          <h1>The search opened<br /><em>two paths.</em></h1>
+          <p>{run.objective.sensed_quantity_or_state?.replace(/-/g, " ") ?? "Your sensing objective"}, translated into candidates that exist and structures that could.</p>
+          <div className="atlas-paths">
+            <button className="atlas-path atlas-path-natural" onClick={() => jumpTo("atlas-nature")}>
+              <span>found in nature</span>
+              <strong>{uniqueAccessions}</strong>
+              <small>public protein{uniqueAccessions === 1 ? "" : "s"} inspected</small>
+            </button>
+            <button className="atlas-path atlas-path-generated" onClick={() => jumpTo("atlas-generate")}>
+              <span>generated for this mission</span>
+              <strong>{realBackbones || designs.length}</strong>
+              <small>{realBackbones ? "RFdiffusion backbones" : "generation briefs"}</small>
+            </button>
+          </div>
+          <p className="atlas-honesty">Nothing here is a proven sensor. Everything here is a clearer next experiment.</p>
         </div>
-      </Chapter>
+      </section>
 
-      <Chapter n="02" kicker="search the protein universe">
-        <h2 className="narr-h">{uniqueAccessions.length} public proteins. {(run.candidates ?? []).length} supported route hypotheses.</h2>
-        <p className="narr-sub">
-          {run.offline ? "Replayed from versioned public data fixtures." : "Retrieved from public protein and structure services."}
-          {" "}A protein can enter only a route supported by its annotations.
-        </p>
-        <div className="narr-acc-grid">
-          {uniqueAccessions.map((accession) => <span key={accession} className="narr-acc">{accession}</span>)}
-        </div>
-      </Chapter>
-
-      <Chapter n="03" kicker="mechanism routes">
-        <h2 className="narr-h">Public annotations constrain which mechanisms remain possible.</h2>
-        <div className="narr-routes">
-          {routeMix.map(([route, n]) => (
-            <div className="narr-route" key={route}>
-              <span className="narr-route-name">{humanRoute(route)}</span>
-              <span className="narr-route-bar"><span style={{ width: `${(n / maxRoute) * 100}%` }} /></span>
-              <span className="narr-route-n">{n}</span>
+      <section className="atlas-scene atlas-nature" id="atlas-nature">
+        <div className="atlas-reveal">
+          <header className="atlas-section-head">
+            <div><span className="atlas-eyebrow">01 · discover</span><h2>What nature already built.</h2></div>
+            <p>Public proteins filtered by mechanism support, measurement fit, and developability context.</p>
+          </header>
+          <CandidateConstellation candidates={candidates} scores={scores} selectedId={selected?.candidate_id ?? null} onSelect={setSelectedId} />
+          <div className="atlas-inspector">
+            <div className="atlas-candidate-list" role="list" aria-label="candidate shortlist">
+              {visibleCandidates.map((candidate, index) => {
+                const candidateScore = scores.find((item) => item.candidate_id === candidate.candidate_id);
+                const active = candidate.candidate_id === selected?.candidate_id;
+                return (
+                  <button key={candidate.candidate_id} className={`atlas-candidate ${active ? "on" : ""}`} onClick={() => setSelectedId(candidate.candidate_id)} aria-pressed={active}>
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <strong>{candidate.uniprot?.primary_accession ?? candidate.title.split(" — ")[0]}</strong>
+                    <small>{humanRoute(candidate.route_class)}</small>
+                    <i style={{ "--metric": candidateScore?.M_measurability ?? 0 } as CSSProperties} />
+                  </button>
+                );
+              })}
             </div>
-          ))}
-        </div>
-      </Chapter>
-
-      <Chapter n="04" kicker="structure gate">
-        <h2 className="narr-h">{physicsAcc ? `${physicsAcc} · structure and cofactor context` : "No structure qualified for inspection."}</h2>
-        <div className="narr-struct">
-          {structureStatus === "unavailable" ? (
-            <div className="narr-empty">No experimental or predicted structure was available for this route hypothesis.</div>
-          ) : (
-            <StructureViewer structure={structure} loading={structureStatus === "loading"} cofactorLabel={physicsCandidate?.cofactors?.[0]?.name ?? null} />
-          )}
-        </div>
-      </Chapter>
-
-      <Chapter n="05" kicker="compute">
-        <h2 className="narr-h">A computed reference. Assumptions exposed.</h2>
-        <p className="narr-sub">Only the flavin radical pair route computes candidate specific quantum chemistry in this build. Every other route is a frontier hypothesis carried on public annotation and measurement value alone, with no candidate specific compute.</p>
-        {physicsDossier && isSpinDynamics(physicsDossier) ? (
-          <>
-            <p className="narr-sub">
-              {cs
-                ? `An isolated neutral doublet isoalloxazine cluster was extracted from ${physicsAcc}. Its basis dependent Mulliken spin population is ${spin ? spin.value.toFixed(3) : "not available"}. Protein environment, radical partner and dynamics are omitted.`
-                : "No candidate specific quantum chemistry completed. The curve below is a generic flavin radical pair assumption sweep."}
-            </p>
-            <div className="narr-trace"><Traces spin={spin} candidateSpecific={cs} candidateLabel={physicsAcc ?? physicsCandidate?.title} /></div>
-          </>
-        ) : (
-          <p className="narr-sub">This route has no candidate specific spin dynamics model in the current build. It remains an experimental hypothesis, not a computed spin result. Only the flavin radical pair route computes candidate specific quantum chemistry here; this route has none.</p>
-        )}
-      </Chapter>
-
-      <Chapter n="06" kicker="rank · evidence vs frontier">
-        <h2 className="narr-h">Evidence and exploration answer different questions.</h2>
-        {abstained ? (
-          <p className="narr-sub">Evidence backed abstention. No public protein was eligible under this objective. The honest answer, not a manufactured winner.</p>
-        ) : (
-          <div className="narr-universe"><UniverseHero run={run} selectedId={universeSelected} onSelect={setUniverseSelected} /></div>
-        )}
-        {score && (
-          <>
-            <div className="narr-score-words">
-              <span>mechanism support <strong>{scoreBand(score.P_plausibility)}</strong></span>
-              <span>measurement fit <strong>{scoreBand(score.M_measurability)}</strong></span>
-              <span>annotation based developability <strong>{scoreBand(score.D_developability)}</strong></span>
+            <div className="atlas-candidate-stage">
+              <StructureViewer structure={structure} loading={structureStatus === "loading"} cofactorLabel={selected?.cofactors?.[0]?.name ?? null} />
+              <CandidateCaption candidate={selected} dossier={dossier} score={score} />
             </div>
-            <details className="narr-metrics">
-              <summary>expert triage axes</summary>
-              <p>P={score.P_plausibility.toFixed(2)} · M={score.M_measurability.toFixed(2)} · D={score.D_developability.toFixed(2)} · IG={score.IG_information_gain.toFixed(2)}</p>
-              <small>Uncalibrated prioritization heuristics. They are not probabilities or predicted performance.</small>
-            </details>
-          </>
-        )}
-      </Chapter>
+          </div>
+        </div>
+      </section>
 
-      <Chapter n="07" kicker="measure next">
-        {candidate ? (
-          <>
-            <h2 className="narr-h">Best supported next measurement under these assumptions: {acc}.</h2>
-            <p className="narr-plan-line"><strong>Route compatible measurement scenario:</strong> {(score?.suggested_instrument_id ?? frontier?.discriminating_experiment?.instrument_id ?? run.instrument_id ?? "a route compatible instrument").replace(/_/g, " ")}</p>
-            {(candidate.readout_modes ?? []).length > 0 && (
-              <div className="narr-chips narr-readouts">
-                <span className="narr-readouts-lbl">Candidate readouts to test:</span>
-                {(candidate.readout_modes ?? []).map((m) => <span key={m} className="chip">{m.replace(/_/g, " ")}</span>)}
-                <small className="narr-readouts-note">Separate readouts this scaffold family can support, not a demonstrated joint measurement and not a claim that any of them resolves the effect.</small>
+      <section className="atlas-scene atlas-generate" id="atlas-generate">
+        <div className="atlas-reveal">
+          <header className="atlas-section-head">
+            <div><span className="atlas-eyebrow">02 · generate</span><h2>Then search beyond nature.</h2></div>
+            <p>RFdiffusion proposes new backbone geometry for the same sensing mission. Coordinates are a starting point, not a finished construct.</p>
+          </header>
+          <div className="atlas-generator">
+            <div className="atlas-design-list" role="list" aria-label="generated design directions">
+              {designs.map((item, index) => {
+                const active = index === designIndex;
+                return (
+                  <button key={`${item.label}-${index}`} className={`atlas-design ${active ? "on" : ""}`} onClick={() => setDesignIndex(index)} aria-pressed={active}>
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <strong>{item.label}</strong>
+                    <small>{item.backbone_pdb ? `${item.n_residues ?? "de novo"} residue backbone` : "generation brief"}</small>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="atlas-design-stage">
+              <GeneratedBackboneViewer pdb={design?.backbone_pdb ?? null} label={design?.label ?? "generation frontier"} residues={design?.n_residues} />
+              <div className="atlas-design-meta">
+                <span>{design?.generator ?? "generation unavailable"}</span>
+                <strong>{design?.invented_for ?? run.objective.sensed_quantity_or_state ?? "the mission"}</strong>
+                <small>{design?.backbone_pdb ? "Backbone coordinates produced. Sequence design and validation remain downstream." : "The adapter returned a design direction without coordinates in this run."}</small>
               </div>
-            )}
-            <p className="narr-plan-line"><strong>{claimLabel(candidate.claim_ceiling)}</strong></p>
-            {candidate.why_it_might_work?.[0] && <p className="narr-plan-line"><strong>Why it remains:</strong> {candidate.why_it_might_work[0]}</p>}
-            <p className="narr-plan-line narr-fals">
-              <strong>Falsification:</strong>{" "}
-              {frontier?.falsifier ?? `if the mechanism specific control shows the same signal change as the construct, the ${humanRoute(candidate.route_class)} hypothesis for ${acc} is rejected.`}
-            </p>
-          </>
-        ) : (
-          <h2 className="narr-h">No candidate to measure yet. Broaden the objective.</h2>
-        )}
-        {candidate && (
-          <button className="btn-run" onClick={downloadHandoff}>download the handoff ↓</button>
-        )}
-        {(run.generative_frontier ?? []).length > 0 && (
-          <details className="narr-unmade-details">
-            <summary>speculative design frontier</summary>
-            <p>These are design directions only. No sequence or orderable construct is produced.</p>
-            <div className="narr-unmade">
-              {(run.generative_frontier ?? []).map((g) => (
-                <div className="unmade-card" key={g.label}>
-                  <span className="unmade-name">{g.label}</span>
-                  <span className="unmade-for">invented for {g.invented_for}</span>
-                </div>
-              ))}
             </div>
-          </details>
-        )}
-      </Chapter>
+          </div>
+        </div>
+      </section>
+
+      <section className="atlas-scene atlas-decision" id="atlas-decision">
+        <div className="atlas-reveal">
+          <header className="atlas-section-head">
+            <div><span className="atlas-eyebrow">03 · measure</span><h2>Choose what earns bench time.</h2></div>
+            <p>Nebula does not choose a winner by one score. It exposes the trade: support, measurability, developability, and uncertainty.</p>
+          </header>
+          {selected ? (
+            <div className="atlas-decision-grid">
+              <div className="atlas-decision-candidate">
+                <span>measurement priority</span>
+                <h3>{selected.uniprot?.primary_accession ?? selected.title}</h3>
+                <p>{humanRoute(selected.route_class)}</p>
+                <div className="atlas-metrics">
+                  <Metric label="mechanism" value={score?.P_plausibility} />
+                  <Metric label="measurable" value={score?.M_measurability} />
+                  <Metric label="developable" value={score?.D_developability} />
+                  <Metric label="uncertainty" value={score?.U_uncertainty} inverse />
+                </div>
+              </div>
+              <div className="atlas-measurement">
+                <span>decisive next measurement</span>
+                <h3>{frontier?.discriminating_experiment?.what_to_measure ?? "Test the proposed readout against its mechanism-specific controls."}</h3>
+                <dl>
+                  <div><dt>instrument</dt><dd>{(score?.suggested_instrument_id ?? frontier?.discriminating_experiment?.instrument_id ?? run.instrument_id ?? "route-compatible measurement bench").replace(/_/g, " ")}</dd></div>
+                  <div><dt>reject when</dt><dd>{frontier?.falsifier ?? selected.why_it_might_fail?.[0] ?? "the mechanism-specific control is indistinguishable from the candidate"}</dd></div>
+                  <div><dt>claim ceiling</dt><dd>{claimLabel(selected.claim_ceiling)}</dd></div>
+                </dl>
+              </div>
+            </div>
+          ) : <p className="atlas-empty">No candidate passed into measurement planning.</p>}
+          {selected && <EvidenceLedger candidate={selected} dossier={dossier} score={score} />}
+        </div>
+      </section>
+
+      <section className="atlas-scene atlas-handoff" id="atlas-handoff">
+        <div className="atlas-reveal">
+          <span className="atlas-eyebrow">handoff</span>
+          <h2>Take the next experiment with you.</h2>
+          <p>One selected public candidate, one generated design direction, the assumptions, and the experiment that can prove the idea wrong.</p>
+          <button className="atlas-download" onClick={downloadHandoff} disabled={!selected}>download discovery brief <span>↓</span></button>
+          <small>Evidence is public. Generated coordinates, when present, are unvalidated RFdiffusion output with no sequence.</small>
+        </div>
+      </section>
     </div>
   );
+}
+
+function CandidateCaption({ candidate, dossier, score }: { candidate?: CandidateRecord; dossier?: CandidateDossier; score?: DiscoveryScore }) {
+  if (!candidate) return null;
+  const candidateSpecific = Boolean(dossier?.physics_eligibility?.qm_cluster_plan?.candidate_specific);
+  return (
+    <div className="atlas-candidate-caption">
+      <div><span>selected public protein</span><strong>{candidate.uniprot?.primary_accession ?? candidate.title}</strong></div>
+      <div><span>cofactor context</span><strong>{candidate.cofactors?.map((c) => c.name).join(" + ") || "not annotated"}</strong></div>
+      <div><span>physics provenance</span><strong>{candidateSpecific ? "candidate-specific QM" : "route-level evidence"}</strong></div>
+      <div><span>current ceiling</span><strong>{claimLabel(dossier?.claim_ceiling ?? candidate.claim_ceiling)}</strong></div>
+      <div><span>lane</span><strong>{score?.lane ?? "unassigned"}</strong></div>
+    </div>
+  );
+}
+
+function EvidenceLedger({ candidate, dossier, score }: { candidate?: CandidateRecord; dossier?: CandidateDossier; score?: DiscoveryScore }) {
+  if (!candidate) return null;
+  const citations = dossier?.evidence_citations ?? [];
+  const steps = score?.mechanism_graph?.primitives ?? [];
+  const unresolved = steps.filter((p) => p.knowledge.state !== "known").length;
+  const degradations = candidate.degradations ?? [];
+  return (
+    <div className="atlas-evidence">
+      <div className="ev-col">
+        <span className="ev-head">public evidence · supports mechanism plausibility</span>
+        {citations.length ? (
+          <ul className="ev-cites">
+            {citations.map((c, i) => (
+              <li key={c.doi + i}>
+                <span className="ev-cite-meta">{c.authors.split(",")[0]} et al. {c.year}. {c.title}. <em>{c.venue}</em>.</span>
+                <a className="ev-doi" href={`https://doi.org/${c.doi}`} target="_blank" rel="noopener noreferrer">doi:{c.doi}</a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="ev-none">No public citation anchors this route in the current build. It stands on scientific rationale, not on literature.</p>
+        )}
+      </div>
+      <div className="ev-col">
+        <span className="ev-head">mechanism steps · {steps.length ? `${unresolved} of ${steps.length} unresolved` : "not composed"}</span>
+        {steps.length > 0 && (
+          <ol className="ev-steps">
+            {steps.map((p, i) => (
+              <li key={i} className={`ev-step ev-${p.knowledge.state}`}><b>{p.knowledge.state}</b><span>{p.detail}</span></li>
+            ))}
+          </ol>
+        )}
+      </div>
+      <div className="ev-col">
+        <span className="ev-head">what we could not resolve</span>
+        {degradations.length ? (
+          <ul className="ev-gaps">{degradations.map((d, i) => <li key={i}>{d}</li>)}</ul>
+        ) : (
+          <p className="ev-none">Retrieval and enrichment completed with no recorded gaps for this candidate.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Metric({ label, value = 0, inverse = false }: { label: string; value?: number; inverse?: boolean }) {
+  const display = Math.round(Math.max(0, Math.min(1, value)) * 100);
+  return (
+    <div className="atlas-metric">
+      <span>{label}</span><strong>{display}</strong>
+      <i><b style={{ width: `${inverse ? 100 - display : display}%` }} /></i>
+    </div>
+  );
+}
+
+function CandidateConstellation({ candidates, scores, selectedId, onSelect }: {
+  candidates: CandidateRecord[];
+  scores: DiscoveryScore[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}) {
+  // honest scatter: x = mechanism support (P_plausibility), y = measurement value (information gain).
+  // Positions are the real triage axes, not a decorative layout, so the axis labels are truthful.
+  const scoreById = new Map(scores.map((s) => [s.candidate_id, s]));
+  const visible = candidates.filter((c) => scoreById.has(c.candidate_id)).slice(0, 12);
+  const pos = (c: CandidateRecord): [number, number] => {
+    const s = scoreById.get(c.candidate_id);
+    const x = 10 + (s?.P_plausibility ?? 0.35) * 80;       // left→right = mechanism support
+    const y = 86 - (s?.IG_information_gain ?? 0.3) * 70;    // bottom→top = measurement value
+    return [Math.round(x), Math.round(y)];
+  };
+  return (
+    <div className="atlas-field" role="group" aria-label="candidate scatter: horizontal is mechanism support, vertical is measurement value">
+      <div className="atlas-field-rings" aria-hidden><i /><i /><i /></div>
+      <div className="atlas-field-core" aria-hidden><b /><span>nebula</span></div>
+      <svg className="atlas-field-links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+        {visible.map((candidate) => {
+          const [x, y] = pos(candidate);
+          return <line key={candidate.candidate_id} x1="50" y1="50" x2={x} y2={y} />;
+        })}
+      </svg>
+      {visible.map((candidate) => {
+        const [x, y] = pos(candidate);
+        const candidateScore = scoreById.get(candidate.candidate_id);
+        const active = candidate.candidate_id === selectedId;
+        return (
+          <button
+            key={candidate.candidate_id}
+            className={`atlas-field-node atlas-field-node-${candidateScore?.lane ?? "unassigned"} ${active ? "on" : ""}`}
+            style={{ left: `${x}%`, top: `${y}%`, "--node-score": candidateScore?.P_plausibility ?? 0.35 } as CSSProperties}
+            onClick={() => onSelect(candidate.candidate_id)}
+            aria-pressed={active}
+          >
+            <span>{candidate.uniprot?.primary_accession ?? candidate.candidate_id.slice(0, 8)}</span>
+            <small>{candidateScore?.lane ?? "candidate"}</small>
+          </button>
+        );
+      })}
+      <div className="atlas-field-axis atlas-field-axis-x" aria-hidden>mechanism support →</div>
+      <div className="atlas-field-axis atlas-field-axis-y" aria-hidden>measurement value →</div>
+    </div>
+  );
+}
+
+function rankOf(candidateId: string, run: RunState): number {
+  const evidence = run.evidence_shortlist?.indexOf(candidateId) ?? -1;
+  if (evidence >= 0) return evidence;
+  const frontier = run.frontier_experiments?.findIndex((f) => f.candidate_id === candidateId) ?? -1;
+  return frontier >= 0 ? 100 + frontier : 1000;
 }
 
 function humanRoute(route: string): string {
   if (route === "RFP_flavin_photochemical") return "flavin photochemical light history";
   return route.replace(/_/g, " ").replace(/\bFAD\b/i, "FAD").replace(/\bLOV\b/i, "LOV");
-}
-
-function scoreBand(value: number): string {
-  if (value < 0.34) return "low";
-  if (value < 0.67) return "moderate";
-  return "higher within this run";
-}
-
-function Chapter({ n, kicker, children }: { n: string; kicker: string; children: React.ReactNode }) {
-  return (
-    <section className="narr-chapter">
-      <div className="narr-reveal">
-        <div className="narr-kicker"><span className="narr-n">{n}</span>{kicker}</div>
-        {children}
-      </div>
-    </section>
-  );
 }

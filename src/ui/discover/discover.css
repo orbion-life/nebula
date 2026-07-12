@@ -572,6 +572,27 @@ body:has(.discover) { background: var(--d-bg); }
 .atlas-design-meta small { color: var(--d-faint); font-size: 11px; }
 
 .atlas-decision { background: linear-gradient(180deg, rgba(4,9,15,.9), rgba(8,12,18,.98)); }
+/* evidence ledger: real citations, mechanism knowledge states, unresolved gaps */
+.atlas-evidence { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; margin-top: 26px; background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.09); }
+.ev-col { background: rgba(4,9,15,0.72); padding: 18px 18px 20px; min-width: 0; display: flex; flex-direction: column; gap: 11px; }
+.ev-head { color: var(--atlas-green); font: 700 9px/1.4 var(--d-mono); letter-spacing: 0.12em; text-transform: uppercase; }
+.ev-cites, .ev-steps, .ev-gaps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.ev-cites { gap: 13px; }
+.ev-cites li { display: flex; flex-direction: column; gap: 3px; }
+.ev-cite-meta { color: var(--d-mut); font-size: 12.5px; line-height: 1.45; }
+.ev-cite-meta em { color: var(--d-faint); font-style: italic; }
+.ev-doi { font-family: var(--d-mono); font-size: 11px; color: var(--d-evi); word-break: break-all; }
+.ev-none { color: var(--d-faint); font-size: 12px; line-height: 1.5; }
+.ev-steps { gap: 6px; }
+.ev-step { display: grid; grid-template-columns: 72px 1fr; gap: 9px; align-items: baseline; font-size: 12px; color: var(--d-mut); }
+.ev-step b { font: 700 8px/1.5 var(--d-mono); letter-spacing: 0.08em; text-transform: uppercase; border-radius: 999px; padding: 2px 0; text-align: center; }
+.ev-known b { color: #06100d; background: var(--atlas-green); }
+.ev-assumed b { color: var(--d-fro); border: 1px solid var(--d-fro); }
+.ev-unknown b { color: var(--d-red); border: 1px solid var(--d-red); }
+.ev-gaps { gap: 8px; }
+.ev-gaps li { color: var(--d-mut); font-size: 12px; line-height: 1.45; padding-left: 15px; position: relative; }
+.ev-gaps li::before { content: "!"; position: absolute; left: 2px; color: var(--d-red); font-weight: 800; }
+@media (max-width: 900px) { .atlas-evidence { grid-template-columns: 1fr; } }
 .atlas-decision-grid { display: grid; grid-template-columns: .82fr 1.18fr; border-top: 1px solid rgba(255,255,255,.12); border-bottom: 1px solid rgba(255,255,255,.12); }
 .atlas-decision-candidate, .atlas-measurement { padding: clamp(28px,4.5vw,62px); }
 .atlas-decision-candidate { border-right: 1px solid rgba(255,255,255,.11); }
