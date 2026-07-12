@@ -16,6 +16,7 @@ import { StructureViewer } from "../StructureViewer";
 import { claimLabel, computedSpinParam, dossierMarkdown, isCandidateSpecific, isSpinDynamics, routeLabel } from "../dossierExport";
 import { Metric } from "./Metric";
 import { AppliedConstraints, ObjectiveSplit } from "./AppliedConstraints";
+import { FieldPrecedent } from "./FieldPrecedent";
 
 // the physics trace is heavy (raw SVG + the versioned RadicalPy artifact); lazy-load it so it
 // only enters the bundle when a completed run actually reaches the compute scene.
@@ -207,6 +208,7 @@ export function NarrativeReplay({ run }: Props) {
               <p>No candidate-specific quantum chemistry for this route. {routeLabel(selected?.route_class ?? "")} is a frontier hypothesis; only the flavin radical-pair route computes candidate-specific spin in this build. This candidate is scored on public annotation and measurement value alone.</p>
             </div>
           )}
+          <FieldPrecedent />
         </div>
       </section>
 
