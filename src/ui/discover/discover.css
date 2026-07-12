@@ -504,10 +504,20 @@ body:has(.discover) { background: var(--d-bg); }
   radial-gradient(circle at 42% 48%, rgba(156,247,189,0.34) 0 2px, transparent 3px),
   radial-gradient(circle, rgba(52,134,99,0.2), transparent 62%); animation: atlas-breathe 12s ease-in-out infinite alternate; }
 .atlas-hero::after { content: ""; position: absolute; inset: 0; opacity: 0.36; background-image: radial-gradient(circle, rgba(255,255,255,0.28) 0 1px, transparent 1.3px); background-size: 72px 72px; mask-image: linear-gradient(90deg, transparent 10%, black 100%); }
-.atlas-hero .atlas-reveal { padding-top: clamp(120px, 16vh, 180px); }
-.atlas-hero h1 { max-width: 10ch; margin: 24px 0 28px; font-family: var(--d-display); font-size: clamp(62px, 10vw, 150px); font-weight: 500; line-height: 0.77; letter-spacing: 0; }
+.atlas-hero .atlas-reveal { padding-top: clamp(88px, 12vh, 148px); width: min(1340px, calc(100% - 56px)); }
+/* graphic-forward outcome: the discovered candidate universe is the reveal, not empty space */
+.atlas-hero-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(28px, 4vw, 72px); align-items: center; }
+.atlas-hero-copy { min-width: 0; }
+.atlas-hero h1 { max-width: 12ch; margin: 20px 0 22px; font-family: var(--d-display); font-size: clamp(44px, 5vw, 92px); font-weight: 500; line-height: 0.82; letter-spacing: 0; }
 .atlas-hero h1 em { color: var(--atlas-green); font-style: normal; font-weight: 500; }
-.atlas-hero > .atlas-reveal > p { max-width: 58ch; color: var(--d-mut); font-size: clamp(16px, 1.55vw, 21px); }
+.atlas-hero-copy > p { max-width: 48ch; color: var(--d-mut); font-size: clamp(15px, 1.4vw, 19px); }
+.atlas-hero-universe { position: relative; height: min(64vh, 560px); min-height: 320px; }
+.atlas-hero-universe .universe { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; margin: 0; }
+.atlas-hero-hint { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 4; color: var(--d-faint); font: 600 var(--fs-2xs)/1 var(--d-mono); letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.62; pointer-events: none; white-space: nowrap; }
+@media (max-width: 900px) {
+  .atlas-hero-grid { grid-template-columns: 1fr; gap: var(--space-6); }
+  .atlas-hero-universe { height: 44vh; min-height: 280px; order: -1; }
+}
 /* two paths — compact horizontal cards, integrated count, two-lane colour (evidence / frontier) */
 .atlas-paths { width: min(720px, 100%); display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-7); }
 .atlas-path { display: grid; grid-template-columns: 40px auto 1fr auto; align-items: center; gap: var(--space-4);

@@ -13,6 +13,7 @@ import { useGSAP } from "@gsap/react";
 import { getStructure, type CandidateDossier, type CandidateRecord, type DiscoveryScore, type RunState, type StructureResponse } from "../../../api/client";
 import { GeneratedBackboneViewer } from "../GeneratedBackboneViewer";
 import { StructureViewer } from "../StructureViewer";
+import { UniverseHero } from "../universe/UniverseHero";
 import { claimLabel, dossierBriefHtml, dossierMarkdown } from "../dossierExport";
 import { ObjectiveSplit } from "./AppliedConstraints";
 import { CandidateDossierPanel } from "./CandidateDossierPanel";
@@ -169,7 +170,8 @@ export function NarrativeReplay({ run }: Props) {
       </nav>
 
       <section className="atlas-scene atlas-hero" id="atlas-outcome">
-        <div className="atlas-reveal">
+        <div className="atlas-reveal atlas-hero-grid">
+          <div className="atlas-hero-copy">
           <span className="atlas-eyebrow">mission resolved</span>
           <h1>The search opened<br /><em>two paths.</em></h1>
           <p>{run.objective.sensed_quantity_or_state?.replace(/-/g, " ") ?? "Your sensing objective"}, translated into candidates that exist and structures that could.</p>
@@ -200,6 +202,11 @@ export function NarrativeReplay({ run }: Props) {
             </button>
           </div>
           <p className="atlas-honesty">Nothing here is a proven sensor. Everything here is a clearer next experiment.</p>
+          </div>
+          <div className="atlas-hero-universe">
+            <UniverseHero run={run} settled selectedId={selected?.candidate_id ?? null} onSelect={(id) => { setSelectedId(id); jumpTo("atlas-dossier"); }} interactive />
+            <span className="atlas-hero-hint" aria-hidden>select a star to open its case ↓</span>
+          </div>
         </div>
       </section>
 
