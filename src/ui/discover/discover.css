@@ -91,12 +91,24 @@ body:has(.discover) { background: var(--d-bg); }
 .pre-sub { font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--d-faint); }
 
 /* ---- ambient audio toggle ---- */
-.audio-toggle { display: inline-flex; align-items: center; gap: 6px; background: transparent;
-  border: 1px solid var(--d-line2); color: var(--d-faint); border-radius: 20px; padding: 4px 11px;
-  font-size: 11px; cursor: pointer; font-family: var(--d-sans); transition: color 0.15s, border-color 0.15s; }
-.audio-toggle:hover { color: var(--d-mut); border-color: var(--d-teal); }
-.audio-toggle.on { color: var(--d-amber); border-color: var(--d-bronze); }
-.audio-toggle:focus-visible { outline: 2px solid var(--d-amber); outline-offset: 2px; }
+/* header control cluster — one refined pill treatment shared by "new objective" + "sound" */
+.disc-reset, .audio-toggle {
+  display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 13px;
+  border-radius: 999px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.025);
+  color: var(--d-mut); font: 500 12px/1 var(--d-sans); letter-spacing: 0.01em; cursor: pointer;
+  transition: color 0.16s, border-color 0.16s, background 0.16s;
+}
+.disc-reset:hover, .audio-toggle:hover { color: var(--d-ink); border-color: rgba(255,255,255,0.26); background: rgba(255,255,255,0.05); }
+.disc-reset:focus-visible, .audio-toggle:focus-visible { outline: 2px solid var(--d-gold-bright); outline-offset: 2px; }
+.disc-reset-icon { font-size: 13px; opacity: 0.68; }
+.audio-eq rect { fill: currentColor; opacity: 0.8; transform-origin: center; }
+.audio-toggle.on { color: var(--d-amber); border-color: color-mix(in srgb, var(--d-amber) 46%, transparent); background: color-mix(in srgb, var(--d-amber) 10%, transparent); }
+.audio-toggle.on .audio-eq rect { opacity: 1; animation: disc-eq 1.15s ease-in-out infinite; }
+.audio-toggle.on .audio-eq rect:nth-child(2) { animation-delay: 0.16s; }
+.audio-toggle.on .audio-eq rect:nth-child(3) { animation-delay: 0.32s; }
+.audio-toggle.on .audio-eq rect:nth-child(4) { animation-delay: 0.48s; }
+@keyframes disc-eq { 0%, 100% { transform: scaleY(0.5); } 50% { transform: scaleY(1); } }
+@media (prefers-reduced-motion: reduce) { .audio-toggle.on .audio-eq rect { animation: none; } }
 .audio-label { letter-spacing: 0.04em; }
 
 .discover {
@@ -147,11 +159,11 @@ body:has(.discover) { background: var(--d-bg); }
 .disc-nebula-star::after { rotate: 90deg; width: 26px; }
 .disc-nebula { font-weight: 800; letter-spacing: -0.045em; color: #bdf38a; font-size: 22px; text-shadow: 0 0 22px rgba(153, 255, 154, 0.24); }
 .disc-tag { color: var(--d-faint); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; }
-.disc-health { display: flex; align-items: center; gap: 10px; }
-.disc-health .hz { font-size: 12px; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--d-line2); }
-.hz.live { color: var(--d-evi); border-color: var(--d-line2); }
-.hz.offline { color: var(--d-mut); border-color: var(--d-line2); }
-.hz.down { color: var(--d-red); border-color: #5f2a34; }
+.disc-health { display: flex; align-items: center; gap: 8px; }
+.disc-status { display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 13px;
+  border-radius: 999px; border: 1px solid #5f2a34; background: rgba(239,138,122,0.08);
+  color: var(--d-red); font: 500 12px/1 var(--d-sans); }
+.disc-status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--d-red); box-shadow: 0 0 8px rgba(239,138,122,0.55); }
 
 .disc-stage { flex: 1; width: 100%; }
 .disc-foot {
@@ -165,7 +177,6 @@ body:has(.discover) { background: var(--d-bg); }
   gap: 12px; width: min(720px, calc(100% - 36px)); margin: 0 auto; }
 .experience-error h1, .experience-error p { margin: 0; }
 .experience-error p { color: var(--d-mut); }
-.disc-reset { font-size: 11px; padding: 4px 11px; }
 
 /* ---- cinematic Acts ---- */
 .act { width: 100%; }
@@ -808,7 +819,6 @@ body:has(.discover) { background: var(--d-bg); }
   .disc-name { font-size: 13px; white-space: nowrap; }
   .disc-tag { display: none; }
   .disc-health { gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
-  .disc-health .hz { display: none; }
   .audio-label { display: none; }
 }
 

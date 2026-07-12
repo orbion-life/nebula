@@ -171,19 +171,17 @@ export function DiscoverApp() {
         </button>
         <div className="disc-health">
           {phase === "workspace" && (
-            <button className="disc-reset btn-ghost" onClick={reset}>new objective ↺</button>
+            <button className="disc-reset" onClick={reset}>
+              <span className="disc-reset-icon" aria-hidden>↺</span>new objective
+            </button>
           )}
           <AmbientAudio />
-          {health ? (
-            <span className={`hz ${health.offline ? "offline" : health.status === "ok" ? "live" : "down"}`}>
-              {health.offline
-                ? "public fixtures · deterministic replay"
-                : health.status === "ok"
-                  ? "live · public APIs"
-                  : `${health.status} · public APIs`}
+          {/* No live/offline chrome in the header — provenance is surfaced where it matters (the scan
+              and the brief). Only a genuinely unreachable API earns a quiet warning here. */}
+          {(!health || (health.status !== "ok" && !health.offline)) && (
+            <span className="disc-status" role="status" title="Discovery API unreachable — check the backend service">
+              <span className="disc-status-dot" aria-hidden />API offline
             </span>
-          ) : (
-            <span className="hz down">API unreachable</span>
           )}
         </div>
       </header>
