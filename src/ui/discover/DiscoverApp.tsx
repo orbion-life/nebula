@@ -164,11 +164,11 @@ export function DiscoverApp() {
       ) : <div className="world-fallback" aria-hidden />}
       <div className="disc-content">
       <header className="disc-top">
-        <div className="disc-brand">
-          <span className="disc-mark" aria-hidden>◊</span>
-          <span className="disc-name">Nebula Discover</span>
-          <span className="disc-tag">chart the protein universe</span>
-        </div>
+        <button className="disc-home" onClick={reset} aria-label="nebula discovery, back to objective">
+          <span className="disc-nebula-star" aria-hidden />
+          <span className="disc-nebula">nebula</span>
+          <span className="disc-tag">discovery</span>
+        </button>
         <div className="disc-health">
           {phase === "workspace" && (
             <button className="disc-reset btn-ghost" onClick={reset}>new objective ↺</button>

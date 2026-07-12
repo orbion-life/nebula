@@ -2,10 +2,10 @@
  * End-to-end proof (real browser, offline backend) that the shipped app:
  *  - drives the gamified Mission Bench and runs a real discovery,
  *  - returns a REAL UniProt accession (not a template family),
- *  - narrates candidate-specific QM and renders a NON-BLANK 3Dmol WebGL structure,
+ *  - surfaces physics provenance and renders a NON-BLANK 3Dmol WebGL structure,
  *  - surfaces the suggested measurement as an OUTPUT (never asks for it),
  *  - is ONE continuous result view (no workspace toggle) with an inline handoff download,
- *  - carries the honest generative-frontier preview ("the unmade"),
+ *  - carries the honest RFdiffusion generation lane,
  *  - has a persistent non-blank world canvas, real wheel scroll, muted audio by default,
  *    zero horizontal overflow at every target viewport, keyboard operability, reduced motion.
  */
@@ -20,14 +20,16 @@ async function boot(page: import("@playwright/test").Page) {
   await page.waitForSelector(".preloader", { state: "detached", timeout: 15_000 });
 }
 
-// Mission Bench (default objective) → take the dive → the single result narrative.
-async function runToResult(page: import("@playwright/test").Page) {
+// Mission Bench → search constructs → the single discovery atlas.
+async function runToResult(page: import("@playwright/test").Page, world = "Field patch") {
   await boot(page);
-  await expect(page.locator(".disc-brand")).toContainText("Nebula Discover");
+  await expect(page.locator(".disc-nebula")).toHaveText("nebula");
+  await expect(page.locator(".disc-tag")).toHaveText("discovery");
   await expect(page.locator(".mb")).toBeVisible(); // the gamified objective bench, not a text form
-  await page.locator(".mb .btn-run").click(); // "take the dive": compiles + runs (offline seeds)
+  await page.getByRole("button", { name: new RegExp(`^${world}`, "i") }).click();
+  await page.locator(".mb .btn-run").click();
   await expect(page.locator(".act-result")).toBeVisible({ timeout: 40_000 });
-  await expect(page.locator(".narr-kicker").first()).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator(".atlas-hero")).toBeVisible({ timeout: 20_000 });
 }
 
 function nonBackgroundFraction(buf: Buffer): number {
@@ -41,11 +43,11 @@ function nonBackgroundFraction(buf: Buffer): number {
   return nonBg / n;
 }
 
-test("run returns a real accession, a non-blank structure, candidate-specific QM, and a measurement scenario", async ({ page }) => {
+test("run returns a real accession, a non-blank structure, physics provenance, and a measurement scenario", async ({ page }) => {
   await runToResult(page);
 
-  // a REAL UniProt accession appears in the search chapter (not a template family)
-  await expect(page.locator(".narr-acc").first()).toHaveText(/^[A-Z][A-Z0-9]{5,9}$/);
+  // a REAL UniProt accession appears in the discovery atlas (not a template family)
+  await expect(page.locator(".atlas-candidate strong").first()).toHaveText(/^[A-Z][A-Z0-9]{5,9}$/);
 
   // the 3Dmol structure chapter renders a NON-BLANK WebGL canvas
   const canvas = page.locator(".struct-canvas canvas").first();
@@ -56,10 +58,10 @@ test("run returns a real accession, a non-blank structure, candidate-specific QM
   const frac = nonBackgroundFraction(shot);
   expect(frac, `structure canvas should be non-blank (got ${(frac * 100).toFixed(2)}% non-bg)`).toBeGreaterThan(0.02);
 
-  const narr = page.locator(".narr");
-  await expect(narr).toContainText(/candidate specific/i); // physics computed on real coordinates
-  await expect(narr).toContainText(/Route compatible measurement scenario/i); // measurement surfaced as OUTPUT
-  await expect(narr).toContainText(/Falsification/i); // the decisive kill criterion
+  const atlas = page.locator(".atlas");
+  await expect(atlas).toContainText(/candidate-specific QM|route-level evidence/i);
+  await expect(atlas).toContainText(/decisive next measurement/i);
+  await expect(atlas).toContainText(/reject when/i);
 
   const body = (await page.locator("body").innerText()).toLowerCase();
   expect(body).not.toContain("validated sensor");
@@ -70,16 +72,17 @@ test("one result view: no workspace toggle, inline handoff download", async ({ p
   await runToResult(page);
   await expect(page.locator(".view-toggle")).toHaveCount(0);
   await expect(page.locator(".narr-skip")).toHaveCount(0);
-  await expect(page.locator(".narr .btn-run")).toContainText(/download the handoff/i);
+  await expect(page.locator(".atlas-download")).toContainText(/download discovery brief/i);
 });
 
-test("the unmade generative frontier is an honest preview", async ({ page }) => {
+test("the RFdiffusion generation lane is an honest preview", async ({ page }) => {
   await runToResult(page);
-  const details = page.locator(".narr-unmade-details");
-  await details.scrollIntoViewIfNeeded();
-  await details.locator("summary").click();
-  await expect(details).toContainText(/No sequence or orderable construct is produced/i);
-  await expect(details.locator(".unmade-card")).toHaveCount(3);
+  const generation = page.locator(".atlas-generate");
+  await generation.scrollIntoViewIfNeeded();
+  await expect(generation).toContainText(/RFdiffusion proposes new backbone geometry/i);
+  await expect(generation.locator(".atlas-design")).toHaveCount(3);
+  await expect(generation).toContainText(/Backbone not generated in this run/i);
+  await expect(generation).toContainText(/without coordinates/i);
 });
 
 test("measurement is never asked as an input", async ({ page }) => {
@@ -119,7 +122,7 @@ test("completes with prefers-reduced-motion (no motion-only meaning)", async ({ 
   const ctx = await browser.newContext({ reducedMotion: "reduce" });
   const page = await ctx.newPage();
   await runToResult(page);
-  await expect(page.locator(".narr-acc").first()).toHaveText(/^[A-Z][A-Z0-9]{5,9}$/);
+  await expect(page.locator(".atlas-candidate strong").first()).toHaveText(/^[A-Z][A-Z0-9]{5,9}$/);
   await ctx.close();
 });
 
