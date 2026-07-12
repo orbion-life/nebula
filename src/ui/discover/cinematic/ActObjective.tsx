@@ -1,29 +1,18 @@
 /**
- * Act I — Objective. A quiet, full viewport opening scene: one large question, then the
- * gamified Mission Bench (the default) with the free text ObjectivePanel one click away.
+ * Act I — Objective. A cinematic, guided mission builder:
+ * the first screen must teach beginners and still expose enough control for experts.
  */
-import { useState } from "react";
-import { ObjectivePanel } from "../ObjectivePanel";
 import { MissionBench } from "../objective/MissionBench";
 import type { ObjectiveSpec } from "../../../api/client";
 
 export function ActObjective({ onRun, offline }: { onRun: (spec: ObjectiveSpec) => void; offline: boolean }) {
-  const [expert, setExpert] = useState(false);
   return (
     <section className="act act-objective">
       <div className="act-inner">
-        <div className="act-kicker"><span className="act-n">01</span>objective</div>
-        <h1 className="act-h">What are you building? What must it sense?</h1>
-        {expert ? (
-          <>
-            <ObjectivePanel onRun={onRun} offline={offline} />
-            <button className="mb-type" onClick={() => setExpert(false)} style={{ marginTop: 14 }}>
-              back to the bench
-            </button>
-          </>
-        ) : (
-          <MissionBench onRun={onRun} offline={offline} onTypeInstead={() => setExpert(true)} />
-        )}
+        <span className="act-eyebrow">the objective</span>
+        <h1 className="act-h">Begin a quantum biosensor.</h1>
+        <p className="act-lede">Every quantum biosensor starts as one question. Choose the world where yours will live and the signal it must feel, and the scan turns your objective into real protein candidates to test at a bench.</p>
+        <MissionBench onRun={onRun} offline={offline} />
       </div>
     </section>
   );

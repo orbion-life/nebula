@@ -178,6 +178,8 @@ body:has(.discover) { background: var(--d-bg); }
   letter-spacing: 0.16em; color: #9cf7bd; margin-bottom: 14px; }
 .act-kicker .act-n { font-family: var(--d-mono); color: var(--d-faint); }
 .act-h { font-size: clamp(34px, 6.2vw, 76px); font-weight: 650; line-height: 0.98; margin: 0 0 28px; color: var(--d-ink); max-width: 12ch; }
+.act-eyebrow { display: inline-block; color: #9cf7bd; font: 700 var(--fs-2xs)/1 var(--d-mono); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: var(--space-4); }
+.act-lede { color: var(--d-mut); font-size: var(--fs-lead); line-height: 1.55; max-width: 52ch; margin: 0 0 var(--space-7); }
 
 /* Act II — the run-driven descent */
 .act-search { position: relative; overflow: hidden; }
@@ -345,10 +347,14 @@ body:has(.discover) { background: var(--d-bg); }
 .mb > *:not(.mb-aura):not(.mb-orbit) { position: relative; z-index: 1; }
 .mb-eyebrow { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mb-accent);
   text-shadow: 0 0 18px color-mix(in srgb, var(--mb-accent) 34%, transparent); }
-.mb-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
-.mb-nav-item { background: rgba(7, 12, 24, 0.52); border: 1px solid rgba(255,255,255,0.12);
-  color: var(--d-mut); border-radius: 999px; padding: 8px 14px; font-family: var(--d-sans); cursor: pointer; }
+.mb-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: var(--space-6); }
+.mb-nav-item { display: inline-flex; align-items: center; gap: 8px; background: rgba(7, 12, 24, 0.52); border: 1px solid rgba(255,255,255,0.12);
+  color: var(--d-mut); border-radius: 999px; padding: 7px 15px 7px 8px; font-family: var(--d-sans); font-size: var(--fs-sm); cursor: pointer; transition: border-color 0.16s, color 0.16s, background 0.16s; }
 .mb-nav-item.on { color: #06100d; background: var(--mb-accent); border-color: var(--mb-accent); }
+.mb-nav-n { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; font: 700 var(--fs-2xs)/1 var(--d-mono); background: rgba(255,255,255,0.1); color: var(--d-faint); }
+.mb-nav-item.on .mb-nav-n { background: rgba(6,16,13,0.32); color: #06100d; }
+.mb-nav-item.done { border-color: color-mix(in srgb, var(--mb-accent) 42%, transparent); color: var(--d-ink); }
+.mb-nav-item.done .mb-nav-n { background: var(--mb-accent); color: #06100d; }
 .mb-stage { min-height: 338px; display: grid; align-items: center; }
 .mb-scene { display: grid; grid-template-columns: minmax(260px, 0.72fr) minmax(360px, 1.28fr); gap: clamp(18px, 4vw, 44px); align-items: center; }
 .mb-stage-copy h2 { font-family: var(--d-display); font-size: clamp(32px, 6vw, 74px); line-height: 0.96; margin: 10px 0 16px; max-width: 8.5ch; font-weight: 600; }
@@ -419,8 +425,14 @@ body:has(.discover) { background: var(--d-bg); }
   font-size: 12px;
 }
 .mb-summary-chips b { color: var(--d-ink); font-weight: 700; }
-.mb-actions { margin-top: 18px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.mb-actions { margin-top: var(--space-5); display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 .mb .btn-run { background: var(--mb-accent); box-shadow: 0 0 34px color-mix(in srgb, var(--mb-accent) 22%, transparent); }
+/* soft funnel: Continue leads on world/signals; discover-now stays present but secondary,
+   then becomes the sole primary on survival (the run button always fires the discovery). */
+.mb-continue { background: var(--mb-accent); color: #06100d; border: none; font-weight: 600; padding: 11px 20px; font-size: var(--fs-sm); box-shadow: 0 0 30px color-mix(in srgb, var(--mb-accent) 24%, transparent); }
+.mb-continue:hover { filter: brightness(1.07); background: var(--mb-accent); }
+.mb-actions:not(.mb-actions-final) .btn-run { background: transparent; color: var(--mb-accent); border: 1px solid color-mix(in srgb, var(--mb-accent) 52%, transparent); box-shadow: none; }
+.mb-actions:not(.mb-actions-final) .btn-run:hover { background: color-mix(in srgb, var(--mb-accent) 12%, transparent); transform: none; }
 @keyframes mb-drift { from { transform: rotate(0deg) scale(1); } to { transform: rotate(360deg) scale(1.02); } }
 @keyframes mb-life {
   from { translate: 0 0; scale: 0.92; opacity: calc(var(--o, 0.42) * 0.72); }
