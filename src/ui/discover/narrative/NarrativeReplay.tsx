@@ -107,7 +107,17 @@ export function NarrativeReplay({ run }: Props) {
     }
   }, { scope, dependencies: [run.run_id] });
 
-  const jumpTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+  const jumpTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+    // move focus to the section heading so keyboard + screen-reader users land where they jumped
+    const heading = el.querySelector<HTMLElement>("h1, h2");
+    if (heading) {
+      heading.setAttribute("tabindex", "-1");
+      heading.focus({ preventScroll: true });
+    }
+  };
 
   const downloadHandoff = () => {
     if (!selected) return;
