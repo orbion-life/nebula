@@ -6,21 +6,17 @@
  * select a candidate, inspect its evidence, compare the generated frontier, then
  * leave with one falsifiable measurement handoff.
  */
-import { Suspense, lazy, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { getStructure, type CandidateDossier, type CandidateRecord, type DiscoveryScore, type RunState, type StructureResponse } from "../../../api/client";
 import { GeneratedBackboneViewer } from "../GeneratedBackboneViewer";
 import { StructureViewer } from "../StructureViewer";
-import { claimLabel, computedSpinParam, dossierBriefHtml, dossierMarkdown, isCandidateSpecific, isSpinDynamics, routeLabel } from "../dossierExport";
-import { Metric } from "./Metric";
-import { AppliedConstraints, ObjectiveSplit } from "./AppliedConstraints";
-import { FieldPrecedent } from "./FieldPrecedent";
-
-// the physics trace is heavy (raw SVG + the versioned RadicalPy artifact); lazy-load it so it
-// only enters the bundle when a completed run actually reaches the compute scene.
-const Traces = lazy(() => import("../Traces").then((m) => ({ default: m.Traces })));
+import { claimLabel, dossierBriefHtml, dossierMarkdown } from "../dossierExport";
+import { ObjectiveSplit } from "./AppliedConstraints";
+import { CandidateDossierPanel } from "./CandidateDossierPanel";
+import { GENERATE_PRECEDENT } from "./FieldPrecedent";
 
 interface Props { run: RunState }
 
@@ -46,12 +42,6 @@ export function NarrativeReplay({ run }: Props) {
   const frontier = (run.frontier_experiments ?? []).find((f) => f.candidate_id === selected?.candidate_id);
   const design = designs[designIndex] ?? designs[0] ?? null;
   const realBackbones = designs.filter((d) => Boolean(d.backbone_pdb)).length;
-  // physics scene: only radical-pair routes carry a spin-dynamics reference; everything else
-  // shows the honest "no candidate-specific quantum chemistry" note (never physics theater).
-  const spinParam = computedSpinParam(dossier);
-  const spinEligible = isSpinDynamics(dossier);
-  const candidateSpecificPhysics = isCandidateSpecific(dossier);
-  const selectedLabel = selected?.uniprot?.primary_accession ?? selected?.title ?? "this protein";
   const uniqueAccessions = new Set(candidates.map((c) => c.uniprot?.primary_accession ?? c.candidate_id)).size;
   const shortlistIds = new Set([...(run.evidence_shortlist ?? []), ...(run.frontier_experiments ?? []).map((f) => f.candidate_id)]);
   const shortlist = candidates
@@ -174,9 +164,8 @@ export function NarrativeReplay({ run }: Props) {
       <nav className="atlas-nav" aria-label="discovery result sections">
         <button onClick={() => jumpTo("atlas-outcome")}>outcome</button>
         <button onClick={() => jumpTo("atlas-nature")}>discover</button>
-        <button onClick={() => jumpTo("atlas-compute")}>physics</button>
+        <button onClick={() => jumpTo("atlas-dossier")}>rationale</button>
         <button onClick={() => jumpTo("atlas-generate")}>generate</button>
-        <button onClick={() => jumpTo("atlas-decision")}>measure</button>
       </nav>
 
       <section className="atlas-scene atlas-hero" id="atlas-outcome">
@@ -186,14 +175,28 @@ export function NarrativeReplay({ run }: Props) {
           <p>{run.objective.sensed_quantity_or_state?.replace(/-/g, " ") ?? "Your sensing objective"}, translated into candidates that exist and structures that could.</p>
           <div className="atlas-paths">
             <button className="atlas-path atlas-path-natural" onClick={() => jumpTo("atlas-nature")}>
-              <span>found in nature</span>
-              <strong>{uniqueAccessions}</strong>
-              <small>public protein{uniqueAccessions === 1 ? "" : "s"} inspected</small>
+              <svg className="atlas-path-glyph" viewBox="0 0 44 44" aria-hidden>
+                <line x1="8" y1="30" x2="22" y2="11" /><line x1="22" y1="11" x2="36" y2="27" /><line x1="22" y1="11" x2="17" y2="35" />
+                <circle cx="8" cy="30" r="2.3" /><circle cx="22" cy="11" r="3" /><circle cx="36" cy="27" r="2.3" /><circle cx="17" cy="35" r="1.9" />
+              </svg>
+              <strong className="atlas-path-count">{uniqueAccessions}</strong>
+              <span className="atlas-path-text">
+                <b>found in nature</b>
+                <small>public protein{uniqueAccessions === 1 ? "" : "s"} inspected</small>
+              </span>
+              <span className="atlas-path-arrow" aria-hidden>→</span>
             </button>
             <button className="atlas-path atlas-path-generated" onClick={() => jumpTo("atlas-generate")}>
-              <span>generated for this mission</span>
-              <strong>{realBackbones || designs.length}</strong>
-              <small>{realBackbones ? "RFdiffusion backbones" : "generation briefs"}</small>
+              <svg className="atlas-path-glyph" viewBox="0 0 44 44" aria-hidden>
+                <ellipse cx="22" cy="22" rx="16" ry="6.5" transform="rotate(32 22 22)" /><ellipse cx="22" cy="22" rx="16" ry="6.5" transform="rotate(-32 22 22)" />
+                <circle cx="22" cy="22" r="3" />
+              </svg>
+              <strong className="atlas-path-count">{realBackbones || designs.length}</strong>
+              <span className="atlas-path-text">
+                <b>generated beyond nature</b>
+                <small>{realBackbones ? "RFdiffusion backbones" : "de novo design briefs"}</small>
+              </span>
+              <span className="atlas-path-arrow" aria-hidden>→</span>
             </button>
           </div>
           <p className="atlas-honesty">Nothing here is a proven sensor. Everything here is a clearer next experiment.</p>
@@ -204,8 +207,9 @@ export function NarrativeReplay({ run }: Props) {
         <div className="atlas-reveal">
           <header className="atlas-section-head">
             <div><span className="atlas-eyebrow">01 · discover</span><h2>What nature already built.</h2></div>
-            <p>Public proteins filtered by mechanism support, measurement fit, and developability context.</p>
+            <p>Public proteins filtered by mechanism support, measurement fit, and developability context. Select one to open its full rationale.</p>
           </header>
+          <ObjectiveSplit run={run} />
           <CandidateConstellation candidates={candidates} scores={scores} selectedId={selected?.candidate_id ?? null} onSelect={setSelectedId} />
           <div className="atlas-inspector">
             <div className="atlas-candidate-list" role="list" aria-label="candidate shortlist">
@@ -230,29 +234,13 @@ export function NarrativeReplay({ run }: Props) {
         </div>
       </section>
 
-      <section className="atlas-scene atlas-compute" id="atlas-compute">
+      <section className="atlas-scene atlas-dossier" id="atlas-dossier">
         <div className="atlas-reveal">
           <header className="atlas-section-head">
-            <div><span className="atlas-eyebrow">02 · physics</span><h2>The spin physics, laid bare.</h2></div>
-            <p>A reference radical-pair spin-dynamics calculation with its counterfactual controls and every assumption it rests on. A synthetic assumption sweep, not a prediction of this protein.</p>
+            <div><span className="atlas-eyebrow">02 · rationale</span><h2>{selected ? `The case for ${selected.uniprot?.primary_accession ?? selected.title.split(" — ")[0]}.` : "The case for the candidate."}</h2></div>
+            <p>Everything specific to this protein in one place: why it ranked, its own physics, the public evidence, the constraints, and the one measurement that could prove it wrong.</p>
           </header>
-          {spinEligible ? (
-            <div className="atlas-compute-body">
-              <Suspense fallback={<div className="atlas-compute-loading" aria-live="polite">composing the spin dynamics trace…</div>}>
-                <Traces spin={spinParam} candidateSpecific={candidateSpecificPhysics} candidateLabel={selectedLabel} />
-              </Suspense>
-              <p className="atlas-compute-foot">
-                {spinParam
-                  ? `${selectedLabel} carries a candidate-specific max Mulliken spin population (isolated neutral-doublet cluster, ${candidateSpecificPhysics ? "structure-extracted" : "generic template"}), shown on its own axis — basis-dependent, HIGH uncertainty, not a probability and not a response prediction.`
-                  : `No candidate-specific spin value was produced for this flavin radical-pair candidate; a generic isoalloxazine template applies. The reference sweep above stands as mechanism context, not a prediction.`}
-              </p>
-            </div>
-          ) : (
-            <div className="atlas-compute-none">
-              <p>No candidate-specific quantum chemistry for this route. {routeLabel(selected?.route_class ?? "")} is a frontier hypothesis; only the flavin radical-pair route computes candidate-specific spin in this build. This candidate is scored on public annotation and measurement value alone.</p>
-            </div>
-          )}
-          <FieldPrecedent />
+          <CandidateDossierPanel candidate={selected} dossier={dossier} score={score} frontier={frontier} run={run} />
         </div>
       </section>
 
@@ -260,7 +248,7 @@ export function NarrativeReplay({ run }: Props) {
         <div className="atlas-reveal">
           <header className="atlas-section-head">
             <div><span className="atlas-eyebrow">03 · generate</span><h2>Then search beyond nature.</h2></div>
-            <p>RFdiffusion proposes new backbone geometry for the same sensing mission. Coordinates are a starting point, not a finished construct.</p>
+            <p>RFdiffusion proposes new backbone geometry for the same sensing mission — each brief targeting a shortlisted protein's cofactor motif. Coordinates are a starting point, not a finished construct.</p>
           </header>
           <div className="atlas-generator">
             <div className="atlas-design-list" role="list" aria-label="generated design directions">
@@ -270,7 +258,7 @@ export function NarrativeReplay({ run }: Props) {
                   <button key={`${item.label}-${index}`} className={`atlas-design ${active ? "on" : ""}`} onClick={() => setDesignIndex(index)} aria-pressed={active}>
                     <span>{String(index + 1).padStart(2, "0")}</span>
                     <strong>{item.label}</strong>
-                    <small>{item.backbone_pdb ? `${item.n_residues ?? "de novo"} residue backbone` : "generation brief"}</small>
+                    <small>{item.invented_from_accession ? `→ ${item.invented_from_accession}` : item.backbone_pdb ? `${item.n_residues ?? "de novo"} residue backbone` : "generation brief"}</small>
                   </button>
                 );
               })}
@@ -279,47 +267,19 @@ export function NarrativeReplay({ run }: Props) {
               <GeneratedBackboneViewer pdb={design?.backbone_pdb ?? null} label={design?.label ?? "generation frontier"} residues={design?.n_residues} />
               <div className="atlas-design-meta">
                 <span>{design?.generator ?? "generation unavailable"}</span>
-                <strong>{design?.invented_for ?? run.objective.sensed_quantity_or_state ?? "the mission"}</strong>
+                <strong>{design?.invented_from_accession ? `targeting ${design.invented_from_accession}` : design?.invented_for ?? run.objective.sensed_quantity_or_state ?? "the mission"}</strong>
+                {design?.motif_note ? <small className="atlas-design-motif">{design.motif_note}</small> : null}
+                {design?.design_rationale ? <p className="atlas-design-rationale">{design.design_rationale}</p> : null}
                 <small>{design?.backbone_pdb ? "Backbone coordinates produced. Sequence design and validation remain downstream." : "The adapter returned a design direction without coordinates in this run."}</small>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className="atlas-scene atlas-decision" id="atlas-decision">
-        <div className="atlas-reveal">
-          <header className="atlas-section-head">
-            <div><span className="atlas-eyebrow">04 · measure</span><h2>Choose what earns bench time.</h2></div>
-            <p>Nebula does not choose a winner by one score. It exposes the trade: support, measurability, developability, and uncertainty.</p>
-          </header>
-          <ObjectiveSplit run={run} />
-          {selected ? (
-            <div className="atlas-decision-grid">
-              <div className="atlas-decision-candidate">
-                <span>measurement priority</span>
-                <h3>{selected.uniprot?.primary_accession ?? selected.title}</h3>
-                <p>{humanRoute(selected.route_class)}</p>
-                <div className="atlas-metrics">
-                  <Metric label="mechanism" value={score?.P_plausibility} />
-                  <Metric label="measurable" value={score?.M_measurability} />
-                  <Metric label="developable" value={score?.D_developability} />
-                  <Metric label="uncertainty" value={score?.U_uncertainty} inverse />
-                </div>
-              </div>
-              <div className="atlas-measurement">
-                <span>decisive next measurement</span>
-                <h3>{frontier?.discriminating_experiment?.what_to_measure ?? "Test the proposed readout against its mechanism-specific controls."}</h3>
-                <dl>
-                  <div><dt>instrument</dt><dd>{(score?.suggested_instrument_id ?? frontier?.discriminating_experiment?.instrument_id ?? run.instrument_id ?? "route-compatible measurement bench").replace(/_/g, " ")}</dd></div>
-                  <div><dt>reject when</dt><dd>{frontier?.falsifier ?? selected.why_it_might_fail?.[0] ?? "the mechanism-specific control is indistinguishable from the candidate"}</dd></div>
-                  <div><dt>claim ceiling</dt><dd>{claimLabel(selected.claim_ceiling)}</dd></div>
-                </dl>
-              </div>
-            </div>
-          ) : <p className="atlas-empty">No candidate passed into measurement planning.</p>}
-          {selected && <AppliedConstraints score={score} dossier={dossier} />}
-          {selected && <EvidenceLedger candidate={selected} dossier={dossier} score={score} />}
+          <aside className="atlas-gen-precedent" aria-label="generation frontier precedent">
+            <span className="atlas-eyebrow">frontier engine · precedent</span>
+            <strong>{GENERATE_PRECEDENT.title}</strong>
+            <p>{GENERATE_PRECEDENT.shows}</p>
+            <a href={`https://doi.org/${GENERATE_PRECEDENT.doi}`} target="_blank" rel="noopener noreferrer">{GENERATE_PRECEDENT.venue} {GENERATE_PRECEDENT.year} · doi:{GENERATE_PRECEDENT.doi}</a>
+          </aside>
         </div>
       </section>
 
@@ -346,51 +306,6 @@ function CandidateCaption({ candidate, dossier, score }: { candidate?: Candidate
       <div><span>physics provenance</span><strong>{candidateSpecific ? "candidate-specific QM" : "route-level evidence"}</strong></div>
       <div><span>current ceiling</span><strong>{claimLabel(dossier?.claim_ceiling ?? candidate.claim_ceiling)}</strong></div>
       <div><span>lane</span><strong>{score?.lane ?? "unassigned"}</strong></div>
-    </div>
-  );
-}
-
-function EvidenceLedger({ candidate, dossier, score }: { candidate?: CandidateRecord; dossier?: CandidateDossier; score?: DiscoveryScore }) {
-  if (!candidate) return null;
-  const citations = dossier?.evidence_citations ?? [];
-  const steps = score?.mechanism_graph?.primitives ?? [];
-  const unresolved = steps.filter((p) => p.knowledge.state !== "known").length;
-  const degradations = candidate.degradations ?? [];
-  return (
-    <div className="atlas-evidence">
-      <div className="ev-col">
-        <span className="ev-head">public evidence · supports mechanism plausibility</span>
-        {citations.length ? (
-          <ul className="ev-cites">
-            {citations.map((c, i) => (
-              <li key={c.doi + i}>
-                <span className="ev-cite-meta">{c.authors.split(",")[0]} et al. {c.year}. {c.title}. <em>{c.venue}</em>.</span>
-                <a className="ev-doi" href={`https://doi.org/${c.doi}`} target="_blank" rel="noopener noreferrer">doi:{c.doi}</a>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="ev-none">No public citation anchors this route in the current build. It stands on scientific rationale, not on literature.</p>
-        )}
-      </div>
-      <div className="ev-col">
-        <span className="ev-head">mechanism steps · {steps.length ? `${unresolved} of ${steps.length} unresolved` : "not composed"}</span>
-        {steps.length > 0 && (
-          <ol className="ev-steps">
-            {steps.map((p, i) => (
-              <li key={i} className={`ev-step ev-${p.knowledge.state}`}><b>{p.knowledge.state}</b><span>{p.detail}</span></li>
-            ))}
-          </ol>
-        )}
-      </div>
-      <div className="ev-col">
-        <span className="ev-head">what we could not resolve</span>
-        {degradations.length ? (
-          <ul className="ev-gaps">{degradations.map((d, i) => <li key={i}>{d}</li>)}</ul>
-        ) : (
-          <p className="ev-none">Retrieval and enrichment completed with no recorded gaps for this candidate.</p>
-        )}
-      </div>
     </div>
   );
 }

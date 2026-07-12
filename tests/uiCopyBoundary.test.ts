@@ -14,6 +14,7 @@ const FILES = [
   "src/ui/discover/DiscoverApp.tsx",
   "src/ui/discover/narrative/NarrativeReplay.tsx",
   "src/ui/discover/narrative/AppliedConstraints.tsx",
+  "src/ui/discover/narrative/CandidateDossierPanel.tsx",
   "src/ui/discover/narrative/Metric.tsx",
   "src/ui/discover/narrative/FieldPrecedent.tsx",
   "src/ui/discover/objective/MissionBench.tsx",
