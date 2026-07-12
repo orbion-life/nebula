@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { exportAffirmativeViolations } from "../src/core/claimFirewall";
-import { dossierMarkdown } from "../src/ui/discover/dossierExport";
+import { dossierBriefHtml, dossierMarkdown } from "../src/ui/discover/dossierExport";
 import type { CandidateDossier, CandidateRecord, RunState } from "../src/api/client";
 
 const candidate = {
@@ -73,6 +73,36 @@ describe("shipped dossier export boundary", () => {
     const hostile = { ...candidate, title: "A validated sensor" } as CandidateRecord;
     const exported = dossierMarkdown(hostile, { ...dossier, candidate: hostile } as CandidateDossier, run);
     expect(exported).not.toContain("validated sensor");
+    expect(exportAffirmativeViolations(exported)).toEqual([]);
+  });
+});
+
+describe("branded PDF brief (dossierBriefHtml)", () => {
+  const html = dossierBriefHtml(candidate, dossier, run, { generatedAt: "2026-07-12" });
+
+  it("is a self-contained branded HTML document with the accession", () => {
+    expect(html.startsWith("<!doctype html>")).toBe(true);
+    expect(html).toContain("Nebula Discovery Brief — Q8LPD9");
+    expect(html).toContain("Cormorant Garamond"); // the brand display serif
+    expect(html).toContain("nebula"); // wordmark
+  });
+
+  it("triggers no affirmative claim-firewall violations and leaks no private path", () => {
+    expect(exportAffirmativeViolations(html)).toEqual([]);
+    expect(html.includes("/Users/")).toBe(false);
+  });
+
+  it("carries the unvalidated boundary and humanizes the claim ceiling", () => {
+    expect(html).toContain("Unvalidated public-protein candidate hypothesis");
+    expect(html).not.toContain("partner_ready_dossier");
+    expect(html).toContain("measurement collaborator handoff");
+  });
+
+  it("escapes and sanitizes hostile public-record text before it reaches the document", () => {
+    const hostile = { ...candidate, title: "<script>alert(1)</script> a validated sensor" } as CandidateRecord;
+    const exported = dossierBriefHtml(hostile, { ...dossier, candidate: hostile } as CandidateDossier, run);
+    expect(exported).not.toContain("<script>alert(1)</script>"); // escaped, not injected
+    expect(exported).not.toContain("validated sensor"); // firewall-rewritten
     expect(exportAffirmativeViolations(exported)).toEqual([]);
   });
 });

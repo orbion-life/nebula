@@ -13,7 +13,7 @@ import { useGSAP } from "@gsap/react";
 import { getStructure, type CandidateDossier, type CandidateRecord, type DiscoveryScore, type RunState, type StructureResponse } from "../../../api/client";
 import { GeneratedBackboneViewer } from "../GeneratedBackboneViewer";
 import { StructureViewer } from "../StructureViewer";
-import { claimLabel, computedSpinParam, dossierMarkdown, isCandidateSpecific, isSpinDynamics, routeLabel } from "../dossierExport";
+import { claimLabel, computedSpinParam, dossierBriefHtml, dossierMarkdown, isCandidateSpecific, isSpinDynamics, routeLabel } from "../dossierExport";
 import { Metric } from "./Metric";
 import { AppliedConstraints, ObjectiveSplit } from "./AppliedConstraints";
 import { FieldPrecedent } from "./FieldPrecedent";
@@ -119,7 +119,8 @@ export function NarrativeReplay({ run }: Props) {
     }
   };
 
-  const downloadHandoff = () => {
+  // Markdown fallback (used only if the print window is blocked or the brief fails to build).
+  const downloadMarkdown = () => {
     if (!selected) return;
     const base = dossierMarkdown(selected, dossier, run);
     const generated = design
@@ -132,6 +133,39 @@ export function NarrativeReplay({ run }: Props) {
     a.download = `nebula-discovery-${selected.uniprot?.primary_accession ?? selected.candidate_id}.md`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // Branded PDF: render the self-contained Nebula Discovery brief into a window and hand it to
+  // the browser's own print → "Save as PDF" (vector-crisp, exact brand fonts, no dependency).
+  const downloadHandoff = () => {
+    if (!selected) return;
+    let html: string;
+    try {
+      html = dossierBriefHtml(selected, dossier, run, {
+        score,
+        frontier,
+        design,
+        generatedAt: new Date().toISOString().slice(0, 10),
+      });
+    } catch {
+      downloadMarkdown();
+      return;
+    }
+    const w = window.open("", "_blank");
+    if (!w) {
+      downloadMarkdown(); // popup blocked → deliver the Markdown brief instead
+      return;
+    }
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    w.onafterprint = () => { try { w.close(); } catch { /* already closed */ } };
+    window.setTimeout(() => {
+      try {
+        const ready = w.document.fonts?.ready ?? Promise.resolve();
+        ready.then(() => { w.focus(); w.print(); }, () => { w.focus(); w.print(); });
+      } catch { /* window closed by the user */ }
+    }, 500);
   };
 
   return (
