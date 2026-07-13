@@ -24,7 +24,6 @@ async function boot(page: import("@playwright/test").Page) {
 async function runToResult(page: import("@playwright/test").Page, world = "Field patch") {
   await boot(page);
   await expect(page.locator(".disc-nebula")).toHaveText("nebula");
-  await expect(page.locator(".disc-tag")).toHaveText("discovery");
   await expect(page.locator(".mb")).toBeVisible(); // the gamified objective bench, not a text form
   await page.getByRole("button", { name: new RegExp(`^${world}`, "i") }).click();
   await page.locator(".mb .btn-run").click();

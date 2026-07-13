@@ -873,6 +873,30 @@ body:has(.discover) { background: var(--d-bg); }
 .dossier-rp-vals dd { margin: 0; color: var(--d-ink); font-size: var(--fs-xs); font-weight: 600; }
 .dossier-rp-vals dd small { display: block; color: var(--d-faint); font-weight: 400; font-size: var(--fs-2xs); margin-top: 2px; }
 .dossier-rp-note { color: var(--d-faint); font-size: var(--fs-2xs); line-height: 1.5; margin: 0; }
+
+/* Rationale constellation: the graphic navigator that replaces the text-walls. The candidate is the
+   central star; each facet is a clickable satellite; only the active facet's detail shows below. */
+.dossier-cluetip { color: var(--d-mut); font-size: var(--fs-sm); text-align: center; margin: 0; }
+.dossier-cluetip strong { color: var(--d-ink); font-weight: 650; }
+.rc { display: block; width: 100%; max-width: 680px; margin: 0 auto; height: auto; overflow: visible; }
+.rc-core-acc { fill: var(--d-ink); font: 700 19px/1 var(--d-sans); letter-spacing: -0.01em; }
+.rc-core-lane { fill: var(--d-faint); font: 500 10px/1 var(--d-sans); letter-spacing: 0.14em; text-transform: uppercase; }
+.rc-sat { cursor: pointer; }
+.rc-sat:focus { outline: none; }
+.rc-sat:focus-visible .rc-node { stroke-width: 2.6; }
+.rc-node { transition: fill 0.18s, stroke-width 0.18s; }
+.rc-sat:hover .rc-node { fill: #10203a; }
+.rc-sat.on .rc-node { fill: #12233d; }
+.rc-metric { font: 700 15px/1 var(--d-sans); }
+.rc-label { fill: var(--d-ink); font: 600 12px/1 var(--d-sans); }
+.rc-sat.on .rc-label { fill: #fff; }
+.rc-take { fill: var(--d-faint); font: 400 10.5px/1 var(--d-sans); }
+.dossier-detail { min-height: 220px; }
+.dossier-facet { animation: dossier-facet-in 0.4s ease both; }
+/* inside the single-facet detail panel, the first block sits at the top, so drop the section rules */
+.dossier-facet.dossier-physics, .dossier-facet.dossier-measure { border-top: 0; padding-top: 0; }
+@keyframes dossier-facet-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .dossier-facet { animation: none; } }
 .dossier-reference { border: 1px solid var(--d-line); border-radius: 12px; background: rgba(4,9,15,0.4); overflow: hidden; margin-bottom: var(--space-5); }
 .dossier-reference > summary { cursor: pointer; padding: var(--space-3) var(--space-4); color: var(--d-faint); font: 600 var(--fs-2xs)/1.3 var(--d-mono); letter-spacing: 0.08em; text-transform: uppercase; list-style: none; }
 .dossier-reference > summary::-webkit-details-marker { display: none; }

@@ -7,11 +7,12 @@
  * Everything is specific to this search; the reference model and route precedent are visibly separated
  * from any claim about this protein.
  */
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useState } from "react";
 import type { CandidateDossier, CandidateRecord, DiscoveryScore, RunState } from "../../../api/client";
 import { claimLabel, computedSpinParam, isCandidateSpecific, isSpinDynamics, routeLabel } from "../dossierExport";
 import { AppliedConstraints } from "./AppliedConstraints";
 import { FieldPrecedent } from "./FieldPrecedent";
+import { RationaleConstellation, type Facet, type FacetId } from "./RationaleConstellation";
 
 const Traces = lazy(() => import("../Traces").then((m) => ({ default: m.Traces })));
 
@@ -24,6 +25,7 @@ export function CandidateDossierPanel({ candidate, dossier, score, frontier, run
   frontier?: Frontier;
   run: RunState;
 }) {
+  const [activeId, setActiveId] = useState<FacetId>("decisive");
   if (!candidate) return <p className="atlas-empty">No candidate passed into measurement planning.</p>;
   const accession = candidate.uniprot?.primary_accession ?? candidate.title;
   const spinParam = computedSpinParam(dossier);
@@ -32,11 +34,26 @@ export function CandidateDossierPanel({ candidate, dossier, score, frontier, run
   const geometry = dossier?.physics_eligibility?.qm_cluster_plan?.geometry_source;
   const rp = dossier?.physics_eligibility?.radical_pair;
   const cofactors = candidate.cofactors?.map((c) => c.name).filter(Boolean).join(" + ") || "no annotated cofactor";
+  const lane = score?.lane === "evidence" ? "evidence" : "frontier";
+  const citations = dossier?.evidence_citations ?? [];
+  const mfe = rp?.magnetic_field_effect_percent;
+  const physicsMetric = mfe != null ? `~${mfe}%` : spinParam ? spinParam.value.toFixed(2) : undefined;
+  const facets: Facet[] = [
+    { id: "why", label: "Rationale", takeaway: "why it ranked", tone: lane === "evidence" ? "evidence" : "frontier" },
+    { id: "evidence", label: "Evidence", takeaway: citations.length ? "public support" : "rationale only", metric: String(citations.length), tone: "evidence" },
+    { id: "physics", label: "Physics", takeaway: spinEligible ? (mfe != null ? "field effect" : "spin computed") : "route only", metric: physicsMetric, tone: "physics" },
+    { id: "fit", label: "Fit", takeaway: "constraints", tone: "fit" },
+    { id: "decisive", label: "Decisive test", takeaway: "run this", tone: "decisive" },
+  ];
 
   return (
-    <div className="dossier">
-      {/* 1. why this candidate (the real per-protein rationale, surfaced) */}
-      <div className="dossier-why">
+    <div className="dossier dossier-constellation">
+      <p className="dossier-cluetip">The case for <strong>{accession}</strong>. Tap a star to open its detail.</p>
+      <RationaleConstellation accession={accession} lane={lane} facets={facets} activeId={activeId} onSelect={setActiveId} />
+      <div className="dossier-detail">
+
+      {/* RATIONALE facet */}
+      <div className="dossier-facet dossier-why" hidden={activeId !== "why"}>
         <span className="dossier-k">why {accession} earned a place</span>
         <p className="dossier-rationale">
           {`A ${routeLabel(candidate.route_class)} candidate carrying ${cofactors}, ranked ${score?.lane === "evidence" ? "onto the evidence lane" : "into the frontier"} for its mechanism support and measurement value against your objective.`}
@@ -52,8 +69,8 @@ export function CandidateDossierPanel({ candidate, dossier, score, frontier, run
         </div>
       </div>
 
-      {/* 2. candidate-led physics: THIS protein's own number first; the generic MARY is a labelled reference */}
-      <div className="dossier-physics">
+      {/* PHYSICS facet: THIS protein's own number first; the generic MARY is a labelled reference */}
+      <div className="dossier-facet dossier-physics" hidden={activeId !== "physics"}>
         <h3 tabIndex={-1}>{spinEligible ? `The spin physics behind ${accession}` : `What we can (and cannot) compute for ${accession}`}</h3>
         {spinEligible ? (
           <>
@@ -96,14 +113,18 @@ export function CandidateDossierPanel({ candidate, dossier, score, frontier, run
         <FieldPrecedent route={candidate.route_class} />
       </div>
 
-      {/* 3. the public evidence + mechanism ladder + what we could not resolve */}
-      <EvidenceLedger candidate={candidate} dossier={dossier} score={score} />
+      {/* EVIDENCE facet: public evidence + mechanism ladder + what we could not resolve */}
+      <div className="dossier-facet" hidden={activeId !== "evidence"}>
+        <EvidenceLedger candidate={candidate} dossier={dossier} score={score} />
+      </div>
 
-      {/* 4. the uncalibrated triage axes + satisfied/remaining constraints */}
-      <AppliedConstraints score={score} dossier={dossier} />
+      {/* FIT facet: the uncalibrated triage axes + satisfied/remaining constraints */}
+      <div className="dossier-facet" hidden={activeId !== "fit"}>
+        <AppliedConstraints score={score} dossier={dossier} />
+      </div>
 
-      {/* 5. the one falsifiable measurement that earns bench time */}
-      <div className="dossier-measure">
+      {/* DECISIVE facet: the one falsifiable measurement that earns bench time (default open) */}
+      <div className="dossier-facet dossier-measure" hidden={activeId !== "decisive"}>
         <span className="dossier-k dossier-k-teal">decisive next measurement</span>
         <h3 className="dossier-measure-what">{frontier?.discriminating_experiment?.what_to_measure ?? "Test the proposed readout against its mechanism-specific controls."}</h3>
         <dl>
@@ -112,6 +133,8 @@ export function CandidateDossierPanel({ candidate, dossier, score, frontier, run
           <div><dt>claim ceiling</dt><dd>{claimLabel(dossier?.claim_ceiling ?? candidate.claim_ceiling)}</dd></div>
         </dl>
       </div>
+
+      </div>{/* dossier-detail */}
     </div>
   );
 }
