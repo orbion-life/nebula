@@ -52,3 +52,8 @@ playwright-report/
 # Internal hackathon-submission docs — kept local, not published in the public repo
 DEMO_SCRIPT.md
 SUBMISSION.md
+
+# Other-tool AI config kept local (this is a Built with Claude repo; not for the public tree)
+.codex/
+.agents/
+AGENTS.md

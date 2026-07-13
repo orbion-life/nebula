@@ -79,7 +79,7 @@ test("the RFdiffusion generation lane is an honest preview", async ({ page }) =>
   await runToResult(page);
   const generation = page.locator(".atlas-generate");
   await generation.scrollIntoViewIfNeeded();
-  await expect(generation).toContainText(/RFdiffusion proposes new backbone geometry/i);
+  await expect(generation).toContainText(/unconditional RFdiffusion backbone proposals/i);
   await expect(generation.locator(".atlas-design")).toHaveCount(3);
   await expect(generation).toContainText(/Backbone not generated in this run/i);
   await expect(generation).toContainText(/without coordinates/i);

@@ -1,145 +1,173 @@
 # Nebula
 
-**Discover biology's quantum sensing frontier.**
+**The next quantum sensing mechanism may already be encoded in biology.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-informational.svg)](./LICENSE)
 [![Built with Claude: Life Sciences](https://img.shields.io/badge/Built%20with-Claude%3A%20Life%20Sciences-6b5bd6.svg)](./CLAUDE_USE.md)
 [![Live app](https://img.shields.io/badge/Live-app-3fb950.svg)](https://nebula-discover.greenforest-ed82ac43.westeurope.azurecontainerapps.io)
 
-Nebula is an open tool from [Orbion](https://www.orbion.life) that turns a biosensing objective into a measurement ready protein hypothesis. It searches public protein knowledge (UniProt, InterPro, RCSB, AlphaFold), keeps only candidates whose family, cofactor, and structural evidence support a real sensing mechanism, and returns the single most decision relevant next experiment: a specific protein, the instrument to use, the controls to run, and the result that would rule it out. It helps you decide what to measure. It never claims a protein is a working sensor.
+**Nebula is an open discovery physics engine built by Aniruddh Goteti.** Give it a supported biosensing objective and it maps that objective to implemented mechanism routes, retrieves a bounded set of route-compatible public protein records, applies bounded diagnostics where the evidence permits, and returns a falsifiable discovery dossier.
 
-**Try it now, no install:** https://nebula-discover.greenforest-ed82ac43.westeurope.azurecontainerapps.io
+Nebula does **not** measure proteins, predict a working sensor, or turn simulation into evidence. It makes the frontier searchable and the next experimental question inspectable.
 
-![Nebula objective screen](docs/screenshots/objective.png)
+**[Launch Nebula — no install](https://nebula-discover.greenforest-ed82ac43.westeurope.azurecontainerapps.io)**
 
-> The objective builder. You describe the sensing world, the signal, and the practical constraints; Nebula turns that into a public protein search and a falsifiable measurement brief.
+![Nebula opening world](docs/screenshots/objective.png)
 
-## Contents
+> Nebula opens with the frontier and states the boundary before an objective is entered: evidence and unknowns, never a working-sensor prediction.
 
-- [Why this matters](#why-this-matters)
-- [Who it is for](#who-it-is-for)
-- [What Nebula does not claim](#what-nebula-does-not-claim)
-- [Quickstart](#quickstart)
-- [How it works](#how-it-works)
-- [Bring your own GPU](#bring-your-own-gpu)
-- [Host it yourself](#host-it-yourself)
-- [Built with Claude](#built-with-claude)
-- [Scientific boundary](#scientific-boundary)
-- [Project status](#project-status)
-- [Contributing](#contributing)
-- [License and contact](#license-and-contact)
+## Why Nebula now
 
-## Why this matters
+Protein quantum sensing is no longer only a speculative idea. Recent primary research has established several specific experimental systems:
 
-Predicting a protein's shape is now cheap. The AlphaFold database holds [over 200 million predicted structures](https://alphafold.ebi.ac.uk/about), while the Protein Data Bank holds about [256,000 experimentally determined ones](https://www.rcsb.org/), roughly one in a thousand. The slow and expensive step is no longer structure. It is measuring what a protein actually does.
-
-That gap is widest for **quantum biosensors**: proteins whose spin chemistry responds to a magnetic field, a redox change, or light. The promise is a genetically encoded, label free way to read the chemistry of living tissue, sensing weak fields, free radicals, and redox states at the molecular scale. Nature may already do this. The radical pair mechanism in cryptochrome is the [leading hypothesis for avian magnetoreception](https://www.nature.com/articles/s41467-024-55124-x), and quantum sensing of free radicals has been [demonstrated inside living human cells](https://pmc.ncbi.nlm.nih.gov/articles/PMC8880378/). If the field delivers, it gives biomedicine a new instrument for early disease signals, oxidative stress, and how a drug acts, read in real time.
-
-Getting there means testing candidate proteins one at a time on scarce instruments such as EPR and ODMR, where a single slot can be booked months out and most candidates fail their controls. Choosing the wrong protein to measure is a large, quiet cost. Studies estimate that [about 28 billion US dollars a year](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.1002165) of United States preclinical research does not reproduce.
-
-Nebula is the decision layer for that choice. It does not build the sensor and it does not run the experiment. It tells you, with the evidence laid out, which protein is worth the next measurement and how to design that measurement so the result is trustworthy either way.
-
-## Who it is for
-
-Nebula is built for teams that own candidate triage under a scarce measurement budget.
-
-| Who | The job to be done | Why Nebula |
+| Experimental precedent | What was shown | Boundary that still matters |
 | --- | --- | --- |
-| **Genetically encoded spin and magneto sensor engineers** | Pick a starting scaffold before burning slow, costly design build test learn cycles across thousands of candidates, most of which show no usable spin resonance. | Pre filters public databases to cofactor bearing families with a plausible radical pair route and returns a specific accession, next measurement, and controls. |
-| **Quantum biology, spin chemistry, and magnetoreception labs** | Candidate identity is the field's live dispute; justifying the next protein to study is contested and effortful. | Evidence gated candidate lists plus a bounded per protein spin diagnostic and an explicit stop rule give a defensible, reviewable next measurement spec. An expert idea generator, not an oracle. |
-| **EPR, ODMR, and in cell ESR core facilities** | Pulse EPR and ODMR slots are scarce, expensive, and setup heavy; a no signal construct wastes an irreplaceable slot. | Screens candidates before allocation and outputs the instrument class, required controls, and a stop rule, so scarce instrument time goes to samples likely to give signal. |
-| **NV diamond and optical magnetometry teams** | Exquisite sensors, but little fluency in protein databases; the reverse problem of which biological target to measure. | Translates a biosensing objective into a concrete protein and measurement plan, bridging the physics to protein gap. |
-| **Redox and photochemical biosensor engineers** | Candidate selection is the acknowledged screening bottleneck in the design build test learn loop. | For redox, ROS, and light responsive scaffolds, the cofactor and mechanism gate helps choose which scaffold to build first. |
+| [EYFP spin qubit · Nature 2025](https://www.nature.com/articles/s41586-025-09417-w) | Optical spin readout and coherent microwave control at cryogenic temperature; room-temperature ODMR in *E. coli* | A triplet spin-1 route, not a general rule for finding useful proteins |
+| [Engineered MagLOV · Nature 2026](https://www.nature.com/articles/s41586-025-09971-3) | Magnetic-field effects and room-temperature ODMR in living bacterial cells, including single-cell measurements | Evidence for the measured engineered variants, not flavoproteins in general |
+| [CraCry and iLOV · Nature Biotechnology 2026](https://www.nature.com/articles/s41587-026-03158-5) | Ambient optically detected and radio-wave-controlled spin chemistry in selected flavoproteins | Mechanism and photochemical outcome remain protein- and condition-specific |
 
-## What Nebula does not claim
+Together, these papers establish a frontier—not a universal recipe that turns a sequence or structure into predicted sensing performance. Nebula addresses the narrower decision this leaves: which public mechanism hypothesis is grounded enough to justify a falsifiable measurement next.
 
-Nebula is a triage and idea tool, not an oracle. It is deliberate about its limits.
+Different proteins can expose a similar optical readout through different physics. EYFP's readout comes from a metastable triplet. The flavoprotein studies investigate spin-correlated radical-pair explanations whose certainty and photochemistry remain system- and condition-specific. Those routes require different cofactors, evidence gates, model assumptions, controls, and falsifiers. Nebula starts with the mechanism before it starts ranking proteins.
 
-- It does not claim any protein is a validated or working sensor.
-- It does not predict performance, sensitivity, or a probability of success. Its ranking axes are uncalibrated triage heuristics.
-- The per protein spin number is a coarse, basis dependent estimate under stated assumptions, not a response prediction.
-- It does not run wet lab experiments or generate experimental evidence.
-- Radical pair magnetoreception is a leading hypothesis, not settled science. Nebula surfaces the evidence and the unknowns; it does not resolve the debate.
+## What the engine does
 
-Every result carries its assumptions on screen, and a built in claim firewall keeps unvalidated results from being written up as validated ones.
+```text
+sensing objective
+  → structured constraints
+  → eligible mechanism routes
+  → public protein retrieval and evidence gates
+  → structure-conditioned physics where eligible
+  → synthetic assumption sweeps
+  → evidence and frontier discovery lanes
+  → falsification dossier and collaborator handoff
+```
+
+| Stage | What Nebula actually does | What it refuses to infer |
+| --- | --- | --- |
+| **Compile** | Turns the sensing quantity, readouts, environment, and practical constraints into a typed objective | Free-form intent is not treated as evidence |
+| **Route** | Selects mechanism families before retrieval | ODMR or fluorescence alone does not identify a mechanism |
+| **Search** | Runs bounded, route-specific UniProt query plans, then enriches records through InterPro, RCSB, and AlphaFold | A database hit is not a sensing result |
+| **Gate** | Requires route-compatible family and cofactor support; structure evidence controls deeper physics eligibility | A convenient seed is never relabelled to fit another route |
+| **Compute** | For at most one eligible flavin candidate per run—the best-resolution cofactor-bound experimental structure—attempts a fixed-geometry UHF cluster diagnostic and derives structure-associated radical-pair geometry when coordinates are available | The outputs are not sensitivity, detectability, confidence, or predicted response |
+| **Sweep** | Displays a versioned model-flavin RadicalPy artifact with counterfactual controls; where candidate geometry is available, computes or replays named D/J and kinetic-sensitivity scenarios | Neither result is a candidate-response prediction or statistical interval |
+| **Rank** | Separates evidence-backed and frontier hypotheses with explicit, uncalibrated triage axes | A rank is not probability of success |
+| **Falsify** | Exports the observable, controls, null, repeat plan, rejection rule, missing information, and claim ceiling | The handoff is not a completed assay or a measurement |
+
+This is a pipeline workflow, not a model wrapper. Retrieval cannot silently become validation; physics cannot silently become performance; ranking cannot silently become probability.
+
+### Implemented objective routes
+
+| Sensed quantity | Retrieval routes in the current backend |
+| --- | --- |
+| Magnetic or radio-frequency field | Cryptochrome–FAD and LOV–FMN radical-pair routes |
+| Redox potential | Redox/electrochemical flavoprotein route |
+| Light history | LOV–FMN photochemical route |
+| Optical spin contrast | Triplet fluorescent-protein proxy route |
+
+An unsupported or ambiguous sensing target can stop explicitly. Expert family and cofactor constraints may narrow an eligible route; they cannot replace the sensing target or force an unsupported protein through another mechanism.
+
+## See one discovery run
+
+### 1. Search public protein space by mechanism
+
+![Mechanism-aware candidate universe](docs/screenshots/candidate-map.png)
+
+The constellation uses declared, uncalibrated heuristics: mechanism support on the horizontal axis and information gain on the vertical axis. Lane colour keeps evidence-backed and frontier hypotheses separate.
+
+### 2. Compute only inside the evidence boundary
+
+![Candidate physics dossier](docs/screenshots/dossier.png)
+
+For Q8LPD9, the fixture-backed run exposes candidate-associated radical-pair geometry and a bounded structure-extracted cluster diagnostic. The visible label keeps the boundary explicit: **reference radical-pair model, a synthetic assumption sweep, not Q8LPD9**. The calculation remains an isolated-cluster diagnostic, not whole-protein spin physics.
+
+### 3. End with a way to be wrong
+
+![Falsification handoff](docs/screenshots/handoff.png)
+
+The screen marks the handoff boundary. Downloading the brief carries the selected accession, public evidence, model assumptions, controls, null expectation, rejection rule, missing information, and claim ceiling into a print-ready collaborator document. Nebula stops before measurement.
+
+## Claim boundary
+
+Nebula is deliberately strict about the difference between discovery and proof.
+
+- It does not claim that a returned protein is a validated or working sensor.
+- It does not predict performance, sensitivity, detectability, or probability of success.
+- Its ranking axes are uncalibrated triage heuristics.
+- Its candidate-specific calculation is an isolated neutral-doublet isoalloxazine cluster: truncated, fixed-geometry, basis-dependent, and missing the radical partner, protonation alternatives, protein environment, and dynamics.
+- Its RadicalPy trace is a versioned mechanism-class scenario sweep, not a candidate response prediction.
+- It does not run wet-lab measurements or generate experimental evidence.
+- A route-compatible instrument class is a measurement scenario, not an equipment recommendation or proof that a signal will be detectable.
+
+See [IP_BOUNDARY.md](./IP_BOUNDARY.md) and [docs/DATA_CONTRACTS.md](./docs/DATA_CONTRACTS.md).
 
 ## Quickstart
 
 ### One command with Docker
 
-The whole application, the React interface plus the FastAPI service and the physics, runs from a single container.
-
 ```bash
 docker compose up --build
-# then open http://localhost:8000
+# open http://localhost:8000
 ```
 
-For a deterministic, no network run served from committed public fixtures (seed 1337, ideal for reproducible demos or CI):
+For a deterministic run from committed public fixtures—seed 1337, no public-API traffic:
 
 ```bash
 NEBULA_OFFLINE=1 docker compose up --build
 ```
 
-### Developer mode with hot reload
+### Developer mode
 
 ```bash
 npm ci
 python3 -m pip install -e './backend[dev,physics]'
 
-# terminal 1: API and live public database retrieval
+# terminal 1
 cd backend && python3 -m uvicorn app.api.main:app --host 127.0.0.1 --port 8000
 
-# terminal 2: Vite dev server
+# terminal 2, from the repository root
 npm run dev
 ```
 
-Open http://127.0.0.1:5173. The `physics` extra pulls PySCF and RadicalPy, which need a C toolchain. Both are optional and degrade gracefully, and the offline path does not require them. Drop `,physics` to skip.
+Open <http://127.0.0.1:5173>. The base backend includes RadicalPy. The `physics` extra adds PySCF for uncached UHF attempts; omit `,physics` for the lighter cache-only QM path. Native scientific dependencies may require a build toolchain, and unavailable calculations remain explicitly labelled as non-computed.
 
-## How it works
-
-You give Nebula an objective. It returns one decision.
+## Runtime architecture
 
 ```text
-sensing objective  (a signal to sense, plus practical constraints)
-  -> mechanism specific search across UniProt, InterPro, RCSB, AlphaFold
-  -> keep a protein only when family, cofactor, and structure support the route
-  -> a bounded per protein spin diagnostic where the evidence allows
-  -> evidence and exploration kept in separate lanes
-  -> one decisive measurement: protein, instrument class, controls, uncertainty, stop rule
+React + TypeScript interface
+        ↓ /api
+FastAPI objective compiler and run state machine
+        ↓
+public providers → evidence assembly → physics eligibility
+        ↓
+candidate-specific diagnostics + mechanism-class sweeps
+        ↓
+two-lane ranking → dossier → downloadable brief
 ```
 
-![A ranked candidate and its case](docs/screenshots/candidate-map.png)
+The browser application calls the FastAPI path under [`backend/app`](./backend/app). The deterministic TypeScript core under [`src/core`](./src/core) is a reference implementation used by its own test suite; the two paths are kept explicit rather than presented as one runtime.
 
-> Candidates are placed by real triage axes, mechanism support against measurement value, and colored by lane. Selecting one opens its full, per protein case.
+## Optional design frontier
 
-![The decisive measurement](docs/screenshots/dossier.png)
-
-> The output is not a long list. It is the single best supported next experiment, with its controls, its unknowns, its coarse per protein physics, and the result that would prove it wrong.
-
-## Bring your own GPU
-
-Out of the box, the generative lane produces deterministic, clearly labelled design briefs with no GPU and no credentials. To generate real de novo RFdiffusion backbones, plug in **your own** Modal GPU. Nebula never holds your credentials and never runs it for you.
+Every completed run includes a separate, clearly labelled no-coordinate design-brief lane. Real RFdiffusion backbone generation is optional and on-demand through the deployer's endpoint. Neither affects public-candidate ranking or yields a validated construct.
 
 ```bash
 pip install modal
-modal token new                                                   # sign in to YOUR Modal account
-modal secret create nebula-rfdiffusion RFDIFFUSION_TOKEN=$(openssl rand -hex 24)
-modal deploy infra/modal/rfdiffusion_modal.py                     # prints your endpoint URL
-```
+modal token new
+export RFDIFFUSION_TOKEN="$(openssl rand -hex 24)"
+modal secret create nebula-rfdiffusion RFDIFFUSION_TOKEN="$RFDIFFUSION_TOKEN"
+modal deploy infra/modal/rfdiffusion_modal.py
 
-Then point Nebula at your endpoint (keep these in an untracked `.env`, never commit them):
-
-```bash
 export NEBULA_DESIGN_ADAPTER=modal
 export NEBULA_MODAL_RFDIFFUSION_URL="https://<you>--nebula-rfdiffusion-generate.modal.run"
-export NEBULA_MODAL_RFDIFFUSION_TOKEN="<the RFDIFFUSION_TOKEN from above>"
+export NEBULA_MODAL_RFDIFFUSION_TOKEN="$RFDIFFUSION_TOKEN"
 ```
 
-Your compute stays yours. Nothing is baked into the image, your endpoint is token gated, and any error degrades safely back to the deterministic preview. Full details, including per protein motif conditioning, are in [docs/DESIGN_ADAPTERS.md](./docs/DESIGN_ADAPTERS.md).
+Those exports configure developer mode. `docker-compose.yml` does not forward the adapter variables by default; pass them explicitly when deploying or running the container. Credentials stay in your environment, and errors degrade to the deterministic no-coordinate preview. See [docs/DESIGN_ADAPTERS.md](./docs/DESIGN_ADAPTERS.md).
 
 ## Host it yourself
 
-Nebula is a single container. FastAPI serves both the built React interface (same origin, no CORS) and the API. Deploy that image anywhere containers run.
+FastAPI serves the built React application and API from one container.
 
 ```bash
 docker build -t nebula .
@@ -148,49 +176,49 @@ docker run -p 8000:8000 nebula
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `NEBULA_OFFLINE` | `0` | `0` uses live public APIs, `1` uses deterministic committed fixtures |
-| `NEBULA_CORS_ORIGINS` | `""` | comma separated allowed origins (same origin needs none) |
-| `NEBULA_STATIC_DIR` | `/app/dist` | where the built interface is served from |
-| `NEBULA_DESIGN_ADAPTER` and Modal vars | unset | opt in real RFdiffusion, see above |
+| `NEBULA_OFFLINE` | `0` | `0` uses public APIs; `1` uses deterministic committed fixtures |
+| `NEBULA_CORS_ORIGINS` | `""` | Comma-separated allowed origins; same-origin deployment needs none |
+| `NEBULA_STATIC_DIR` | `/app/dist` | Built interface served by FastAPI |
+| `NEBULA_DESIGN_ADAPTER` and Modal variables | unset | Opt-in RFdiffusion adapter |
 
-The reference deployment runs on Azure Container Apps via [.github/workflows/deploy.yml](./.github/workflows/deploy.yml) using OIDC, with no long lived secrets in the repository. The same image runs on Cloud Run, Fly.io, Render, a VM, or a laptop. For live quantum chemistry on arbitrary proteins, build [Dockerfile.physics](./Dockerfile.physics) instead of the default cache only image.
+The default image excludes PySCF. It replays committed, content-addressed UHF cache entries for the demo candidate; uncached candidates remain uncomputed. Build [Dockerfile.physics](./Dockerfile.physics) to enable bounded live UHF attempts for eligible flavin candidates. The live app runs on Azure Container Apps and is deployed manually: build the single container image and roll a new revision with the Azure CLI.
 
-## Built with Claude
+## AI-assisted development
 
-Nebula was built with Claude Code as a visible, auditable panel: 13 repository visible agents, 27 skills, and nine commands, all under [.claude/](./.claude), with dated decision records under `artifacts/claude/`. See [CLAUDE_USE.md](./CLAUDE_USE.md) and [CLAUDE_TRANSPARENCY.md](./CLAUDE_TRANSPARENCY.md).
+Nebula was built by Aniruddh Goteti with repository-visible assistance from Claude Code: 13 agents, 27 skills, and 9 commands under [.claude/](./.claude), plus dated decision records under `artifacts/claude/`. The contracts, claim boundaries, interface, and tests retain that provenance. See [CLAUDE_USE.md](./CLAUDE_USE.md) and [CLAUDE_TRANSPARENCY.md](./CLAUDE_TRANSPARENCY.md).
 
-The signature pattern is **adversarial swarms**. Independent Claude agents red teamed each other's findings and verified them against the code before a change landed, so nothing was accepted on one agent's word. That pattern is also built into the product: every Nebula result passes a mandatory ten lens review swarm, four fast sentry gates plus six deep domain critics (reproducibility, claim and IP, protein engineer, judge, quantum physicist, protein design, biomaterials, controls, evidence, and interface). The lenses map their findings into a severity weighted consensus, where a single blocker fails the result, so nothing ships unaudited. This in product swarm is deterministic and seed stable; Claude itself never runs inside the shipped app. The design is documented in [docs/SWARM_ARCHITECTURE.md](./docs/SWARM_ARCHITECTURE.md).
-
-## Scientific boundary
-
-- Retrieved proteins and annotations are public evidence, not validation.
-- A protein is assigned to a mechanism route only when its public family and cofactor annotations support that route.
-- The RadicalPy reference curve is a versioned model flavin assumption sweep for a mechanism class, not a candidate response prediction.
-- The candidate specific spin diagnostic is an isolated cluster calculation. Its values are basis dependent and omit the protein environment, the radical partner, protonation alternatives, and dynamics.
-- The final instrument is a route compatible measurement scenario, not an equipment recommendation or a proof of detectability.
-
-See [IP_BOUNDARY.md](./IP_BOUNDARY.md) and [docs/DATA_CONTRACTS.md](./docs/DATA_CONTRACTS.md).
+The repository also contains a deterministic ten-lens review-swarm reference under [`src/core/swarm`](./src/core/swarm). It is not invoked by the current FastAPI-connected browser path; Nebula does not claim that every browser run passed it. Claude itself does not run inside the shipped application, and AI output is never treated as experimental evidence.
 
 ## Project status
 
-Nebula is an early, working research tool. The table separates what runs today from what is planned, so the vision is clear without overclaiming.
+Nebula is an early, working research tool.
 
 | Capability | Status |
 | --- | --- |
-| Objective compiler, mechanism specific public search, evidence gating | Implemented |
-| Bounded per protein spin and radical pair diagnostic on real structures | Implemented, coarse and clearly bounded |
-| Mandatory in product review swarm, claim firewall, measurement brief export | Implemented |
-| De novo backbone briefs, and real RFdiffusion on your own Modal GPU | Implemented (briefs by default, real backbones opt in) |
-| Broader sensing mechanisms and calibrated, learned ranking | Planned |
-| Structure derived motif conditioning for generated backbones | Planned |
-| A named external user study with a consenting lab | Planned |
+| Objective compiler, mechanism routing, public retrieval, and evidence gates | Implemented |
+| Structure-associated radical-pair geometry and at most one bounded candidate-specific UHF cluster attempt per run | Implemented; requires an eligible cofactor-bound experimental structure |
+| Versioned RadicalPy reference artifact plus optional candidate D/J and kinetic scenarios | Implemented; assumption envelopes, not predicted response |
+| Evidence/frontier ranking and downloadable falsification handoff | Implemented |
+| Deterministic offline fixture path with seed 1337 | Implemented |
+| Optional RFdiffusion briefs and user-owned Modal adapter | Implemented; separate from discovery ranking |
+| TypeScript post-pipeline review swarm | Reference implementation; not on current browser runtime path |
+| Broader mechanisms, calibrated ranking, and a named external user study | Planned |
 
 ## Contributing
 
-Issues and pull requests are welcome. If you work in one of the areas above and want to try Nebula on a real objective, or you find a case where the evidence gating is wrong, please open an issue. Run `npm test`, `npm run build`, `python3 -m pytest -q` in `backend`, and `npm run e2e` before a pull request.
+Issues and pull requests are welcome—especially route-gating counterexamples, incorrect evidence relations, missing controls, and objectives that expose an unsafe inference.
+
+Before a pull request, run:
+
+```bash
+npm test
+npm run build
+cd backend && python3 -m pytest -q
+cd .. && npm run e2e
+```
 
 ## License and contact
 
 [MIT](./LICENSE). Free to use, fork, and build on.
 
-Questions or collaboration: Aniruddh Goteti, [aniruddh.goteti@orbion.life](mailto:aniruddh.goteti@orbion.life), [www.orbion.life](https://www.orbion.life).
+Built and maintained by Aniruddh Goteti. Questions or collaboration: [aniruddh.goteti@orbion.life](mailto:aniruddh.goteti@orbion.life).

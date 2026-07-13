@@ -9,8 +9,8 @@ export function ActObjective({ onRun, offline }: { onRun: (spec: ObjectiveSpec) 
   return (
     <section className="act act-objective">
       <div className="act-inner">
-        <h1 className="act-h">Discover biology&rsquo;s quantum sensing frontier.</h1>
-        <p className="act-lede">Explore nature&rsquo;s proteins, create new construct hypotheses, and define the decisive experiment that moves each possibility forward. Nebula shows the evidence and the unknowns; it does not predict a working sensor.</p>
+        <h1 className="act-h">Search biology&rsquo;s quantum sensing frontier.</h1>
+        <p className="act-lede">Nebula is a discovery physics engine: map a sensing objective to public protein hypotheses, compute only inside the evidence boundary, and export a falsifiable next experiment. It does not measure proteins or predict a working sensor.</p>
         <MissionBench onRun={onRun} offline={offline} />
       </div>
     </section>

@@ -34,7 +34,6 @@ export function CandidateDossierPanel({ candidate, dossier, score, frontier, mea
   const spinParam = computedSpinParam(dossier);
   const spinEligible = isSpinDynamics(dossier);
   const candidateSpecific = isCandidateSpecific(dossier);
-  const geometry = dossier?.physics_eligibility?.qm_cluster_plan?.geometry_source;
   const rp = dossier?.physics_eligibility?.radical_pair;
   const cofactors = candidate.cofactors?.map((c) => c.name).filter(Boolean).join(" + ") || "no annotated cofactor";
   const lane = score?.lane === "evidence" ? "evidence" : "frontier";
@@ -78,14 +77,14 @@ export function CandidateDossierPanel({ candidate, dossier, score, frontier, mea
 
       {/* PHYSICS facet: THIS protein's own number first; the generic MARY is a labelled reference */}
       <div className="dossier-facet dossier-physics" id="dossier-panel-physics" role="tabpanel" aria-labelledby="dossier-tab-physics" hidden={activeId !== "physics"}>
-        <h3 tabIndex={-1}>{spinEligible ? `The spin physics behind ${accession}` : `What we can (and cannot) compute for ${accession}`}</h3>
+        <h3 tabIndex={-1}>{spinEligible ? `Bounded physics diagnostics for ${accession}` : `What we can (and cannot) compute for ${accession}`}</h3>
         {mfeSensitivity ? (
           <div className="dossier-mfe">
             <div className="dossier-mfe-range">
               <span>{mfeSensitivity.lower_percent}</span><i>to</i><span>{mfeSensitivity.upper_percent}%</span>
             </div>
             <div className="dossier-mfe-cap">
-              <strong>kinetic-sensitivity envelope</strong>
+              <strong>assumption envelope</strong>
               <span>Modeled singlet-yield response across {mfeSensitivity.scenarios?.length ?? 0} named exchange-coupling and kinetic scenarios over 0–{mfeSensitivity.field_range_mT} mT. This structure supplies a D estimate and the starting J estimate; hyperfine, kinetics, environment, and optical transduction are not candidate-specific.</span>
               <small>reference scenario: {mfeSensitivity.baseline_percent}% · prioritization aid, not predicted performance</small>
             </div>
@@ -97,7 +96,9 @@ export function CandidateDossierPanel({ candidate, dossier, score, frontier, mea
           <>
             <p className="dossier-lead">
               {spinParam
-                ? `${accession}'s own max Mulliken spin population is ${spinParam.value.toFixed(3)}, ${candidateSpecific ? "computed on structure-extracted coordinates" : `a ${geometry ?? "route-level isoalloxazine template, not yet extracted from this protein's structure"}`}. Basis-dependent, HIGH uncertainty; not a probability and not a response prediction.`
+                ? candidateSpecific
+                  ? `For an isolated neutral-doublet isoalloxazine cluster extracted from ${accession}'s cofactor-associated structure, the maximum Mulliken spin population is ${spinParam.value.toFixed(3)}. Basis-dependent, HIGH uncertainty; not a probability and not a response prediction.`
+                  : `The route-level isoalloxazine template has a maximum Mulliken spin population of ${spinParam.value.toFixed(3)}; it has not been extracted from ${accession}'s structure. Basis-dependent, HIGH uncertainty; not a probability and not a response prediction.`
                 : `No candidate-specific spin value was produced for ${accession}; a generic isoalloxazine template applies to its flavin radical-pair route. Its physics stands on the route reference, not on this protein's own coordinates.`}
             </p>
             {rp ? (
@@ -193,7 +194,7 @@ function MfeSensitivityChart({ model }: { model: MfeSensitivity }) {
   const rateRange = rateValues.length ? `${Math.min(...rateValues).toExponential(1)}–${Math.max(...rateValues).toExponential(1)} s⁻¹` : "not available";
   return (
     <figure className="mfe-chart">
-      <figcaption><strong>Modeled singlet-yield response versus field</strong><span>band: J + rate sensitivity · line: geometry-J baseline rates</span></figcaption>
+      <figcaption><strong>Modeled singlet-yield assumption sweep versus field</strong><span>band: J + rate sensitivity · line: geometry-J baseline rates</span></figcaption>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Modeled singlet-yield magnetic-field-effect sensitivity from ${model.lower_percent} to ${model.upper_percent} percent over zero to ${model.field_range_mT} millitesla`}>
         <line className="mfe-axis" x1={L} y1={y(0)} x2={W - R} y2={y(0)} />
         <line className="mfe-axis" x1={L} y1={T} x2={L} y2={H - B} />
