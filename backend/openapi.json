@@ -1844,6 +1844,15 @@
             "type": "object",
             "title": "Providers"
           },
+          "design_adapter": {
+            "type": "string",
+            "enum": [
+              "modal",
+              "preview"
+            ],
+            "title": "Design Adapter",
+            "default": "preview"
+          },
           "version": {
             "type": "string",
             "title": "Version"

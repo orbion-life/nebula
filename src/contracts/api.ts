@@ -687,6 +687,12 @@ export interface components {
             providers: {
                 [key: string]: boolean;
             };
+            /**
+             * Design Adapter
+             * @default preview
+             * @enum {string}
+             */
+            design_adapter: "modal" | "preview";
             /** Version */
             version: string;
         };

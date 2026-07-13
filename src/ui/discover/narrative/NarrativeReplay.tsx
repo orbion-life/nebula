@@ -10,7 +10,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { generateDesigns, getRun, getStructure, type CandidateDossier, type CandidateRecord, type DiscoveryScore, type RunState, type StructureResponse } from "../../../api/client";
+import { generateDesigns, getHealth, getRun, getStructure, type CandidateDossier, type CandidateRecord, type DiscoveryScore, type RunState, type StructureResponse } from "../../../api/client";
 import { GeneratedBackboneViewer } from "../GeneratedBackboneViewer";
 import { StructureViewer } from "../StructureViewer";
 import { UniverseHero } from "../universe/UniverseHero";
@@ -40,6 +40,14 @@ export function NarrativeReplay({ run }: Props) {
   // DEMAND (the button below), so this is local state we upgrade in place when they finish.
   const [designs, setDesigns] = useState(run.generative_frontier ?? []);
   const [genState, setGenState] = useState<"idle" | "generating" | "error">("idle");
+  // Is a real RFdiffusion adapter wired? Only then do we offer the "generate backbone" action; when it
+  // is not connected the honest "connect the adapter" brief stands (matches what the deploy shows).
+  const [adapterConnected, setAdapterConnected] = useState(false);
+  useEffect(() => {
+    let live = true;
+    getHealth().then((h) => { if (live) setAdapterConnected(h.design_adapter === "modal"); }).catch(() => {});
+    return () => { live = false; };
+  }, []);
   const selected = useMemo(() => candidates.find((c) => c.candidate_id === selectedId) ?? candidates[0], [candidates, selectedId]);
   const dossier = useMemo(() => (run.dossiers ?? []).find((d) => d.candidate.candidate_id === selected?.candidate_id), [run.dossiers, selected]);
   const score = scores.find((s) => s.candidate_id === selected?.candidate_id);
@@ -288,10 +296,10 @@ export function NarrativeReplay({ run }: Props) {
             <div><span className="atlas-eyebrow">03 · generate</span><h2>Then search beyond nature.</h2></div>
             <p>RFdiffusion proposes new backbone geometry for the same sensing mission, each linked to a shortlisted protein's cofactor motif. Coordinates are a starting point, not a finished construct.</p>
           </header>
-          {realBackbones === 0 && (
+          {adapterConnected && realBackbones === 0 && (
             <div className={`atlas-gen-cta ${genState}`}>
               <button className="atlas-gen-run" onClick={runGeneration} disabled={genState === "generating"} aria-busy={genState === "generating"}>
-                {genState === "generating" ? "Generating de novo backbones on GPU…" : "Generate de novo backbones"}
+                {genState === "generating" ? "Generating backbone on GPU…" : "Generate backbone"}
               </button>
               <p className="atlas-gen-hint">
                 {genState === "generating"
@@ -316,7 +324,7 @@ export function NarrativeReplay({ run }: Props) {
               })}
             </div>
             <div className="atlas-design-stage">
-              <GeneratedBackboneViewer pdb={design?.backbone_pdb ?? null} label={design?.label ?? "generation frontier"} residues={design?.n_residues} />
+              <GeneratedBackboneViewer pdb={design?.backbone_pdb ?? null} label={design?.label ?? "generation frontier"} residues={design?.n_residues} connected={adapterConnected} />
               <div className="atlas-design-meta">
                 <span>{design?.generator ?? "generation unavailable"}</span>
                 <strong>{design?.invented_from_accession ? `targeting ${design.invented_from_accession}` : design?.invented_for ?? run.objective.sensed_quantity_or_state ?? "the mission"}</strong>

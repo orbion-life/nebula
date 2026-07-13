@@ -6,9 +6,10 @@ interface Props {
   pdb: string | null;
   label: string;
   residues?: number | null;
+  connected?: boolean;  // is a real RFdiffusion adapter wired? drives the null-state call to action
 }
 
-export function GeneratedBackboneViewer({ pdb, label, residues }: Props) {
+export function GeneratedBackboneViewer({ pdb, label, residues, connected }: Props) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<{ clear: () => void; render: () => void; stopAnimate?: () => void } | null>(null);
   const [ready, setReady] = useState(false);
@@ -80,7 +81,7 @@ export function GeneratedBackboneViewer({ pdb, label, residues }: Props) {
         <div className="gen-seed-copy">
           <span>generation brief</span>
           <strong>Backbone not generated in this run.</strong>
-          <small>Connect the RFdiffusion adapter to turn this brief into coordinates.</small>
+          <small>{connected ? "Press Generate backbone above to run RFdiffusion on this candidate." : "Connect the RFdiffusion adapter to turn this brief into coordinates."}</small>
         </div>
       </div>
     );

@@ -23,7 +23,7 @@ from ..contracts.candidate import CandidateDossier, CandidateRecord
 from ..contracts.enums import TERMINAL_STATUSES, ProviderId, RunStatus
 from ..contracts.objective import ObjectiveSpec, RawObjective
 from ..contracts.run import RunCreated, RunEvent, RunState
-from ..design import generate_previews
+from ..design import _select_adapter, generate_previews
 from ..jobs.fingerprint import input_fingerprint, run_id_for
 from ..jobs.orchestrator import orchestrate
 from ..jobs.store import RunStore
@@ -128,6 +128,7 @@ class Health(BaseModel):
     status: str
     offline: bool
     providers: dict[str, bool]
+    design_adapter: Literal["modal", "preview"] = "preview"  # "modal" = real RFdiffusion is wired
     version: str
 
 
@@ -176,7 +177,8 @@ async def health() -> Health:
         status = "degraded"
     else:
         status = "unavailable"
-    result = Health(status=status, offline=OFFLINE, providers=providers, version=app.version)
+    adapter = "modal" if _select_adapter().name != "deterministic-preview" else "preview"
+    result = Health(status=status, offline=OFFLINE, providers=providers, design_adapter=adapter, version=app.version)
     _HEALTH_CACHE = (now, OFFLINE, result)
     return result
 
