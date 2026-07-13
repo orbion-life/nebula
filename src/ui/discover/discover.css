@@ -108,6 +108,19 @@ body:has(.discover) { margin: 0; background: var(--d-bg); }
 .audio-eq rect { fill: currentColor; opacity: 0.8; transform-origin: center; }
 .audio-toggle.on { color: var(--d-amber); border-color: color-mix(in srgb, var(--d-amber) 46%, transparent); background: color-mix(in srgb, var(--d-amber) 10%, transparent); }
 .audio-toggle.on .audio-eq rect { opacity: 1; animation: disc-eq 1.15s ease-in-out infinite; }
+
+/* GitHub link — Nebula brand green (matches the header pills + the wordmark #bdf38a).
+   Scoped under .disc-top so it beats the global `.discover a` link color. */
+.disc-top .disc-github {
+  display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 13px;
+  border-radius: 999px; border: 1px solid color-mix(in srgb, #bdf38a 42%, transparent);
+  background: color-mix(in srgb, #bdf38a 12%, transparent); color: #bdf38a;
+  font: 600 12px/1 var(--d-sans); letter-spacing: 0.01em; text-decoration: none;
+  transition: color 0.16s, border-color 0.16s, background 0.16s;
+}
+.disc-top .disc-github:hover { color: #d4ffab; border-color: color-mix(in srgb, #bdf38a 68%, transparent); background: color-mix(in srgb, #bdf38a 20%, transparent); }
+.disc-top .disc-github:focus-visible { outline: 2px solid var(--d-gold-bright); outline-offset: 2px; }
+.disc-top .disc-github svg { display: block; }
 .audio-toggle.on .audio-eq rect:nth-child(2) { animation-delay: 0.16s; }
 .audio-toggle.on .audio-eq rect:nth-child(3) { animation-delay: 0.32s; }
 .audio-toggle.on .audio-eq rect:nth-child(4) { animation-delay: 0.48s; }
