@@ -526,7 +526,7 @@ export interface MeasurementPlan {
  * derived from the simulation evidence and the instrument, not a heuristic.
  */
 export interface DiscoverResult {
-  product: "Nebula Discover";
+  product: "Nebula";
   status: "diagnostic_only_not_validated";
   objective: ObjectiveInput;
   /** Instrument whose limits gate observability and shape the ranking. */

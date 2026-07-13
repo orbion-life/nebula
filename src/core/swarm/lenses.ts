@@ -167,10 +167,10 @@ export const SWARM_LENSES: SwarmLensDefinition[] = [
     themes: ["claim-boundary", "product-identity"],
     run: ({ result }) => {
       const findings: SwarmFinding[] = [];
-      if (result.product !== "Nebula Discover") {
+      if (result.product !== "Nebula") {
         findings.push({
           severity: "blocker",
-          message: "Product identity is not Nebula Discover.",
+          message: "Product identity is not Nebula.",
           theme: "product-identity",
         });
       }

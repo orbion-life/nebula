@@ -171,7 +171,7 @@ export function dossierBriefHtml(candidate: CandidateRecord, dossier: CandidateD
 
   const body = `<!doctype html><html lang="en"><head><meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Nebula Discovery Brief, ${esc(acc)}</title>
+<title>Nebula Brief, ${esc(acc)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Hanken+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <style>
@@ -230,7 +230,7 @@ li{color:var(--mut);font-size:12.5px;line-height:1.55;margin-bottom:5px;}
 @media print{.nb-page{min-height:auto;}a{color:inherit;}}
 </style></head>
 <body><div class="nb-page">
-  <header class="nb-top"><span class="nb-star"></span><span class="nb-word">nebula</span><span class="nb-tag">discovery</span><span class="nb-doclabel">discovery brief</span></header>
+  <header class="nb-top"><span class="nb-star"></span><span class="nb-word">nebula</span><span class="nb-doclabel">candidate brief</span></header>
   <div class="nb-hero">
     <span class="nb-eyebrow">selected public candidate</span>
     <div class="nb-acc">${esc(acc)}</div>
@@ -262,7 +262,7 @@ li{color:var(--mut);font-size:12.5px;line-height:1.55;margin-bottom:5px;}
   ${designBlock}
   ${discBlock}
 
-  <footer class="nb-foot"><span>A candidate is a discovery to prove at the bench, not a proven sensor.</span><span><b>nebula</b> discovery${generatedAt ? ` · ${generatedAt}` : ""}</span></footer>
+  <footer class="nb-foot"><span>A candidate is a discovery to prove at the bench, not a proven sensor.</span><span><b>nebula</b>${generatedAt ? ` · ${generatedAt}` : ""}</span></footer>
 </div></body></html>`;
 
   if (exportAffirmativeViolations(body).length > 0) {

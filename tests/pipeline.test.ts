@@ -34,7 +34,7 @@ describe("end-to-end pipeline", () => {
   });
 
   it("runs the full transformation and selects a top hypothesis", () => {
-    expect(result.product).toBe("Nebula Discover");
+    expect(result.product).toBe("Nebula");
     expect(result.hypotheses.length).toBeGreaterThanOrEqual(3);
     expect(result.ranking[0].rank).toBe(1);
     expect(result.selectedHypothesisId).toBe(result.ranking[0].hypothesisId);

@@ -137,7 +137,7 @@ export function runDiscoverCore(
     "This public construct hypothesis has a plausible, source-backed mechanism route and is measurement-worthy under transparent synthetic assumptions; it requires experimental validation.";
 
   return {
-    product: "Nebula Discover",
+    product: "Nebula",
     status: "diagnostic_only_not_validated",
     objective,
     instrument,

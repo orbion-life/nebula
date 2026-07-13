@@ -14,7 +14,7 @@ import { runDiscover, DEMO_OBJECTIVE } from "../src/core/pipeline";
 describe("core independence", () => {
   it("core pipeline runs with no research adapter configured", () => {
     const result = runDiscover(DEMO_OBJECTIVE, 1337);
-    expect(result.product).toBe("Nebula Discover");
+    expect(result.product).toBe("Nebula");
     expect(result.hypotheses.length).toBeGreaterThanOrEqual(3);
   });
 });

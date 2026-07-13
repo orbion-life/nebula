@@ -72,7 +72,7 @@ test("one result view: no workspace toggle, inline handoff download", async ({ p
   await runToResult(page);
   await expect(page.locator(".view-toggle")).toHaveCount(0);
   await expect(page.locator(".narr-skip")).toHaveCount(0);
-  await expect(page.locator(".atlas-download")).toContainText(/download discovery brief/i);
+  await expect(page.locator(".atlas-download")).toContainText(/download brief/i);
 });
 
 test("the RFdiffusion generation lane is an honest preview", async ({ page }) => {

@@ -152,7 +152,7 @@ export function NarrativeReplay({ run }: Props) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `nebula-discovery-${selected.uniprot?.primary_accession ?? selected.candidate_id}.md`;
+    a.download = `nebula-${selected.uniprot?.primary_accession ?? selected.candidate_id}.md`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -340,7 +340,7 @@ export function NarrativeReplay({ run }: Props) {
           <span className="atlas-eyebrow">handoff</span>
           <h2>Take the next experiment with you.</h2>
           <p>One selected public candidate, one generated design direction, the assumptions, and the experiment that can prove the idea wrong.</p>
-          <button className="atlas-download" onClick={downloadHandoff} disabled={!selected}>download discovery brief <span>↓</span></button>
+          <button className="atlas-download" onClick={downloadHandoff} disabled={!selected}>download brief <span>↓</span></button>
           <small>Evidence is public. Generated coordinates, when present, are unvalidated RFdiffusion output with no sequence.</small>
         </div>
       </section>
