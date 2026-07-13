@@ -106,6 +106,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/runs/{run_id}/designs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate Designs
+         * @description Trigger real de novo backbone generation ON DEMAND for a completed run's candidates. Returns
+         *     202 immediately; the GPU job runs in the background and its result appears in the run's
+         *     generative_frontier (poll GET /api/runs/{id}). Decoupled from the search so candidates return fast
+         *     and a GPU is spent only when the user presses generate.
+         */
+        post: operations["generate_designs_api_runs__run_id__designs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/runs/{run_id}/events": {
         parameters: {
             query?: never;
@@ -1013,6 +1036,7 @@ export interface components {
             cofactor_id?: string | null;
             spin_dynamics_plan?: components["schemas"]["SpinDynamicsPlan"] | null;
             qm_cluster_plan?: components["schemas"]["QmClusterPlan"] | null;
+            radical_pair?: components["schemas"]["RadicalPairModel"] | null;
             /**
              * Offline Budget Seconds
              * @default 0
@@ -1159,6 +1183,39 @@ export interface components {
              * @default ribityl/phosphate tail truncated to an N10-methyl cap; dangling bonds H-capped (standard QM-cluster truncation). Assumption-derived; not a whole-protein claim.
              */
             truncation_note: string;
+        };
+        /**
+         * RadicalPairModel
+         * @description Per-protein radical-pair geometry + geometry-derived couplings (Tier 0).
+         *
+         *     The electron-transfer partner (terminal Trp/Tyr) and inter-radical separation are read from THIS
+         *     protein's real structure; the exchange (J) and dipolar (D) couplings are the standard closed forms
+         *     of that separation. So the radical-pair model is per-protein in four inputs the generic template
+         *     fixed: partner identity, separation, J and D. Two honest limits stay explicit: the hyperfine
+         *     couplings are still class-level (not computed on this geometry) and NO spin-dynamics yield or
+         *     magnetic response is predicted. Parameter derivation only, assumption-derived, never a sensor claim.
+         */
+        RadicalPairModel: {
+            /** Partner Residue */
+            partner_residue: string;
+            /**
+             * Partner Kind
+             * @enum {string}
+             */
+            partner_kind: "tryptophan" | "tyrosine";
+            /** Chain Residues */
+            chain_residues?: string[];
+            /** Separation Angstrom */
+            separation_angstrom: number;
+            /** Exchange J Mt */
+            exchange_j_mT: number;
+            /** Dipolar D Mt */
+            dipolar_d_mT: number;
+            /**
+             * Method Note
+             * @default electron-transfer partner from this protein's aromatic hopping chain (light Beratan-Onuchic heuristic; eMap/pyemap is the fuller tool). D from the point dipole is well constrained by the separation; J from the Moser et al. 1992 tunnelling decay is order-of-magnitude only (the real exchange is poorly constrained and usually taken small). Geometry-derived and assumption-derived; hyperfine is still class-level and no spin-dynamics yield is predicted.
+             */
+            method_note: string;
         };
         /**
          * ReadoutMode
@@ -1561,6 +1618,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RunState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_designs_api_runs__run_id__designs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Validation Error */

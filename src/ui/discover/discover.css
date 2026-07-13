@@ -854,6 +854,17 @@ body:has(.discover) { background: var(--d-bg); }
 .dossier-physics > h3 { font-family: var(--d-display); font-size: var(--fs-h3); font-weight: 500; margin: 0 0 var(--space-4); color: var(--d-ink); line-height: 1.02; }
 .dossier-physics > h3:focus { outline: none; }
 .dossier-lead { color: var(--d-mut); font-size: var(--fs-sm); line-height: 1.6; max-width: 72ch; margin: 0 0 var(--space-5); }
+
+/* Tier 0 per-protein radical pair (evidence teal: read from this protein's structure) */
+.dossier-rp { margin: 0 0 var(--space-5); padding: var(--space-4) var(--space-5); border: 1px solid rgba(94,234,212,0.22); border-left: 2px solid var(--d-evi); border-radius: 12px; background: rgba(94,234,212,0.05); max-width: 72ch; }
+.dossier-rp-lead { color: var(--d-ink); font-size: var(--fs-sm); line-height: 1.55; margin: var(--space-2) 0 var(--space-3); }
+.dossier-rp-lead strong { color: var(--d-evi); font-weight: 650; }
+.dossier-rp-vals { margin: 0 0 var(--space-3); display: grid; gap: 1px; background: var(--d-line); border: 1px solid var(--d-line); border-radius: 8px; overflow: hidden; }
+.dossier-rp-vals > div { display: grid; grid-template-columns: 110px 1fr; gap: var(--space-3); padding: var(--space-2) var(--space-4); background: rgba(4,9,15,0.5); align-items: baseline; }
+.dossier-rp-vals dt { color: var(--d-faint); font: 600 var(--fs-2xs)/1.3 var(--d-mono); text-transform: uppercase; margin: 0; }
+.dossier-rp-vals dd { margin: 0; color: var(--d-ink); font-size: var(--fs-xs); font-weight: 600; }
+.dossier-rp-vals dd small { display: block; color: var(--d-faint); font-weight: 400; font-size: var(--fs-2xs); margin-top: 2px; }
+.dossier-rp-note { color: var(--d-faint); font-size: var(--fs-2xs); line-height: 1.5; margin: 0; }
 .dossier-reference { border: 1px solid var(--d-line); border-radius: 12px; background: rgba(4,9,15,0.4); overflow: hidden; margin-bottom: var(--space-5); }
 .dossier-reference > summary { cursor: pointer; padding: var(--space-3) var(--space-4); color: var(--d-faint); font: 600 var(--fs-2xs)/1.3 var(--d-mono); letter-spacing: 0.08em; text-transform: uppercase; list-style: none; }
 .dossier-reference > summary::-webkit-details-marker { display: none; }

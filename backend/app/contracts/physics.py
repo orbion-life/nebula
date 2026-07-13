@@ -52,6 +52,32 @@ class SpinDynamicsPlan(BaseModel):
     note: str = "spin dynamics of a model flavin-based radical pair; a calibration reference, not a candidate-specific prediction"
 
 
+class RadicalPairModel(BaseModel):
+    """Per-protein radical-pair geometry + geometry-derived couplings (Tier 0).
+
+    The electron-transfer partner (terminal Trp/Tyr) and inter-radical separation are read from THIS
+    protein's real structure; the exchange (J) and dipolar (D) couplings are the standard closed forms
+    of that separation. So the radical-pair model is per-protein in four inputs the generic template
+    fixed: partner identity, separation, J and D. Two honest limits stay explicit: the hyperfine
+    couplings are still class-level (not computed on this geometry) and NO spin-dynamics yield or
+    magnetic response is predicted. Parameter derivation only, assumption-derived, never a sensor claim.
+    """
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    partner_residue: str
+    partner_kind: Literal["tryptophan", "tyrosine"]
+    chain_residues: list[str] = Field(default_factory=list)
+    separation_angstrom: float
+    exchange_j_mT: float
+    dipolar_d_mT: float
+    method_note: str = (
+        "electron-transfer partner from this protein's aromatic hopping chain (light Beratan-Onuchic "
+        "heuristic; eMap/pyemap is the fuller tool). D from the point dipole is well constrained by the "
+        "separation; J from the Moser et al. 1992 tunnelling decay is order-of-magnitude only (the real "
+        "exchange is poorly constrained and usually taken small). Geometry-derived and assumption-derived; "
+        "hyperfine is still class-level and no spin-dynamics yield is predicted."
+    )
+
+
 class PhysicsEligibility(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     candidate_id: str
@@ -61,6 +87,7 @@ class PhysicsEligibility(BaseModel):
     cofactor_id: str | None = None
     spin_dynamics_plan: SpinDynamicsPlan | None = None
     qm_cluster_plan: QmClusterPlan | None = None
+    radical_pair: RadicalPairModel | None = None
     offline_budget_seconds: int = 0
     reason: str
     label: Literal["assumption_derived_not_whole_protein_spin_response"] = (

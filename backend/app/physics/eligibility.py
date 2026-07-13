@@ -13,7 +13,7 @@ from pathlib import Path
 
 from ..contracts.candidate import CandidateRecord
 from ..contracts.enums import PhysicsEligibilityKind, RouteClass
-from ..contracts.physics import PhysicsEligibility, QmClusterPlan, SpinDynamicsPlan
+from ..contracts.physics import PhysicsEligibility, QmClusterPlan, RadicalPairModel, SpinDynamicsPlan
 
 _ARTIFACT = Path(__file__).resolve().parents[3] / "src" / "data" / "generated" / "radical_pair_mary.v1.json"
 
@@ -66,6 +66,28 @@ def upgrade_with_candidate_qm(elig: PhysicsEligibility, qm) -> PhysicsEligibilit
         "reason": elig.reason
         + f" | CANDIDATE-SPECIFIC: UHF/{qm.basis} on this protein's {qm.ligand} isoalloxazine from {qm.pdb_id} "
         + f"(converged={qm.converged}, max Mulliken spin {qm.max_abs_spin} over {qm.n_spin_sites} sites, {qm.wall_seconds}s).",
+    })
+
+
+def upgrade_with_radical_pair(elig: PhysicsEligibility, rp) -> PhysicsEligibility:
+    """Attach the per-protein radical-pair model (partner + geometry-derived J, D) computed from THIS
+    protein's structure. rp is a RadicalPair dataclass from physics.radical_pair; partner identity,
+    separation, J and D become per-protein, while the hyperfine stays class-level (Tier 1 territory)."""
+    model = RadicalPairModel(
+        partner_residue=rp.partner_residue,
+        partner_kind=rp.partner_kind,
+        chain_residues=list(rp.chain_residues),
+        separation_angstrom=rp.separation_angstrom,
+        exchange_j_mT=rp.exchange_j_mT,
+        dipolar_d_mT=rp.dipolar_d_mT,
+    )
+    return elig.model_copy(update={
+        "radical_pair": model,
+        "reason": elig.reason
+        + f" | RADICAL PAIR: electron-transfer partner {rp.partner_residue} at {rp.separation_angstrom} A; "
+        + f"D={rp.dipolar_d_mT:.3f} mT (point dipole, well constrained by the separation), J~{rp.exchange_j_mT:.1e} mT "
+        + "(tunnelling estimate, order-of-magnitude only, usually taken small). Partner, separation and D are "
+        + "per-protein; hyperfine still class-level and no spin-dynamics yield is predicted.",
     })
 
 

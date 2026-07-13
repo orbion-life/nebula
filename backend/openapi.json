@@ -181,6 +181,48 @@
         }
       }
     },
+    "/api/runs/{run_id}/designs": {
+      "post": {
+        "summary": "Generate Designs",
+        "description": "Trigger real de novo backbone generation ON DEMAND for a completed run's candidates. Returns\n202 immediately; the GPU job runs in the background and its result appears in the run's\ngenerative_frontier (poll GET /api/runs/{id}). Decoupled from the search so candidates return fast\nand a GPU is spent only when the user presses generate.",
+        "operationId": "generate_designs_api_runs__run_id__designs_post",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Generate Designs Api Runs  Run Id  Designs Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/runs/{run_id}/events": {
       "get": {
         "summary": "Stream Events",
@@ -2895,6 +2937,16 @@
               }
             ]
           },
+          "radical_pair": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RadicalPairModel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "offline_budget_seconds": {
             "type": "integer",
             "title": "Offline Budget Seconds",
@@ -3195,6 +3247,57 @@
         ],
         "title": "QmClusterPlan",
         "description": "A PySCF open-shell single-point plan on a truncated public cofactor cluster.\n\nBudget envelope is MEASURED, not guessed (recon): ~14 heavy atoms = 30 s at\n6-31G*, 8 s at 6-31G, 1.6 s at sto-3g. Full flavin is intractable \u2192 truncate."
+      },
+      "RadicalPairModel": {
+        "properties": {
+          "partner_residue": {
+            "type": "string",
+            "title": "Partner Residue"
+          },
+          "partner_kind": {
+            "type": "string",
+            "enum": [
+              "tryptophan",
+              "tyrosine"
+            ],
+            "title": "Partner Kind"
+          },
+          "chain_residues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Chain Residues"
+          },
+          "separation_angstrom": {
+            "type": "number",
+            "title": "Separation Angstrom"
+          },
+          "exchange_j_mT": {
+            "type": "number",
+            "title": "Exchange J Mt"
+          },
+          "dipolar_d_mT": {
+            "type": "number",
+            "title": "Dipolar D Mt"
+          },
+          "method_note": {
+            "type": "string",
+            "title": "Method Note",
+            "default": "electron-transfer partner from this protein's aromatic hopping chain (light Beratan-Onuchic heuristic; eMap/pyemap is the fuller tool). D from the point dipole is well constrained by the separation; J from the Moser et al. 1992 tunnelling decay is order-of-magnitude only (the real exchange is poorly constrained and usually taken small). Geometry-derived and assumption-derived; hyperfine is still class-level and no spin-dynamics yield is predicted."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "partner_residue",
+          "partner_kind",
+          "separation_angstrom",
+          "exchange_j_mT",
+          "dipolar_d_mT"
+        ],
+        "title": "RadicalPairModel",
+        "description": "Per-protein radical-pair geometry + geometry-derived couplings (Tier 0).\n\nThe electron-transfer partner (terminal Trp/Tyr) and inter-radical separation are read from THIS\nprotein's real structure; the exchange (J) and dipolar (D) couplings are the standard closed forms\nof that separation. So the radical-pair model is per-protein in four inputs the generic template\nfixed: partner identity, separation, J and D. Two honest limits stay explicit: the hyperfine\ncouplings are still class-level (not computed on this geometry) and NO spin-dynamics yield or\nmagnetic response is predicted. Parameter derivation only, assumption-derived, never a sensor claim."
       },
       "ReadoutMode": {
         "type": "string",

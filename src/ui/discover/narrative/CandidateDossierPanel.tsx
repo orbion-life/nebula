@@ -30,6 +30,7 @@ export function CandidateDossierPanel({ candidate, dossier, score, frontier, run
   const spinEligible = isSpinDynamics(dossier);
   const candidateSpecific = isCandidateSpecific(dossier);
   const geometry = dossier?.physics_eligibility?.qm_cluster_plan?.geometry_source;
+  const rp = dossier?.physics_eligibility?.radical_pair;
   const cofactors = candidate.cofactors?.map((c) => c.name).filter(Boolean).join(" + ") || "no annotated cofactor";
 
   return (
@@ -61,6 +62,20 @@ export function CandidateDossierPanel({ candidate, dossier, score, frontier, run
                 ? `${accession}'s own max Mulliken spin population is ${spinParam.value.toFixed(3)}, ${candidateSpecific ? "computed on structure-extracted coordinates" : `a ${geometry ?? "route-level isoalloxazine template, not yet extracted from this protein's structure"}`}. Basis-dependent, HIGH uncertainty; not a probability and not a response prediction.`
                 : `No candidate-specific spin value was produced for ${accession}; a generic isoalloxazine template applies to its flavin radical-pair route. Its physics stands on the route reference, not on this protein's own coordinates.`}
             </p>
+            {rp ? (
+              <div className="dossier-rp">
+                <span className="dossier-k dossier-k-teal">radical pair, read from {accession}'s structure</span>
+                <p className="dossier-rp-lead">
+                  Electron-transfer partner <strong>{rp.partner_residue}</strong> ({rp.partner_kind}), {rp.separation_angstrom} Å from the flavin along its aromatic hopping chain.
+                </p>
+                <dl className="dossier-rp-vals">
+                  <div><dt>separation</dt><dd>{rp.separation_angstrom} Å</dd></div>
+                  <div><dt>dipolar D</dt><dd>{rp.dipolar_d_mT.toFixed(3)} mT <small>point dipole, well constrained</small></dd></div>
+                  <div><dt>exchange J</dt><dd>~{rp.exchange_j_mT.toExponential(1)} mT <small>tunnelling estimate, order of magnitude only</small></dd></div>
+                </dl>
+                <p className="dossier-rp-note">Partner, separation and D are per-protein, read from this structure. The hyperfine couplings are still class-level and no magnetic response is predicted.</p>
+              </div>
+            ) : null}
             <details className="dossier-reference" open>
               <summary>reference radical-pair model, a synthetic assumption sweep, not {accession}</summary>
               <Suspense fallback={<div className="atlas-compute-loading" aria-live="polite">composing the spin dynamics trace…</div>}>

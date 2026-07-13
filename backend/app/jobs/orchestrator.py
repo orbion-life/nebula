@@ -18,7 +18,8 @@ from ..design import PreviewDesigner
 from ..retrieval.evidence_cards import citations_for_route
 from ..discovery import build_discovery
 from ..physics.candidate_specific import run_candidate_qm
-from ..physics.eligibility import assess_eligibility, upgrade_with_candidate_qm
+from ..physics.eligibility import assess_eligibility, upgrade_with_candidate_qm, upgrade_with_radical_pair
+from ..physics.radical_pair import extract_radical_pair
 from ..providers.rcsb import RcsbProvider
 from ..retrieval.assemble import assemble_candidates
 from ..retrieval.plan import plan_queries
@@ -160,21 +161,36 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
                 "events": [*run.events, RunEvent(at=now, from_status=RunStatus.assessing_physics, to_status=RunStatus.assessing_physics, stage="assessing_physics", note=f"running candidate-specific {_QM_BASIS.upper()} quantum chemistry on the isoalloxazine core extracted from {pdb_id} (~2 min)", progress=progress_fraction(RunStatus.assessing_physics))],
             })
             store.put(run)
+            cif_text = None
             try:
                 cif_text, _prov = rcsb.coordinates(pdb_id)
-                qm = run_candidate_qm(
-                    pdb_id,
-                    cif_text,
-                    basis=_QM_BASIS,
-                    timeout=_QM_TIMEOUT_S,
-                    cancel_check=lambda: _cancelled(store, run_id),
-                )
             except Exception:
-                qm = None
+                cif_text = None
+            qm = None
+            if cif_text is not None:
+                try:
+                    qm = run_candidate_qm(
+                        pdb_id,
+                        cif_text,
+                        basis=_QM_BASIS,
+                        timeout=_QM_TIMEOUT_S,
+                        cancel_check=lambda: _cancelled(store, run_id),
+                    )
+                except Exception:
+                    qm = None
             if _cancelled(store, run_id):
                 return store.get(run_id)
             if qm is not None:
                 eligs[cand_id] = upgrade_with_candidate_qm(eligs[cand_id], qm)
+            # Tier 0: per-protein radical-pair partner + geometry-derived J, D from the SAME structure
+            # (cheap; no QM). Best-effort — any failure leaves the generic radical-pair model in place.
+            if cif_text is not None:
+                try:
+                    rp = extract_radical_pair(cif_text)
+                except Exception:
+                    rp = None
+                if rp is not None:
+                    eligs[cand_id] = upgrade_with_radical_pair(eligs[cand_id], rp)
 
         dossiers: list[CandidateDossier] = []
         for cand in candidates:
