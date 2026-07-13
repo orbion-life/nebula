@@ -48,3 +48,7 @@ playwright-report/
 # Never commit private keys or certs (belt-and-suspenders; none are tracked)
 *.pem
 *.key
+
+# Internal hackathon-submission docs — kept local, not published in the public repo
+DEMO_SCRIPT.md
+SUBMISSION.md
