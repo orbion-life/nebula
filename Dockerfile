@@ -22,10 +22,16 @@ ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-# backend source + install (FastAPI runtime deps only; no PySCF/RadicalPy in the
-# slim image). The QM cache + fixtures ship as package data.
+# backend source + install. RadicalPy (the coarse per-protein MFE estimate) pulls MDAnalysis, which
+# may need a compiler; install build tools only for this step and purge them so the runtime image
+# stays slim. PySCF is still excluded (QM stays cache-only). estimate_mfe degrades to None if the
+# import ever fails, so the app is safe even if radicalpy drops out. The QM cache + fixtures ship as
+# package data.
 COPY backend/ /app/backend/
-RUN pip install ./backend
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential gfortran \
+    && pip install ./backend \
+    && apt-get purge -y build-essential gfortran && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
 # versioned radical-pair reference artifact (scoring.py resolves it at /app/src/data/)
 COPY src/data/generated/ /app/src/data/generated/
 # built SPA from stage 1

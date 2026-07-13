@@ -13,6 +13,9 @@ dependencies = [
   "gemmi==0.7.5",
   "numpy==2.4.6",
   "scipy==1.16.0",
+  # coarse per-protein magnetic field effect estimate (physics/radical_pair_response.py). Imported
+  # lazily and degrades to None if unavailable, so a slim build that drops it never breaks the app.
+  "radicalpy==1.0.9",
 ]
 
 [project.optional-dependencies]
