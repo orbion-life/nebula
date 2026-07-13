@@ -3,7 +3,7 @@ import Fuse from "fuse.js";
 /**
  * Public analog index (real vector index, offline & deterministic).
  *
- * This is a genuine embedding index — NOT keyword-only search. Each public
+ * This is a genuine embedding index, NOT keyword-only search. Each public
  * corpus entry is embedded into an L2-normalized hashed-trigram vector; queries
  * are embedded the same way and ranked by cosine similarity, then blended with a
  * Fuse.js keyword score for robustness (hybrid retrieval). In production this is
@@ -34,7 +34,7 @@ export interface CorpusHit {
 
 /**
  * Curated PUBLIC corpus of well-known public proteins/scaffolds used as analog
- * targets. All are public, literature-known constructs — none are Orbion
+ * targets. All are public, literature-known constructs, none are Orbion
  * candidates, none carry any sensing claim.
  */
 export const PUBLIC_CORPUS: CorpusEntry[] = [

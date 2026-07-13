@@ -1,5 +1,5 @@
 /**
- * Act III — The Result. The completed run IS the scroll experience: the seven chapter
+ * Act III. The Result. The completed run IS the scroll experience: the seven chapter
  * scroll scrubbed narrative (lazy loaded so its GSAP/ScrollTrigger code stays out of the
  * initial bundle). This is the single result view. There is no separate workspace window;
  * the expert handoff downloads straight from the final chapter.

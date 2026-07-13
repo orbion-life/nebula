@@ -11,7 +11,7 @@ import type {
 /**
  * Simulation evidence.
  *
- * For each candidate/route we compute — BEFORE ranking — what the experiment
+ * For each candidate/route we compute, BEFORE ranking, what the experiment
  * would look like under a specific instrument: the peak observable signature
  * reachable within the instrument's field/RF envelope, the expected SNR against
  * its noise floor, the ensemble uncertainty, how well the signature can be
@@ -79,7 +79,7 @@ export function radicalPairSignature(
   const mfe = mfeOverride ?? art.mfePercent;
   const dff = mfe.map((m) => c * phi0 * (m / 100));
   // Peak |ΔF/F| within the instrument's reachable field, and the ensemble std
-  // AT that field (not the global-max std) — an honest per-signature uncertainty.
+  // AT that field (not the global-max std), an honest per-signature uncertainty.
   let signature = 0;
   let peakIdx = 0;
   for (let i = 0; i < dff.length; i++) {

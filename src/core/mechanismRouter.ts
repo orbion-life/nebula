@@ -5,7 +5,7 @@ import type { MechanismRoute, ScaffoldFamily } from "./types";
  * Mechanism router.
  *
  * Maps a scaffold family to its mechanism route. This is a fixed, auditable
- * mapping — no scaffold gets silently upgraded to a stronger claim level than
+ * mapping, no scaffold gets silently upgraded to a stronger claim level than
  * its route allows.
  */
 const SCAFFOLD_TO_ROUTE: Record<ScaffoldFamily, string> = {

@@ -37,7 +37,7 @@ export function exportMarkdown(
   const rank = result.ranking.find((r) => r.hypothesisId === hypothesisId)!;
 
   const lines: string[] = [];
-  lines.push(`# Nebula Discover — Measurement Handoff`);
+  lines.push(`# Nebula Discover, Measurement Handoff`);
   lines.push("");
   lines.push(`> Status: **${result.status.replace(/_/g, " ")}**`);
   lines.push(`> All traces are **${simulation.label}**.`);
@@ -45,7 +45,7 @@ export function exportMarkdown(
     `> Exported for: **${hyp.title}** (measurement rank #${rank.rank}, score ${rank.score.toFixed(3)})`,
   );
   lines.push(
-    `> Public construct hypothesis — not a working sensor, not an Orbion commercial candidate.`,
+    `> Public construct hypothesis, not a working sensor, not an Orbion commercial candidate.`,
   );
   lines.push("");
   lines.push(`## Objective`);
@@ -55,7 +55,7 @@ export function exportMarkdown(
   lines.push(`- Desired readouts: ${result.objective.desiredReadouts.join(", ")}`);
   lines.push(`- Material context: ${result.objective.materialContext}`);
   lines.push(`- Expression host: ${result.objective.expressionHost}`);
-  lines.push(`- Instrument: ${result.instrument.label} (noise floor ΔF/F ≥ ${result.instrument.minDetectableDeltaFOverF}, field ${result.instrument.staticFieldRange_mT[0]}–${result.instrument.staticFieldRange_mT[1]} mT, RF ${result.instrument.rfAvailable ? "available" : "none"})`);
+  lines.push(`- Instrument: ${result.instrument.label} (noise floor ΔF/F ≥ ${result.instrument.minDetectableDeltaFOverF}, field ${result.instrument.staticFieldRange_mT[0]} to ${result.instrument.staticFieldRange_mT[1]} mT, RF ${result.instrument.rfAvailable ? "available" : "none"})`);
   lines.push("");
   lines.push(`## Measure this next (decisive experiment)`);
   lines.push("");
@@ -135,7 +135,7 @@ export function exportMarkdown(
   lines.push(`| --- | --- | --- | --- |`);
   for (const p of parameterSpace.parameters) {
     lines.push(
-      `| ${p.name} | ${p.valueRange[0]}–${p.valueRange[1]} | ${p.unit} | ${p.source.replace(/_/g, " ")} |`,
+      `| ${p.name} | ${p.valueRange[0]} to ${p.valueRange[1]} | ${p.unit} | ${p.source.replace(/_/g, " ")} |`,
     );
   }
   lines.push("");
@@ -151,7 +151,7 @@ export function exportMarkdown(
   lines.push("");
   for (const t of simulation.traces) {
     const tag = t.isControl ? " [control]" : t.isNuisance ? " [nuisance]" : "";
-    lines.push(`- **${t.title}**${tag} — ${t.condition}. Control: ${t.requiredControl}`);
+    lines.push(`- **${t.title}**${tag}, ${t.condition}. Control: ${t.requiredControl}`);
   }
   lines.push("");
   lines.push(`## Claim boundary`);
@@ -184,7 +184,7 @@ export function exportMarkdown(
   lines.push(`## Design adapter (public demo only)`);
   lines.push("");
   lines.push(`- Adapter: ${result.designAdapter.adapter} (${result.designAdapter.status})`);
-  lines.push(`- Artifact: ${result.designAdapter.generatedArtifactType} — ${result.designAdapter.artifactPreview}`);
+  lines.push(`- Artifact: ${result.designAdapter.generatedArtifactType}, ${result.designAdapter.artifactPreview}`);
   for (const w of result.designAdapter.warnings) lines.push(`  - warning: ${w}`);
   lines.push("");
   lines.push(`---`);
@@ -204,7 +204,7 @@ export function exportJson(
     selectedHypothesisId: hypothesisId,
     blockedClaimExample: {
       ...result.blockedClaimExample,
-      input: "[redacted unsafe demo claim — see matchedPatterns]",
+      input: "[redacted unsafe demo claim, see matchedPatterns]",
     },
   };
   if (options.rationale) sanitized.rationale = options.rationale;

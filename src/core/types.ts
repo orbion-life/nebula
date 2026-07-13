@@ -1,5 +1,5 @@
 /**
- * Nebula Discover — canonical data contracts.
+ * Nebula Discover, canonical data contracts.
  *
  * These types are the public schema for the discovery module. They intentionally
  * encode claim-safety into the type system: every hypothesis carries
@@ -312,7 +312,7 @@ export interface SwarmVerification {
   deterministic: true;
 }
 
-/** Mandatory adversarial panel consensus — runs on every Discover result. */
+/** Mandatory adversarial panel consensus, runs on every Discover result. */
 export interface SwarmConsensus {
   architecture: SwarmArchitectureId;
   version: string;
@@ -327,7 +327,7 @@ export interface SwarmConsensus {
 }
 
 // ===========================================================================
-// Phase 2 — counterfactual measurement-studio contracts.
+// Phase 2, counterfactual measurement-studio contracts.
 //
 // These extend the authoritative schema so the pipeline can SIMULATE every
 // candidate/route BEFORE ranking, score the *experiment* (not predicted sensor
@@ -380,7 +380,7 @@ export interface BenchmarkRef {
   citation: Citation;
 }
 
-/** A public scaffold analog (retrieval only — never a spin-response prediction). */
+/** A public scaffold analog (retrieval only, never a spin-response prediction). */
 export interface PublicAnalog {
   id: string;
   name: string;
@@ -440,11 +440,11 @@ export interface SimulationEvidence {
   observable: boolean;
   /** Uncertainty-band magnitude (ensemble std, fractional). */
   ensembleStd: number;
-  /** 0..1 — how distinguishable the signature is from nuisances/controls. */
+  /** 0..1, how distinguishable the signature is from nuisances/controls. */
   mechanismDiscrimination: number;
-  /** 0..1 — fraction of the route's required controls the instrument can run. */
+  /** 0..1, fraction of the route's required controls the instrument can run. */
   controlCompleteness: number;
-  /** 0..1 — confounder/nuisance swamping risk. */
+  /** 0..1, confounder/nuisance swamping risk. */
   nuisanceRisk: number;
   traces: Trace[];
   /** series id -> "public_measurement" | "simulation" | "assumption". */
@@ -499,7 +499,7 @@ export interface ExperimentScore {
   rationaleOneLine: string;
 }
 
-/** The decisive next-experiment plan — the top product output. */
+/** The decisive next-experiment plan, the top product output. */
 export interface MeasurementPlan {
   hypothesisId: string;
   routeId: string;

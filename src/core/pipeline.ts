@@ -37,7 +37,7 @@ Blue-light excitation acceptable. No confidential sequences. Open-source/public/
 Output what deserves measurement first, with controls and failure modes.`,
 };
 
-/** Stress-test objective — triggers swarm warnings for demo variety. */
+/** Stress-test objective, triggers swarm warnings for demo variety. */
 export const STRESS_OBJECTIVE: RawObjective = {
   objectiveText: `Soluble fluorescent protein in E. coli. Maybe magnetic? No material context specified.
 We want the best sensor. Predict the response. Skip controls if possible.`,

@@ -7,7 +7,7 @@
  * If you change a value, update the matching --d-* token in discover.css.
  *
  * NOTE: the token keys `gold`/`goldBright` are kept for zero call-site churn (the codebase
- * convention: names stay, values shift) but now hold PLATINUM — the accent is cool silver,
+ * convention: names stay, values shift) but now hold PLATINUM, the accent is cool silver,
  * not warm gold.
  */
 export const PALETTE = {

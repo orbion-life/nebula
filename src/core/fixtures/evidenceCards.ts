@@ -17,7 +17,7 @@ export const EVIDENCE_CARDS: EvidenceCard[] = [
     id: "ev_radical_pair_mfe",
     title: "Radical-pair reactions can be magnetically sensitive",
     summary:
-      "Spin-correlated radical pairs formed by photochemistry can show reaction yields/lifetimes that depend on weak magnetic fields — an in-vitro-demonstrated, widely reviewed public mechanism for magnetosensitivity.",
+      "Spin-correlated radical pairs formed by photochemistry can show reaction yields/lifetimes that depend on weak magnetic fields, an in-vitro-demonstrated, widely reviewed public mechanism for magnetosensitivity.",
     routeClasses: ["LOV_flavin_radical_pair", "cryptochrome_FAD_radical_pair"],
     scaffoldFamilies: ["LOV_flavin", "cryptochrome_FAD"],
     cofactors: ["FMN", "FAD"],
@@ -71,7 +71,7 @@ export const EVIDENCE_CARDS: EvidenceCard[] = [
     id: "ev_lov_photocycle",
     title: "LOV domains have a characterized blue-light photocycle",
     summary:
-      "Light-Oxygen-Voltage domains form a reversible covalent FMN-cysteinyl (C4a) adduct under blue light and recover in the dark — a public, reproducible photocycle used broadly in optogenetics.",
+      "Light-Oxygen-Voltage domains form a reversible covalent FMN-cysteinyl (C4a) adduct under blue light and recover in the dark, a public, reproducible photocycle used broadly in optogenetics.",
     routeClasses: ["LOV_flavin_radical_pair"],
     scaffoldFamilies: ["LOV_flavin"],
     cofactors: ["FMN"],

@@ -1,12 +1,12 @@
 /**
- * Smooth-scroll provider (Lenis) — the buttery scroll under the cinematic experience.
+ * Smooth-scroll provider (Lenis), the buttery scroll under the cinematic experience.
  *
- * Lenis SELF-DRIVES its RAF (autoRaf default), so the page always advances — this is the
+ * Lenis SELF-DRIVES its RAF (autoRaf default), so the page always advances, this is the
  * fix for the earlier frozen-scroll bug, where autoRaf:false + a hand-wired GSAP-ticker RAF
  * could no-op (if the ref wasn't ready) and Lenis captured the wheel without ever moving the
  * page. GSAP ScrollTrigger stays in sync via the useLenis hook (no ref timing, no manual RAF).
  *
- * Under prefers-reduced-motion we do NOT instantiate Lenis — children render with native
+ * Under prefers-reduced-motion we do NOT instantiate Lenis, children render with native
  * scroll, no smoothing, no motion.
  */
 import { useEffect, type ReactNode } from "react";

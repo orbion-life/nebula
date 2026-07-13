@@ -1,5 +1,5 @@
 /**
- * QuantumField — a data-driven navy→gold flow field rendered on a plane BEHIND the
+ * QuantumField, a data-driven navy→gold flow field rendered on a plane BEHIND the
  * candidate nodes, inside the existing universe canvas (no extra WebGL context). It is
  * not decoration-for-decoration's-sake: `progress` (the real run fraction in Act II,
  * or a resting value in the workspace) drives the field's turbulence/brightness, so

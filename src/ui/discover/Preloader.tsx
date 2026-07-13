@@ -1,10 +1,10 @@
 /**
- * First-paint entry preloader — the reference's signature circular 0→100 counter.
+ * First-paint entry preloader, the reference's signature circular 0→100 counter.
  *
  * Honest gating: the counter cannot reach 100 until the app is actually ready (fonts
  * loaded + the API health probe resolved), with a 3s hard cap so a slow/unreachable
  * backend never traps the user. Then it fades out and hands off. Label says "loading"
- * (this is not run progress — the run has its own counter later).
+ * (this is not run progress, the run has its own counter later).
  */
 import { useEffect, useRef, useState } from "react";
 

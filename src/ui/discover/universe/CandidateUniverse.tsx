@@ -1,8 +1,8 @@
 /**
- * The candidate universe (React Three Fiber) — a DATA-DRIVEN spatial overview, not
+ * The candidate universe (React Three Fiber), a DATA-DRIVEN spatial overview, not
  * decoration. Each node is a real retrieved protein; its lane (evidence/frontier/
  * excluded) sets which column it flies to, its rank sets height, and its score sets
- * size. On mount the nodes reorganize from a loose cloud into the lane columns — a
+ * size. On mount the nodes reorganize from a loose cloud into the lane columns, a
  * literal picture of what the ranking just did. Clicking a node selects it (syncs the
  * rail); the selected node lifts toward the camera and shows its accession.
  *
@@ -60,7 +60,7 @@ function targetPositions(nodes: UNode[]): Map<string, [number, number, number]> 
     const a = (i / Math.max(1, lanes.excluded.length - 1) - 0.5) * Math.PI * 0.8;
     m.set(n.id, [Math.sin(a) * 2.2, Math.cos(a) * 1.6 - 0.5, -4]);
   });
-  // pending (still searching — lanes not assigned yet): a loose spherical cloud that the
+  // pending (still searching, lanes not assigned yet): a loose spherical cloud that the
   // nodes will later fly out of into the lane columns (the "search → rank" beat).
   const N = lanes.pending.length;
   lanes.pending.forEach((n, i) => {

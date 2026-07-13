@@ -1,5 +1,5 @@
 /**
- * The run counter — the reference's 0→100% ring, but bound to the REAL discovery
+ * The run counter, the reference's 0→100% ring, but bound to the REAL discovery
  * progress (RunEvent.progress). The backend emits a coarse 7-step fraction; we tween
  * the displayed value toward it every frame so the descent reads as buttery, never
  * faked. During retrieval the fraction plateaus, so the "N proteins retrieved" line
@@ -46,7 +46,7 @@ export function RunCounter({ fraction, stage, candidateCount }: { fraction: numb
   );
 }
 
-/** Progress fraction 0–1 from a run's events (last numeric RunEvent.progress), with a
+/** Progress fraction 0 to 1 from a run's events (last numeric RunEvent.progress), with a
  * stage-index fallback so the counter always has a sane value. */
 const STAGE_ORDER = [
   "queued", "compiling_objective", "retrieving_evidence", "assessing_physics",

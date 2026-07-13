@@ -18,10 +18,10 @@ export interface SwarmOrchestratorInput {
 /**
  * Four-stage hierarchical orchestrator:
  *
- * 1. ORCHESTRATE — freeze producer artifact; build immutable reviewer context
- * 2. MAP        — parallel specialist lenses (producer-reviewer isolation)
- * 3. REDUCE     — severity-weighted consensus + cross-lens escalation
- * 4. SYNTHESIZE — arbiter decision + verification manifest
+ * 1. ORCHESTRATE, freeze producer artifact; build immutable reviewer context
+ * 2. MAP        , parallel specialist lenses (producer-reviewer isolation)
+ * 3. REDUCE     , severity-weighted consensus + cross-lens escalation
+ * 4. SYNTHESIZE, arbiter decision + verification manifest
  */
 export function runSwarmOrchestrator(input: SwarmOrchestratorInput): SwarmConsensus {
   const stages: SwarmStageRecord[] = [];

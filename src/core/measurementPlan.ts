@@ -9,7 +9,7 @@ import type {
 } from "./types";
 
 /**
- * Measurement plan — the decisive next-experiment card (the product's top
+ * Measurement plan, the decisive next-experiment card (the product's top
  * output). It states, for the selected hypothesis under the selected
  * instrument: what to measure, the expected signature and uncertainty, the null
  * expectation, the required positive/negative controls, competing explanations,
@@ -24,7 +24,7 @@ function radicalPairSignatureText(inst: InstrumentProfile): string {
   const rfFreq = d.rf.freq_MHz[rfIdx];
   const rfClause = inst.rfAvailable
     ? ` plus an RF-frequency resonance near ${rfFreq.toFixed(0)} MHz (RF off = flat control)`
-    : " (no RF actuation on this instrument — static-field curve only)";
+    : " (no RF actuation on this instrument, static-field curve only)";
   // Ensemble range so the nominal point is not read as the only outcome (W4).
   const means = d.ensemble.meanMfePercent;
   const emin = Math.min(...means);
@@ -93,7 +93,7 @@ export function buildMeasurementPlan(
       )} on ${inst.label}.`
     : `Signature (~${(evidence.signatureMetric * 100).toFixed(
         2,
-      )}% ΔF/F) is at or below the ${inst.label} noise floor — NOT observable on this instrument; choose a lower-noise instrument first.`;
+      )}% ΔF/F) is at or below the ${inst.label} noise floor, NOT observable on this instrument; choose a lower-noise instrument first.`;
 
   const competingExplanations = [
     ...route.confounders.map((c) => `${c} mimicking or masking the signal`),
@@ -125,7 +125,7 @@ export function buildMeasurementPlan(
       ? `Resolves whether the ${route.routeClass.replace(
           /_/g,
           " ",
-        )} coupling produces a measurable, control-surviving signal for this scaffold class — advancing it from hypothesis toward ${route.maxClaimLevel.replace(
+        )} coupling produces a measurable, control-surviving signal for this scaffold class, advancing it from hypothesis toward ${route.maxClaimLevel.replace(
           /_/g,
           " ",
         )} or falsifying it.`

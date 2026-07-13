@@ -1,7 +1,7 @@
 import type { ConstructHypothesis, MechanismRoute, RationaleCard } from "./types";
 
 /**
- * Falsification criteria — explicit kill rules for measurement triage.
+ * Falsification criteria, explicit kill rules for measurement triage.
  * Answers: "What experiment result would make us abandon this route?"
  */
 export function buildFalsificationCriteria(

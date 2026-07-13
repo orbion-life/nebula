@@ -6,7 +6,7 @@ import type { InstrumentProfile } from "../types";
  * An InstrumentProfile is a first-class INPUT to Discover: its detection noise
  * floor, static-field range, and RF availability decide whether each route's
  * simulated signature is observable, which changes the experiment ranking.
- * These are public, transparent capability envelopes — not device secrets.
+ * These are public, transparent capability envelopes, not device secrets.
  */
 export const INSTRUMENT_PROFILES: InstrumentProfile[] = [
   {

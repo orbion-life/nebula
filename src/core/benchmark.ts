@@ -31,7 +31,7 @@ export const PUBLIC_BENCHMARKS: BenchmarkRef[] = [
     system: "Red fluorescent protein (mScarlet3)",
     observable: "Static-magnetic-field-dependent fluorescence via a radical-pair / triplet mechanism",
     relevance:
-      "Supports that a fluorescent protein can show a static-field-dependent fluorescence — the magnetofluorescence mechanism class this route models.",
+      "Supports that a fluorescent protein can show a static-field-dependent fluorescence, the magnetofluorescence mechanism class this route models.",
     claimCeiling: "measurement_triage",
     citation: {
       authors: "Xiang Y, Lampson B, Hayward M, York A, Ingaramo M, Cohen AE",
@@ -46,7 +46,7 @@ export const PUBLIC_BENCHMARKS: BenchmarkRef[] = [
     system: "Engineered protein (LOV-family) for multimodal sensing",
     observable: "Quantum spin resonance read out optically for multimodal magnetic sensing",
     relevance:
-      "Engineered-protein spin-resonance readout — supports the plausibility of designing spin-linked optical reporters.",
+      "Engineered-protein spin-resonance readout, supports the plausibility of designing spin-linked optical reporters.",
     claimCeiling: "measurement_triage",
     citation: {
       authors: "Abrahams JNH, Štuhec T, Spreng B, Henry L, Kempf N, James D, Sechkar A, Stacey A, Trelles-Fernandez P, Antill LM, Timmel CR, Miller S, Ingaramo M, York A, Tetienne J-P, Steel A, et al.",
@@ -61,7 +61,7 @@ export const PUBLIC_BENCHMARKS: BenchmarkRef[] = [
     system: "Fluorescent protein (EYFP-derived) spin",
     observable: "Optically addressable protein spin (ODMR-like)",
     relevance:
-      "Protein triplet/spin optical addressability — supports the triplet-FP ODMR route as a diagnostic concept.",
+      "Protein triplet/spin optical addressability, supports the triplet-FP ODMR route as a diagnostic concept.",
     claimCeiling: "diagnostic_only",
     citation: {
       authors: "Feder JS, Soloway BE, Verma S, Geng Z, Wang S, Kifle B, Riendeau EG, Tsaturyan Y, Weiss LS, Xie J, Huang H, Esser-Kahn A, Gagliardi L, Awschalom DD, Maurer PC, et al.",
@@ -129,7 +129,7 @@ export function buildBenchmarkComparisons(route: MechanismRoute): BenchmarkCompa
         agreementKind: "qualitative_reproduction",
         mechanismClassConsistent: true,
         residualUncertainty:
-          "Sign and magnitude of the field effect are model- and system-dependent; our flavin–tryptophan pair is a different system than the benchmark protein.",
+          "Sign and magnitude of the field effect are model- and system-dependent; our flavin-tryptophan pair is a different system than the benchmark protein.",
         disclaimer: NO_FABRICATION_DISCLAIMER,
       },
     ];

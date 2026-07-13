@@ -5,7 +5,7 @@
  *
  * Everything here is REAL data the backend already computes: the seven DiscoveryScore axes,
  * the physics-eligibility tier, and exploration.physical_constraints_satisfied /
- * assumptions_remaining. Nothing is a probability, a confidence, or a performance number —
+ * assumptions_remaining. Nothing is a probability, a confidence, or a performance number,
  * the header says so, verbatim, so a normalized axis can never be misread as a measurement.
  */
 import type { CandidateDossier, DiscoveryScore, RunState } from "../../../api/client";
@@ -35,7 +35,7 @@ export function AppliedConstraints({ score, dossier }: { score?: DiscoveryScore;
     <div className="atlas-constraints">
       <header className="atlas-constraints-head">
         <span className="atlas-eyebrow">applied constraints</span>
-        <p>Uncalibrated triage axes — not probabilities, confidence, or performance. Each is a normalized 0–100 heuristic used only to order candidates against this objective.</p>
+        <p>Uncalibrated triage axes, not probabilities, confidence, or performance. Each is a normalized 0 to 100 heuristic used only to order candidates against this objective.</p>
       </header>
       <div className="atlas-constraints-axes">
         <Metric label="mechanism support" value={score.P_plausibility} />

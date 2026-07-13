@@ -1,9 +1,9 @@
 /**
  * Elegant abstention (brief Ask E): failing to find a candidate should read as an honest,
- * intentional result — never a broken app. Two triggers:
- *   "empty"       — a SUPPORTED objective that completed with zero candidates (nature handed
+ * intentional result, never a broken app. Two triggers:
+ *   "empty"      , a SUPPORTED objective that completed with zero candidates (nature handed
  *                   us nothing that clears the mechanism / measurability gate).
- *   "unsupported" — a 422 before the run: the objective sits outside what this build can search.
+ *   "unsupported", a 422 before the run: the objective sits outside what this build can search.
  * An absent candidate is information, and we say so, with the same cinematic restraint as a hit.
  */
 import type { RunState } from "../../../api/client";
@@ -35,7 +35,7 @@ export function ActAbstention({ kind, run, error, onReset }: Props) {
             <p className="abstain-lead">
               The scan searched {dbCount > 0 ? `${dbCount} public database${dbCount === 1 ? "" : "s"}` : "the public record"} for{" "}
               {sensed} and found no protein that clears the mechanism-support and measurability gates. An absent candidate is
-              information, not a failure — the record simply does not carry one under these constraints.
+              information, not a failure, the record simply does not carry one under these constraints.
             </p>
             <p className="abstain-sub">Loosen a constraint, choose a different world, or change the sensing target to open the search.</p>
           </>

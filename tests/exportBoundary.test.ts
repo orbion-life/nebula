@@ -82,7 +82,7 @@ describe("branded PDF brief (dossierBriefHtml)", () => {
 
   it("is a self-contained branded HTML document with the accession", () => {
     expect(html.startsWith("<!doctype html>")).toBe(true);
-    expect(html).toContain("Nebula Discovery Brief — Q8LPD9");
+    expect(html).toContain("Nebula Discovery Brief, Q8LPD9");
     expect(html).toContain("Cormorant Garamond"); // the brand display serif
     expect(html).toContain("nebula"); // wordmark
   });

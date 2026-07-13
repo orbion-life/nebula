@@ -1,8 +1,8 @@
 /**
  * Scientifically accurate protein structure viewer (3Dmol.js, lazy-loaded WebGL).
  *
- * Loads THIS candidate's real structure — the experimental cofactor-bound PDB when
- * one exists (inline mmCIF so it works offline), otherwise the AlphaFold model — and
+ * Loads THIS candidate's real structure, the experimental cofactor-bound PDB when
+ * one exists (inline mmCIF so it works offline), otherwise the AlphaFold model, and
  * highlights the cofactor/chromophore that carries the proposed spin center. The
  * protein is a muted cartoon; the cofactor is emphasised as sticks + translucent
  * surface so the redox-active core reads at a glance. WebGL resources are disposed
@@ -89,7 +89,7 @@ export function StructureViewer({ structure, loading, cofactorLabel }: Props) {
         /* viewer already torn down */
       }
       viewerRef.current = null;
-      // explicitly release the WebGL context — 3Dmol.clear() does not, and browsers cap
+      // explicitly release the WebGL context, 3Dmol.clear() does not, and browsers cap
       // ~16 live contexts, so clicking through candidates would otherwise blank the viewer.
       try {
         const canvas = hostRef.current?.querySelector("canvas") as HTMLCanvasElement | null;

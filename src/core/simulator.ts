@@ -20,7 +20,7 @@ import { SYNTHETIC_TRACE_LABEL } from "./types";
  * The remaining routes use transparent MECHANISM-SHAPED PROXIES (not physics
  * solvers). Every trace is a synthetic assumption sweep, deterministic for a
  * fixed seed. These curves show what a measurement COULD look like under the
- * stated assumptions so a team can decide whether it is worth measuring — they
+ * stated assumptions so a team can decide whether it is worth measuring, they
  * are not predictions of biology.
  *
  * proxy equations (non-radical-pair routes):
@@ -108,7 +108,7 @@ function radicalPairTraces(): Trace[] {
     x: art.rf.freq_MHz,
     y: art.rf.rfResponseNormalized,
     condition: `fixed B0 = ${art.rf.workingField_mT} mT, B1 = ${art.rf.b1_mT} mT; resonance from static-Hamiltonian eigen-gaps (not a scalar gain)`,
-    requiredControl: "RF off (B1 = 0) reference — must be flat",
+    requiredControl: "RF off (B1 = 0) reference, must be flat",
     isControl: false,
     isNuisance: false,
   };
@@ -262,7 +262,7 @@ function confounderTraces(_seed: number): Trace[] {
       yLabel: "ΔF/F (undefined)",
       x,
       y: x.map(() => 0),
-      condition: "annotation only — presence is not a mechanism",
+      condition: "annotation only, presence is not a mechanism",
       requiredControl: "Apo (metal-free) control; supply transduction path before any claim",
       isControl: true,
       isNuisance: false,

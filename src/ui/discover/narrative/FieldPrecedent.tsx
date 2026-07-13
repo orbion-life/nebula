@@ -1,8 +1,8 @@
 /**
- * Field precedent — recent (2024–2026) external results that show a mechanism CLASS is real and
+ * Field precedent, recent (2024 to 2026) external results that show a mechanism CLASS is real and
  * benchable, ROUTE-GATED to the selected candidate's route. Deliberately, visibly separated from
  * the candidate: every item is something achieved ELSEWHERE, on other proteins or methods, cited as
- * precedent for the route — never a claim about this shortlist. A redox candidate no longer shows
+ * precedent for the route, never a claim about this shortlist. A redox candidate no longer shows
  * spin-qubit papers; a flavin one shows iLOV + RadicalPy. Every citation was verified against the
  * primary literature before shipping.
  */
@@ -21,7 +21,7 @@ const PRECEDENTS: Record<PrecedentKey, Precedent> = {
   ilov: {
     title: "Optically detected spin chemistry in flavoproteins",
     shows:
-      "Flavoproteins that form spin-correlated radical pairs (including iLOV) show optically detected magnetic resonance — ODMR contrast approaching 50% — and radio-wave control of the spin state.",
+      "Flavoproteins that form spin-correlated radical pairs (including iLOV) show optically detected magnetic resonance (ODMR contrast approaching 50%) and radio-wave control of the spin state.",
     precedentFor: "flavin radical-pair route · RF / optical readout",
     venue: "Nature Biotechnology",
     year: "2026",
@@ -39,7 +39,7 @@ const PRECEDENTS: Record<PrecedentKey, Precedent> = {
   radicalpy: {
     title: "RadicalPy: a radical-pair spin-dynamics toolbox",
     shows:
-      "The open-source spin-dynamics framework this app's reference MARY sweep is built on — classical, semiclassical and quantum radical-pair kinetics for the flavin route.",
+      "The open-source spin-dynamics framework this app's reference MARY sweep is built on, classical, semiclassical and quantum radical-pair kinetics for the flavin route.",
     precedentFor: "the reference physics engine (provenance)",
     venue: "J. Chem. Theory Comput.",
     year: "2024",
@@ -48,7 +48,7 @@ const PRECEDENTS: Record<PrecedentKey, Precedent> = {
   rfdiffusion2: {
     title: "Atom-level scaffolding with RFdiffusion2",
     shows:
-      "De-novo protein backbones can be generated directly from an atom-level functional-group geometry without fixing sequence positions — the class of engine behind the generate-beyond-nature lane.",
+      "De-novo protein backbones can be generated directly from an atom-level functional-group geometry without fixing sequence positions, the class of engine behind the generate-beyond-nature lane.",
     precedentFor: "generated backbones · coordinates only",
     venue: "Nature Methods",
     year: "2025",
@@ -65,7 +65,7 @@ const ROUTE_PRECEDENT: Record<string, PrecedentKey[]> = {
   triplet_FP: ["eyfp"],
 };
 
-// the generation-lane precedent (RFdiffusion2) — surfaced with the designs, not a protein's physics.
+// the generation-lane precedent (RFdiffusion2), surfaced with the designs, not a protein's physics.
 export const GENERATE_PRECEDENT = PRECEDENTS.rfdiffusion2;
 
 function PrecedentCard({ p }: { p: Precedent }) {
@@ -89,7 +89,7 @@ export function FieldPrecedent({ route }: { route?: string }) {
         <span className="atlas-eyebrow">field precedent · this route</span>
         <p>
           Recent results for this candidate's mechanism route, achieved elsewhere on other proteins or
-          methods — external precedent that the route is real and benchable. None of these is this
+          methods, external precedent that the route is real and benchable. None of these is this
           candidate; each supports the route, not the shortlist.
         </p>
       </header>

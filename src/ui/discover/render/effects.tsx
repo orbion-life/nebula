@@ -1,9 +1,9 @@
 /**
- * Postprocessing for the universe canvas — selective bloom rides the emissive node
+ * Postprocessing for the universe canvas, selective bloom rides the emissive node
  * materials so the gold candidates glow, plus a soft vignette. Mounted inside the
  * existing Canvas (no extra context).
  *
- * Disabled on software WebGL (SwiftShader/llvmpipe — the CI/no-GPU case) and when the
+ * Disabled on software WebGL (SwiftShader/llvmpipe, the CI/no-GPU case) and when the
  * caller passes enabled=false (reduced-motion / mobile). The scene renders normally
  * without it, so the non-blank canvas guarantee holds everywhere.
  */

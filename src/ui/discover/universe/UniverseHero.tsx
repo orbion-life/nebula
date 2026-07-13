@@ -15,8 +15,8 @@ function prefersReducedMotion(): boolean {
 }
 
 /** Project the run into universe nodes: lane, rank, score, candidate-specific flag.
- * Until the run has ranked (settled), every retrieved candidate is `pending` — a loose
- * cloud — so the run phase reads as "searching the universe" before the lanes resolve. */
+ * Until the run has ranked (settled), every retrieved candidate is `pending`, a loose
+ * cloud, so the run phase reads as "searching the universe" before the lanes resolve. */
 export function buildNodes(run: RunState, settled: boolean): UNode[] {
   const evidence = run.evidence_shortlist ?? [];
   const frontier = run.frontier_experiments ?? [];

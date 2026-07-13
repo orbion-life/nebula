@@ -2,7 +2,7 @@
  * The transparent scan (brief Ask E): while Act II runs, show WHICH public databases are
  * being searched, in the fixed provider order, and reconcile each against the run's REAL
  * provenance (endpoint, retrieval mode, source release, HTTP status, licence). No invented
- * state — a database only reads "returned" once run.provider_calls records a real call for it;
+ * state, a database only reads "returned" once run.provider_calls records a real call for it;
  * otherwise it is queued or scanning off the live stage. Retrieval-only, never validation.
  */
 import type { RunState } from "../../../api/client";

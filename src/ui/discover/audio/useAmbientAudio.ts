@@ -1,10 +1,10 @@
 /**
- * Procedural ambient sound — generated with the Web Audio API (no audio file shipped,
+ * Procedural ambient sound, generated with the Web Audio API (no audio file shipped,
  * no copyright surface, genuinely "sound design"). The character is SPACE + MARINE +
  * MEDITATIVE:
- *   space     — a deep sub, slowly rotating fifths, and a faint high shimmer;
- *   marine    — a breathing wave-surge of filtered noise under a dark low-pass;
- *   meditative— slow harmonic changes, soft bell glints, no beat, nothing rhythmic.
+ *   space     , a deep sub, slowly rotating fifths, and a faint high shimmer;
+ *   marine    , a breathing wave-surge of filtered noise under a dark low-pass;
+ *   meditative, slow harmonic changes, soft bell glints, no beat, nothing rhythmic.
  * The low-pass `filter` is left exposed on the graph so the descent can later pull it
  * darker as you sink toward the quantum core.
  *
@@ -109,7 +109,7 @@ function buildGraph(): Graph {
       const o = ctx.createOscillator();
       o.type = v.type;
       o.frequency.value = ROOTS[0] * v.ratio;
-      o.detune.value = rand(-7, 7) + (u - 1) * 4.5; // real spread — NO |0 truncation
+      o.detune.value = rand(-7, 7) + (u - 1) * 4.5; // real spread, NO |0 truncation
       const vf = ctx.createBiquadFilter();
       vf.type = "lowpass";
       vf.frequency.value = 620 + v.ratio * 120;
@@ -287,7 +287,7 @@ export function useAmbientAudio() {
       try {
         graphRef.current = buildGraph();
       } catch {
-        return; // Web Audio unavailable — silently no-op
+        return; // Web Audio unavailable, silently no-op
       }
     }
     void graphRef.current.ctx.resume();

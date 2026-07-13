@@ -1,18 +1,18 @@
 /**
- * Candidate physics trace — Tufte small-multiples (raw SVG, no legend, no gridlines).
+ * Candidate physics trace, Tufte small-multiples (raw SVG, no legend, no gridlines).
  *
- * Two panels on SEPARATE scales (never co-plotted — different units, and co-plotting a
+ * Two panels on SEPARATE scales (never co-plotted, different units, and co-plotting a
  * scalar spin on the mfe% axis would read as a per-protein response prediction):
  *  1. REFERENCE MARY curve from the versioned RadicalPy artifact, drawn over TWO muted
  *     counterfactual controls (no-hyperfine and fast-relaxation) that collapse the field
- *     effect to nothing — the honest falsifier: the curve's structure exists only because
+ *     effect to nothing, the honest falsifier: the curve's structure exists only because
  *     of the assumed spin physics. The platinum band is the ±1σ spread across the 12
  *     assumption draws (a synthetic assumption sweep, NOT a prediction of this protein).
- *  2. This candidate's OWN computed number — the max Mulliken spin from the UHF calculation
- *     on its extracted isoalloxazine — drawn as a point with its ±range interval on a
+ *  2. This candidate's OWN computed number, the max Mulliken spin from the UHF calculation
+ *     on its extracted isoalloxazine, drawn as a point with its ±range interval on a
  *     dynamically scaled axis. Mulliken populations are basis dependent and are not
- *     probabilities, so they must never be clamped to a 0–1 interval.
- * Below both panels: the 7-row assumption ledger — every kinetic/coupling parameter that
+ *     probabilities, so they must never be clamped to a 0 to 1 interval.
+ * Below both panels: the 7-row assumption ledger, every kinetic/coupling parameter that
  * shapes the reference curve, with its source (literature/database/assumption) and range.
  * Only rendered for spin-dynamics-eligible candidates (the caller gates it).
  */
@@ -120,7 +120,7 @@ export function Traces({ spin, candidateSpecific, candidateLabel }: Props) {
 }
 
 // second small-multiple: the candidate's OWN computed spin as a point + ±range interval,
-// on its own unitless 0–1 scale — never on the mfe% axis above.
+// on its own unitless 0 to 1 scale, never on the mfe% axis above.
 const SW = 640;
 const SH = 92;
 const SM = { top: 22, right: 150, bottom: 26, left: 52 };
@@ -149,7 +149,7 @@ function SpinPanel({ spin, candidateSpecific }: { spin: SpinParam; candidateSpec
 }
 
 // the 7-row assumption ledger: every parameter that shapes the reference curve, its source
-// and range. This is the "what did we assume" receipt behind the plot — no hidden knobs.
+// and range. This is the "what did we assume" receipt behind the plot, no hidden knobs.
 function fmtNum(v: number): string {
   const a = Math.abs(v);
   if (a === 0) return "0";
@@ -174,7 +174,7 @@ function AssumptionLedger({ params }: { params: Assumption[] }) {
           <span role="cell" className="tr-p-name">{humanParam(p.name)}</span>
           <span role="cell" className="tr-p-val">
             {fmtNum(p.value)}{p.unit && p.unit !== "dimensionless" ? ` ${p.unit}` : ""}
-            {p.range ? <em> [{fmtNum(p.range[0])}–{fmtNum(p.range[1])}]</em> : null}
+            {p.range ? <em> [{fmtNum(p.range[0])} to {fmtNum(p.range[1])}]</em> : null}
           </span>
           <span role="cell" className="tr-p-src">
             <b>{p.sourceType}</b>

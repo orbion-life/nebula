@@ -40,7 +40,7 @@ export function photokineticDerivative(
   return -(F - p.baseline) / p.tauOff;
 }
 
-/** Analytic (closed-form) solution — the form the simulator proxy uses. */
+/** Analytic (closed-form) solution, the form the simulator proxy uses. */
 export function photokineticAnalytic(t: number, p: PhotokineticParams): number {
   if (t < p.lightOffAt) {
     return p.baseline + p.gain * (1 - Math.exp(-t / p.tauOn));

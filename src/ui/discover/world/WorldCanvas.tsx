@@ -1,5 +1,5 @@
 /**
- * WorldCanvas — the persistent, full viewport, NON interactive 3D backdrop.
+ * WorldCanvas, the persistent, full viewport, NON interactive 3D backdrop.
  *
  * One fixed R3F canvas behind all content (pointer-events:none, so the wheel/trackpad pass
  * straight through to the DOM). It renders "the quantum within": a radial PLATINUM mandala

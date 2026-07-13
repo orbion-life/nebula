@@ -1,6 +1,6 @@
 /**
  * Pure dossier helpers + Markdown export (no React/WebGL imports) so the shipped
- * export can be run through the claim firewall + leak scan in tests — closing the
+ * export can be run through the claim firewall + leak scan in tests, closing the
  * gap where only the retired src/core export was guarded.
  */
 import type { CandidateDossier, CandidateRecord, DiscoveryScore, RunState } from "../../api/client";
@@ -56,17 +56,17 @@ export function dossierMarkdown(candidate: CandidateRecord, dossier: CandidateDo
   const L: string[] = [];
   const safe = (text: string) => auditClaim(text).rewrite;
   L.push(`# ${safe(candidate.title)}`, "");
-  L.push(`**Status:** ${candidate.status} — unvalidated public-protein candidate hypothesis. Computation is not validation.`);
+  L.push(`**Status:** ${candidate.status}, unvalidated public-protein candidate hypothesis. Computation is not validation.`);
   if (acc) L.push(`**UniProt:** [${acc}](https://www.uniprot.org/uniprotkb/${acc})`);
   L.push(`**Route:** ${routeLabel(candidate.route_class)} · **Claim ${claimLabel(candidate.claim_ceiling)}**`);
   if (candidate.readout_modes?.length)
-    L.push(`**Candidate readouts to test:** ${candidate.readout_modes.map((m) => m.replace(/_/g, " ")).join(", ")} — separate readouts the scaffold family can support, not measured together here and not a detectability claim.`);
+    L.push(`**Candidate readouts to test:** ${candidate.readout_modes.map((m) => m.replace(/_/g, " ")).join(", ")}, separate readouts the scaffold family can support, not measured together here and not a detectability claim.`);
   L.push(`**Run:** ${run.run_id} · seed ${run.seed} · ${run.offline ? "public fixtures (deterministic replay)" : "live retrieval"} · fingerprint ${run.input_fingerprint}`, "");
   const spin = computedSpin(dossier);
   if (spin != null)
     L.push(
       `**Candidate-specific QM:** max basis-dependent Mulliken spin population ${spin.toFixed(3)} ` +
-        `(${isCandidateSpecific(dossier) ? "on candidate-associated structure coordinates" : "generic template"}) — ` +
+        `(${isCandidateSpecific(dossier) ? "on candidate-associated structure coordinates" : "generic template"}), ` +
         `isolated neutral-doublet cluster UHF value, HIGH uncertainty, NOT a performance or spin-response prediction; it is also not a probability and requires experimental measurement.`,
       "",
     );
@@ -133,7 +133,7 @@ export function dossierBriefHtml(candidate: CandidateRecord, dossier: CandidateD
   const metaRow = (k: string, v: string) => `<div class="nb-meta-row"><dt>${esc(k)}</dt><dd>${v}</dd></div>`;
 
   const qmBlock = spin != null
-    ? `<p><span class="nb-k">candidate-specific QM</span> max basis-dependent Mulliken spin population <b>${spin.toFixed(3)}</b> (${candSpecific ? "on candidate-associated structure coordinates" : "generic template"}) — isolated neutral-doublet cluster UHF value, HIGH uncertainty. It is not a probability and not a response prediction; it requires experimental measurement.</p>`
+    ? `<p><span class="nb-k">candidate-specific QM</span> max basis-dependent Mulliken spin population <b>${spin.toFixed(3)}</b> (${candSpecific ? "on candidate-associated structure coordinates" : "generic template"}), isolated neutral-doublet cluster UHF value, HIGH uncertainty. It is not a probability and not a response prediction; it requires experimental measurement.</p>`
     : isSpinDynamics(dossier)
       ? `<p><span class="nb-k">candidate-specific QM</span> not completed for this flavin radical-pair candidate; a generic isoalloxazine template applies. Computation is not validation.</p>`
       : `<p><span class="nb-k">no candidate-specific quantum chemistry</span> ${route} is a frontier hypothesis. Only the flavin radical-pair route computes candidate-specific spin in this build; this candidate is scored on public annotation and measurement value alone.</p>`;
@@ -143,7 +143,7 @@ export function dossierBriefHtml(candidate: CandidateRecord, dossier: CandidateD
         const v = Math.round(Math.max(0, Math.min(1, (score[key] as number) ?? 0)) * 100);
         const w = inverse ? 100 - v : v;
         return `<div class="nb-axis"><span class="nb-axis-l">${esc(label)}</span><span class="nb-axis-v">${v}</span><i><b style="width:${w}%"></b></i></div>`;
-      }).join("")}</div><p class="nb-fine">Uncalibrated triage axes — not probabilities, confidence, or performance. Normalized 0–100 heuristics used only to order candidates against this objective.</p>`
+      }).join("")}</div><p class="nb-fine">Uncalibrated triage axes, not probabilities, confidence, or performance. Normalized 0 to 100 heuristics used only to order candidates against this objective.</p>`
     : "";
 
   const measureBlock = `
@@ -171,7 +171,7 @@ export function dossierBriefHtml(candidate: CandidateRecord, dossier: CandidateD
 
   const body = `<!doctype html><html lang="en"><head><meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Nebula Discovery Brief — ${esc(acc)}</title>
+<title>Nebula Discovery Brief, ${esc(acc)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Hanken+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <style>

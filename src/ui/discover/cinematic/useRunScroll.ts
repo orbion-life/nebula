@@ -19,7 +19,7 @@ export function useRunScroll(actKey: string) {
       try {
         ScrollTrigger.refresh();
       } catch {
-        /* ScrollTrigger not registered (reduced-motion) — fine */
+        /* ScrollTrigger not registered (reduced-motion), fine */
       }
       const heading = document.querySelector<HTMLElement>("#main-content h1, #main-content h2");
       if (heading) {

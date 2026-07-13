@@ -1,5 +1,5 @@
 /**
- * CinematicShell — maps the run state machine to the three Acts. DiscoverApp owns all run
+ * CinematicShell, maps the run state machine to the three Acts. DiscoverApp owns all run
  * state + handlers; this only chooses and frames the active Act and keeps scroll sane
  * across transitions (useRunScroll). There is one result view (no workspace toggle).
  *

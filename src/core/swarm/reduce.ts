@@ -19,7 +19,7 @@ export interface ReduceResult {
 }
 
 /**
- * REDUCE phase — severity-weighted consensus (not majority voting).
+ * REDUCE phase, severity-weighted consensus (not majority voting).
  * Cross-lens theme escalation when multiple committee lenses agree.
  */
 export function reduceLensReports(

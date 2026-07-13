@@ -9,7 +9,7 @@ import type {
  * Design adapter panel.
  *
  * Shows how a public construct hypothesis COULD hand off to RFdiffusion /
- * LigandMPNN / ProteinMPNN. On Sunday this is precomputed/stub only — the core
+ * LigandMPNN / ProteinMPNN. On Sunday this is precomputed/stub only, the core
  * demo never depends on a live generation run. Output is public-demo-only and
  * carries explicit warnings; it never emits an Orbion candidate.
  */

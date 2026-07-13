@@ -1,5 +1,5 @@
 /**
- * Nebula Discover — the backend-connected discovery experience.
+ * Nebula Discover, the backend-connected discovery experience.
  *
  * State machine: objective → running → workspace. A run is started explicitly
  * (never on keystroke), streamed via SSE with a polling fallback, cancellable, and
@@ -176,12 +176,12 @@ export function DiscoverApp() {
             </button>
           )}
           <AmbientAudio />
-          {/* No live/offline chrome in the header — provenance is surfaced where it matters (the scan
+          {/* No live/offline chrome in the header, provenance is surfaced where it matters (the scan
               and the brief). Only a genuinely UNREACHABLE API earns a quiet warning here: a "degraded"
-              status (e.g. one public source like FPbase down) is not offline — the app runs on the
-              rest, and per-source state is shown in the scan — so it must not raise this alarm. */}
+              status (e.g. one public source like FPbase down) is not offline, the app runs on the
+              rest, and per-source state is shown in the scan, so it must not raise this alarm. */}
           {!health && (
-            <span className="disc-status" role="status" title="Discovery API unreachable — check the backend service">
+            <span className="disc-status" role="status" title="Discovery API unreachable, check the backend service">
               <span className="disc-status-dot" aria-hidden />API offline
             </span>
           )}

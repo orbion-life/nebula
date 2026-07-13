@@ -1,5 +1,5 @@
 /**
- * The per-protein rationale dossier — one cohesive "why THIS candidate" panel for the selected
+ * The per-protein rationale dossier, one cohesive "why THIS candidate" panel for the selected
  * protein, folding what used to be the standalone physics + measure scenes into one place:
  *   why it earned a place (the real DiscoveryScore.rationale, previously hidden) →
  *   candidate-led physics (its OWN computed spin + route, with the generic MARY demoted to a clearly
@@ -34,7 +34,7 @@ export function CandidateDossierPanel({ candidate, dossier, score, frontier, run
 
   return (
     <div className="dossier">
-      {/* 1 — why this candidate (the real per-protein rationale, surfaced) */}
+      {/* 1. why this candidate (the real per-protein rationale, surfaced) */}
       <div className="dossier-why">
         <span className="dossier-k">why {accession} earned a place</span>
         <p className="dossier-rationale">
@@ -51,18 +51,18 @@ export function CandidateDossierPanel({ candidate, dossier, score, frontier, run
         </div>
       </div>
 
-      {/* 2 — candidate-led physics: THIS protein's own number first; the generic MARY is a labelled reference */}
+      {/* 2. candidate-led physics: THIS protein's own number first; the generic MARY is a labelled reference */}
       <div className="dossier-physics">
         <h3 tabIndex={-1}>{spinEligible ? `The spin physics behind ${accession}` : `What we can (and cannot) compute for ${accession}`}</h3>
         {spinEligible ? (
           <>
             <p className="dossier-lead">
               {spinParam
-                ? `${accession}'s own max Mulliken spin population is ${spinParam.value.toFixed(3)} — ${candidateSpecific ? "computed on structure-extracted coordinates" : `a ${geometry ?? "route-level isoalloxazine template, not yet extracted from this protein's structure"}`}. Basis-dependent, HIGH uncertainty; not a probability and not a response prediction.`
+                ? `${accession}'s own max Mulliken spin population is ${spinParam.value.toFixed(3)}, ${candidateSpecific ? "computed on structure-extracted coordinates" : `a ${geometry ?? "route-level isoalloxazine template, not yet extracted from this protein's structure"}`}. Basis-dependent, HIGH uncertainty; not a probability and not a response prediction.`
                 : `No candidate-specific spin value was produced for ${accession}; a generic isoalloxazine template applies to its flavin radical-pair route. Its physics stands on the route reference, not on this protein's own coordinates.`}
             </p>
             <details className="dossier-reference" open>
-              <summary>reference radical-pair model — a synthetic assumption sweep, not {accession}</summary>
+              <summary>reference radical-pair model, a synthetic assumption sweep, not {accession}</summary>
               <Suspense fallback={<div className="atlas-compute-loading" aria-live="polite">composing the spin dynamics trace…</div>}>
                 <Traces spin={spinParam} candidateSpecific={candidateSpecific} candidateLabel={accession} />
               </Suspense>
@@ -72,19 +72,19 @@ export function CandidateDossierPanel({ candidate, dossier, score, frontier, run
           <p className="dossier-lead">
             No candidate-specific quantum chemistry for this route. {routeLabel(candidate.route_class)} is a frontier hypothesis;
             only the flavin radical-pair route computes candidate-specific spin in this build. {accession} is scored on public
-            annotation and measurement value alone — no physics theater stands in for a computation we did not run.
+            annotation and measurement value alone, no physics theater stands in for a computation we did not run.
           </p>
         )}
         <FieldPrecedent route={candidate.route_class} />
       </div>
 
-      {/* 3 — the public evidence + mechanism ladder + what we could not resolve */}
+      {/* 3. the public evidence + mechanism ladder + what we could not resolve */}
       <EvidenceLedger candidate={candidate} dossier={dossier} score={score} />
 
-      {/* 4 — the uncalibrated triage axes + satisfied/remaining constraints */}
+      {/* 4. the uncalibrated triage axes + satisfied/remaining constraints */}
       <AppliedConstraints score={score} dossier={dossier} />
 
-      {/* 5 — the one falsifiable measurement that earns bench time */}
+      {/* 5. the one falsifiable measurement that earns bench time */}
       <div className="dossier-measure">
         <span className="dossier-k dossier-k-teal">decisive next measurement</span>
         <h3 className="dossier-measure-what">{frontier?.discriminating_experiment?.what_to_measure ?? "Test the proposed readout against its mechanism-specific controls."}</h3>

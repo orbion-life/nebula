@@ -8,7 +8,7 @@ function verdictFrom(findings: SwarmLensReport["findings"]): SwarmVerdict {
 }
 
 /**
- * MAP phase — parallel specialist workers (deterministic synchronous fan-out).
+ * MAP phase, parallel specialist workers (deterministic synchronous fan-out).
  * Each lens reviews the producer artifact in isolation (producer-reviewer pattern).
  */
 export function mapLenses(

@@ -1,5 +1,5 @@
 /**
- * Act II — The Search. The run executes; this scene advances ITSELF from real run
+ * Act II. The Search. The run executes; this scene advances ITSELF from real run
  * state (not scroll). The candidate universe fills as real accessions stream in, the
  * ring counter tweens toward the real progress fraction, and on completion the shell
  * delivers the user into Act III. Failure/cancel/abstention resolve honestly here.
@@ -26,7 +26,7 @@ export function ActSearch({ status, stage, events, run, error, onCancel, onReset
   const terminalBad = status === "failed" || status === "cancelled";
   const note = events[events.length - 1]?.note ?? "compiling objective…";
 
-  // a 422 for an unsupported sensing target is an abstention, not a crash — hand it the elegant scene.
+  // a 422 for an unsupported sensing target is an abstention, not a crash, hand it the elegant scene.
   const unsupported = status === "failed" && /cannot search|supported sensing target/i.test(error ?? "");
   if (unsupported) return <ActAbstention kind="unsupported" run={run} error={error} onReset={onReset} />;
 
