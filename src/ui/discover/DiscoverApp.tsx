@@ -1,5 +1,5 @@
 /**
- * Nebula Discover, the backend-connected discovery experience.
+ * Nebula, the backend-connected discovery experience.
  *
  * State machine: objective → running → workspace. A run is started explicitly
  * (never on keystroke), streamed via SSE with a polling fallback, cancellable, and

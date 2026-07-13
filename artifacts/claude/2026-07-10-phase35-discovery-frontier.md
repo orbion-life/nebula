@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-10 · **Branch:** `claude/live-protein-discovery`
 
-Nebula Discover is a quantum-biology discovery engine. Phase 3.5 turns the closed
+Nebula is a quantum-biology discovery engine. Phase 3.5 turns the closed
 5-route vocabulary into a composable **MechanismGraph** and splits results into
 two strictly-separate lanes, with real product logic (not visuals).
 

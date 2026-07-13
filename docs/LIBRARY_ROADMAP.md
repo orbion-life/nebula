@@ -1,6 +1,6 @@
 # Library Roadmap
 
-Nebula Discover keeps a **small, fast, deterministic core** and represents heavy
+Nebula keeps a **small, fast, deterministic core** and represents heavy
 research tools as **optional adapters**. The structured source of truth is
 [`src/core/libraryRegistry.ts`](../src/core/libraryRegistry.ts); this document is
 the narrative version.

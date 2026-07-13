@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-13  
 **User:** Aniruddh Goteti, founder of Orbion  
-**Role:** First internal user of Nebula Discover
+**Role:** First internal user of Nebula
 
 ## The decision
 

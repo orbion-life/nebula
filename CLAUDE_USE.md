@@ -1,6 +1,6 @@
 # Claude Use
 
-Nebula Discover was built for the **Built with Claude: Life Sciences** hackathon.
+Nebula was built for the **Built with Claude: Life Sciences** hackathon.
 Claude use is designed to be verifiable directly from this repository.
 
 See also: [`CLAUDE_TRANSPARENCY.md`](./CLAUDE_TRANSPARENCY.md)

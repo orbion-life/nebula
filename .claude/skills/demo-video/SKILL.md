@@ -1,6 +1,6 @@
 ---
 name: demo-video
-description: Produce the three-minute hackathon demo script and recording plan for Nebula Discover.
+description: Produce the three-minute hackathon demo script and recording plan for Nebula.
 ---
 
 # Demo Video

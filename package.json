@@ -1,5 +1,5 @@
 {
-  "name": "nebula-discover",
+  "name": "nebula",
   "version": "0.1.0",
   "private": true,
   "description": "Public, open-source discovery module concept for Nebula: turns a sensing objective into public construct hypotheses, mechanism routes, synthetic multimodal measurement signatures, rationale, uncertainty, and a claim-safe measurement handoff.",

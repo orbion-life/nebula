@@ -1,6 +1,6 @@
 ---
 name: competitive-landscape
-description: Honest comparison of Nebula Discover to adjacent tools without overclaiming.
+description: Honest comparison of Nebula to adjacent tools without overclaiming.
 ---
 
 # Competitive Landscape

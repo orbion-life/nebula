@@ -1,6 +1,6 @@
-# CLAUDE.md: operating guide for Nebula Discover
+# CLAUDE.md: operating guide for Nebula
 
-Nebula Discover is the public, open-source discovery module for deciding which
+Nebula is the public, open-source discovery module for deciding which
 public protein and mechanism hypotheses deserve measurement next, across multiple
 sensing modalities (fluorescence, lifetime, magnetic/RF, and redox-electrochemical
 readouts). It retrieves and

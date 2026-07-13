@@ -1,4 +1,4 @@
-# Nebula Discover — Phase 2 quickstart
+# Nebula — Phase 2 quickstart
 .PHONY: help install api ui test test-api test-ui build contracts health
 
 help:

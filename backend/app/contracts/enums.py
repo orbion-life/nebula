@@ -1,4 +1,4 @@
-"""Controlled vocabularies for Nebula Discover Phase 2.
+"""Controlled vocabularies for Nebula Phase 2.
 
 Mirrored 1:1 from the TypeScript domain schema (`src/core/types.ts`) so the two
 sides never drift, plus Phase-2 additions for retrieval, physics eligibility, and

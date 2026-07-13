@@ -1,6 +1,6 @@
 # Swarm Architecture
 
-Nebula Discover uses a **mandatory** adversarial swarm after every pipeline run.
+Nebula uses a **mandatory** adversarial swarm after every pipeline run.
 The implementation is deterministic TypeScript (offline-safe, seed-stable) that
 mirrors research-backed multi-agent patterns used in production MAS design.
 

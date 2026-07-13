@@ -1,6 +1,6 @@
 ---
 name: claim-boundary
-description: Audit and rewrite unsafe scientific claims in Nebula Discover UI, docs, and exports.
+description: Audit and rewrite unsafe scientific claims in Nebula UI, docs, and exports.
 ---
 
 # Claim Boundary

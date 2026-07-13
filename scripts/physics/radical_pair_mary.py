@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Nebula Discover — radical-pair magnetofluorescence generator (Phase 3 deep path).
+Nebula — radical-pair magnetofluorescence generator (Phase 3 deep path).
 
 Computes a REAL flavin-based radical-pair spin-dynamics signature and writes a
 versioned, provenance-tagged, content-hashed JSON artifact consumed by the

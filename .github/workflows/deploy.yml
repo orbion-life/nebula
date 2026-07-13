@@ -160,7 +160,7 @@ jobs:
           APP_URL: ${{ steps.production-smoke.outputs.app_url }}
         run: |
           {
-            echo "### Nebula Discover deployment"
+            echo "### Nebula deployment"
             echo
             echo "- Application: [$APP_URL]($APP_URL)"
             echo "- Smoke: passed (SPA root + API health + completed discovery run)"

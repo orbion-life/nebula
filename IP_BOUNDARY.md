@@ -1,13 +1,13 @@
 # IP Boundary
 
-Nebula Discover is the **public** discovery-module concept for Nebula. This file
+Nebula is the **public** discovery-module concept for Nebula. This file
 defines what the public artifact may and may not do. The runtime claim firewall
 (`src/core/claimFirewall.ts`) and the boundary tests (`tests/boundary.test.ts`)
 enforce these rules in CI.
 
 ## Allowed public claim
 
-> Nebula Discover retrieves public protein candidates for supported sensing
+> Nebula retrieves public protein candidates for supported sensing
 > objectives, checks which mechanism routes their annotations can support,
 > exposes assumption-driven physics references and triage logic, and produces
 > measurement hypotheses with controls and falsifiers.

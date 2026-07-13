@@ -185,7 +185,7 @@ export function NarrativeReplay({ run }: Props) {
     URL.revokeObjectURL(url);
   };
 
-  // Branded PDF: render the self-contained Nebula Discovery brief into a window and hand it to
+  // Branded PDF: render the self-contained Nebula brief into a window and hand it to
   // the browser's own print → "Save as PDF" (vector-crisp, exact brand fonts, no dependency).
   const downloadHandoff = () => {
     if (!selected) return;

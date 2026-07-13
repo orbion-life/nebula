@@ -1,13 +1,13 @@
 ---
 name: not-a-model-wrapper
-description: Articulate why Nebula Discover is a pipeline workflow, not a single-model wrapper.
+description: Articulate why Nebula is a pipeline workflow, not a single-model wrapper.
 ---
 
 # Not a Model Wrapper
 
 ## Narrative (30 seconds)
 
-Nebula Discover is an **experiment-value workflow**: objective → public
+Nebula is an **experiment-value workflow**: objective → public
 hypotheses → mechanism routes → simulated sweeps (every candidate) →
 experiment-value ranking → measurement plan + falsification → handoff →
 deterministic release audit. AlphaFold, ESM, RFdiffusion are **optional adapters**

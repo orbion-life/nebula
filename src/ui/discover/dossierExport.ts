@@ -141,7 +141,7 @@ export function dossierMarkdown(candidate: CandidateRecord, dossier: CandidateDo
 }
 
 // ---- Branded PDF discovery brief -------------------------------------------------------
-// A self-contained HTML document in the Nebula Discovery brand kit (navy + platinum + teal,
+// A self-contained HTML document in the Nebula brand kit (navy + platinum + teal,
 // Cormorant Garamond over Hanken Grotesk, the nebula star mark), rendered to PDF by the
 // browser's own print engine (vector-crisp, no dependency, offline-consistent with the app).
 // Same claim firewall as the Markdown export: every free-text field is run through auditClaim,

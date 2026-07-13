@@ -1,5 +1,5 @@
 /**
- * Typed client for the Nebula Discover FastAPI service.
+ * Typed client for the Nebula FastAPI service.
  *
  * All shapes come from the generated OpenAPI contracts (`src/contracts/api.ts`) —
  * the Python Pydantic models are the single source of truth, so this client can

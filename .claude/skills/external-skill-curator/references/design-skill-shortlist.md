@@ -1,11 +1,11 @@
 # External Design / UX Skill Shortlist
 
-This note summarizes the attached skill list for Nebula Discover. It is a
+This note summarizes the attached skill list for Nebula. It is a
 selection guide, not an installation record.
 
 ## Best fit
 
-| Skill | Source | Use for Nebula Discover | Install level |
+| Skill | Source | Use for Nebula | Install level |
 | --- | --- | --- | --- |
 | Anthropic `frontend-design` | `anthropics/skills` | Cinematic, distinctive UI direction when the app feels generic | Personal |
 | Vercel `web-design-guidelines` | `vercel-labs/agent-skills` | UI/UX and accessibility quality review | Personal or plugin |

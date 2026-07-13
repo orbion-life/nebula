@@ -1,6 +1,6 @@
-"""RFdiffusion on Modal — bring-your-own-GPU recipe for the Nebula Discover design adapter.
+"""RFdiffusion on Modal — bring-your-own-GPU recipe for the Nebula design adapter.
 
-Deploy this to YOUR OWN Modal account. Nebula Discover's backend never runs it and never holds
+Deploy this to YOUR OWN Modal account. Nebula's backend never runs it and never holds
 your credentials; it only POSTs to the endpoint URL you paste into an env var, with a bearer
 token only you know. Forkers do the same on their own account. The maintainer's compute is never
 shared or billed.
@@ -12,7 +12,7 @@ shared or billed.
     modal deploy infra/modal/rfdiffusion_modal.py
     #   -> prints a web endpoint URL, e.g. https://<you>--nebula-rfdiffusion-generate.modal.run
 
-Then point Nebula Discover at YOUR endpoint (never commit these):
+Then point Nebula at YOUR endpoint (never commit these):
 
     export NEBULA_DESIGN_ADAPTER=modal
     export NEBULA_MODAL_RFDIFFUSION_URL="https://<you>--nebula-rfdiffusion-generate.modal.run"

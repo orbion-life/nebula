@@ -1,6 +1,6 @@
 ---
 name: audit-submit
-description: Run the final pre-submission audit for Nebula Discover.
+description: Run the final pre-submission audit for Nebula.
 ---
 
 # Audit Submit

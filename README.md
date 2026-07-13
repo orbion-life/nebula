@@ -1,4 +1,4 @@
-# Nebula Discover
+# Nebula
 
 **Decide what deserves measurement next.**
 
@@ -9,7 +9,7 @@
 > ### 🔗 Try it now — no install
 > **https://nebula-discover.greenforest-ed82ac43.westeurope.azurecontainerapps.io**
 
-Nebula Discover turns a **sensing objective** into a public-protein search across several sensing
+Nebula turns a **sensing objective** into a public-protein search across several sensing
 modalities, and hands back the single experiment worth taking to a bench: a public accession, a
 route-compatible instrument, its controls, its uncertainty, and the result that would prove it
 wrong.
@@ -113,8 +113,8 @@ Nebula is a **single container** — FastAPI serves both the built React SPA (sa
 the `/api` routes. Deploy that image anywhere containers run:
 
 ```bash
-docker build -t nebula-discover .
-docker run -p 8000:8000 nebula-discover
+docker build -t nebula .
+docker run -p 8000:8000 nebula
 # → http://localhost:8000
 ```
 

@@ -1,6 +1,6 @@
 ---
 name: adversarial-swarm
-description: Mandatory hierarchical map-reduce adversarial swarm for every Nebula Discover run.
+description: Mandatory hierarchical map-reduce adversarial swarm for every Nebula run.
 ---
 
 # Adversarial Swarm (mandatory)

@@ -1,6 +1,6 @@
 ---
 name: visual-system
-description: Design the Tufte-style visual explanation system for Nebula Discover screens.
+description: Design the Tufte-style visual explanation system for Nebula screens.
 ---
 
 # Visual System

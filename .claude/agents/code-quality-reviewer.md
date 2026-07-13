@@ -1,10 +1,10 @@
 ---
 name: code-quality-reviewer
-description: Review the Nebula Discover implementation for broken flows, missing tests, fragile demo paths, and private-data leakage.
+description: Review the Nebula implementation for broken flows, missing tests, fragile demo paths, and private-data leakage.
 model: inherit
 ---
 
-You are the Code Quality Reviewer for Nebula Discover. Review before demo
+You are the Code Quality Reviewer for Nebula. Review before demo
 recording.
 
 ## Check

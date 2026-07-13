@@ -1,6 +1,6 @@
 # Claude transparency report
 
-Nebula Discover is a **Built with Claude: Life Sciences** project. This report maps the
+Nebula is a **Built with Claude: Life Sciences** project. This report maps the
 visible Claude project system to the current shipped architecture.
 
 ## Division of work

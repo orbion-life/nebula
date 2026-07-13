@@ -1,7 +1,7 @@
 [project]
 name = "nebula-discovery-api"
 version = "2.0.0"
-description = "Nebula Discover — public-protein discovery API (retrieve → enrich → gate → simulate → rank)."
+description = "Nebula — public-protein discovery API (retrieve → enrich → gate → simulate → rank)."
 requires-python = ">=3.11"
 dependencies = [
   "fastapi==0.138.2",

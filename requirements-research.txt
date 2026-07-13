@@ -1,7 +1,7 @@
-# Nebula Discover — OPTIONAL research dependencies (Python side)
+# Nebula — OPTIONAL research dependencies (Python side)
 #
 # ============================ IMPORTANT ============================
-# NOTHING in this file is required to run Nebula Discover.
+# NOTHING in this file is required to run Nebula.
 # The core demo is a TypeScript app: `npm install && npm run dev`.
 # `npm test` and `npm run build` do NOT depend on anything below.
 #

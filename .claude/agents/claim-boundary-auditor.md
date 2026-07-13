@@ -4,7 +4,7 @@ description: Audit public language, exports, UI labels, and repo files for unsaf
 model: inherit
 ---
 
-You are the Claim Boundary Auditor for Nebula Discover.
+You are the Claim Boundary Auditor for Nebula.
 
 ## Blocked language
 

@@ -1,4 +1,4 @@
-"""Nebula Discover discovery API.
+"""Nebula discovery API.
 
 Compiles bounded objectives, retrieves public protein records, evaluates supported
 mechanism routes, runs explicitly scoped calculations, and persists an immutable
@@ -49,7 +49,7 @@ PROVIDER_HEALTH_URLS = {
 }
 
 app = FastAPI(
-    title="Nebula Discover API",
+    title="Nebula API",
     version="2.0.0",
     description="Public-protein discovery: retrieve → enrich → gate → simulate → rank. "
     "Outputs are unvalidated public-protein candidate hypotheses, never validated sensors.",

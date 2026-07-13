@@ -1,12 +1,12 @@
 ---
 name: external-skill-curator
-description: Evaluate and optionally install external Claude skills for Nebula Discover UI, UX, React, accessibility, and design work without weakening the project claim firewall.
+description: Evaluate and optionally install external Claude skills for Nebula UI, UX, React, accessibility, and design work without weakening the project claim firewall.
 ---
 
 # External Skill Curator
 
 Use this when the user asks to add, install, compare, or use outside Claude
-skills/plugins for Nebula Discover.
+skills/plugins for Nebula.
 
 ## Default decision
 

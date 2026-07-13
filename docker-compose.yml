@@ -1,4 +1,4 @@
-# Nebula Discover — local single-container run (mirrors the Azure Container Apps image).
+# Nebula — local single-container run (mirrors the Azure Container Apps image).
 # One service: FastAPI serves the built React SPA (same origin) AND the /api routes.
 #   docker compose up --build   →   http://localhost:8000
 services:

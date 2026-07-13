@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Smoke-test a running Nebula Discover container using only the Python stdlib.
+"""Smoke-test a running Nebula container using only the Python stdlib.
 
 Shallow mode checks the deployed SPA and API readiness. Full mode additionally
 submits a deterministic public-fixture discovery objective and polls it through

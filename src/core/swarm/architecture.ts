@@ -1,5 +1,5 @@
 /**
- * Research-backed swarm architecture for Nebula Discover.
+ * Research-backed swarm architecture for Nebula.
  *
  * Pattern: Hierarchical Map-Reduce + Producer-Reviewer (Pipeline Triad)
  *

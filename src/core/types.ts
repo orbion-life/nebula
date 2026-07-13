@@ -1,5 +1,5 @@
 /**
- * Nebula Discover, canonical data contracts.
+ * Nebula, canonical data contracts.
  *
  * These types are the public schema for the discovery module. They intentionally
  * encode claim-safety into the type system: every hypothesis carries

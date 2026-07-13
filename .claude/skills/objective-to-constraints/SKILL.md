@@ -1,6 +1,6 @@
 ---
 name: objective-to-constraints
-description: Convert a messy sensor/material objective into the structured Nebula Discover ObjectiveInput.
+description: Convert a messy sensor/material objective into the structured Nebula ObjectiveInput.
 ---
 
 # Objective To Constraints

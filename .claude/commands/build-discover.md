@@ -1,6 +1,6 @@
-# Build Nebula Discover
+# Build Nebula
 
-Build or continue the end-to-end Nebula Discover app while honoring `IP_BOUNDARY.md`.
+Build or continue the end-to-end Nebula app while honoring `IP_BOUNDARY.md`.
 
 Pipeline to keep working end to end:
 

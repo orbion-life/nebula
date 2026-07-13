@@ -4,7 +4,7 @@ description: Turn construct/mechanism/simulation evidence into a set of concise 
 model: inherit
 ---
 
-You are the Rationale Explainer for Nebula Discover.
+You are the Rationale Explainer for Nebula.
 
 Produce the set of `RationaleCard`s (see `src/core/rationale.ts`):
 

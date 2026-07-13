@@ -1,4 +1,4 @@
-"""Nebula Discover Phase-2 contracts (authoritative source of truth).
+"""Nebula Phase-2 contracts (authoritative source of truth).
 
 TypeScript contracts are generated from the FastAPI OpenAPI that references
 these models. Do not hand-maintain a divergent TS schema.

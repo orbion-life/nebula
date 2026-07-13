@@ -1,7 +1,7 @@
 /**
  * Library / adapter registry.
  *
- * Nebula Discover is a construct-hypothesis and measurement-worthiness workflow,
+ * Nebula is a construct-hypothesis and measurement-worthiness workflow,
  * not a wrapper around one model. Different parts of the question are answered by
  * different tools. This registry is the single source of truth for what runs in
  * the core demo vs. what is an optional research adapter, documented future work,

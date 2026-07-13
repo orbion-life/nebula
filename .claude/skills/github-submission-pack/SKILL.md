@@ -17,7 +17,7 @@ description: Polish GitHub repo and hackathon submission materials for first-imp
 
 ## Submission blurb (template)
 
-Nebula Discover turns messy protein-sensor objectives into ranked public construct
+Nebula turns messy protein-sensor objectives into ranked public construct
 hypotheses, synthetic assumption sweeps, falsification criteria, and claim-safe
 measurement handoffs — with a deterministic release audit on every run.
 

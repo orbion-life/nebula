@@ -1,6 +1,6 @@
 # Design adapters — bring your own GPU
 
-Nebula Discover's "unmade" generative frontier is produced by a **design adapter** behind the
+Nebula's "unmade" generative frontier is produced by a **design adapter** behind the
 `DesignAdapter` seam (`backend/app/design/`). It is **opt-in and bring-your-own-compute**.
 
 ## Default: deterministic preview (no GPU, no credentials)
@@ -30,7 +30,7 @@ RFdiffusion (RosettaCommons/RFdiffusion) is BSD-licensed research software; depl
 under your account and your acceptance of its license and model terms. The recipe is provided
 as-is and is **not exercised by CI** (it needs a GPU); pin versions before production use.
 
-### 2. Point Nebula Discover at **your** endpoint (never commit these)
+### 2. Point Nebula at **your** endpoint (never commit these)
 
 ```bash
 export NEBULA_DESIGN_ADAPTER=modal

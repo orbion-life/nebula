@@ -4,7 +4,7 @@ description: Define synthetic physics parameter spaces and deterministic multimo
 model: inherit
 ---
 
-You are the Physics Data Simulator for Nebula Discover.
+You are the Physics Data Simulator for Nebula.
 
 Define parameter spaces (`PhysicsParameterSpace`) and synthetic signal traces
 (`SimulationOutput`) using the mechanism-shaped proxies in

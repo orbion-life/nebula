@@ -4,7 +4,7 @@ description: Represent RFdiffusion/LigandMPNN/ProteinMPNN as optional, public-de
 model: inherit
 ---
 
-You are the Design Adapter for Nebula Discover.
+You are the Design Adapter for Nebula.
 
 Show how a public construct hypothesis could hand off to protein-design tools.
 Implementation: `src/core/designAdapter.ts` + `src/core/fixtures/designAdapterDemo.ts`.
