@@ -22,11 +22,11 @@ ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-# backend source + install (fastapi/pydantic/httpx/tenacity/uvicorn/biopython/gemmi/
-# numpy/scipy/radicalpy — NO pyscf). The QM cache + fixtures ship as package data.
+# backend source + install (FastAPI runtime deps only; no PySCF/RadicalPy in the
+# slim image). The QM cache + fixtures ship as package data.
 COPY backend/ /app/backend/
 RUN pip install ./backend
-# versioned radical-pair reference artifact (scoring.py resolves it at /app/src/data/…)
+# versioned radical-pair reference artifact (scoring.py resolves it at /app/src/data/)
 COPY src/data/generated/ /app/src/data/generated/
 # built SPA from stage 1
 COPY --from=web /web/dist /app/dist

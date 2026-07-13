@@ -17,7 +17,7 @@ Claude works within the repository's contracts and scientific boundaries.
 
 Listed in `.claude/agents/` — see transparency report for code mappings.
 
-## Skills (25)
+## Skills (27)
 
 **Pipeline:** objective-to-constraints, construct-hypothesis, mechanism-route,
 physics-data-simulation, measurement-worthiness, design-adapter, rationale-evidence,
@@ -29,7 +29,8 @@ evidence-citation-audit, measurement-collaborator-handoff, not-a-model-wrapper,
 demo-recording-qa, life-sciences-impact-narrator, competitive-landscape,
 accessibility-demo-pass
 
-**Maintenance:** route-registry-curator, post-swarm-patch, demo-video, audit-submit
+**Maintenance:** route-registry-curator, post-swarm-patch, demo-video,
+audit-submit, external-skill-curator
 
 ## Commands (9)
 

@@ -83,7 +83,7 @@ export async function compileObjective(
   );
 }
 
-/** Start a run from either a raw free-text objective or a full edited ObjectiveSpec. */
+/** Start a run from either a raw objective phrase or a full edited ObjectiveSpec. */
 export async function createRun(
   body: ObjectiveSpec | { objective_text: string; user_mode: UserMode; instrument_id?: string | null; seed?: number },
 ): Promise<RunCreated> {
