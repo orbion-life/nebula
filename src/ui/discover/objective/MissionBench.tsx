@@ -418,6 +418,7 @@ export function MissionBench({
               <p>{STAGE_GUIDE.signals.guide}</p>
             </div>
             <div className="mb-signal-board">
+              <span className="mb-group-label">What to sense <em>pick one, it sets the mechanism route</em></span>
               <div className="mb-sense-grid" role="group" aria-label="sensing target">
                 {SENSES.map((s) => (
                   <button
@@ -431,6 +432,7 @@ export function MissionBench({
                   </button>
                 ))}
               </div>
+              <span className="mb-group-label">How it is read out <em>layer any that apply</em></span>
               <div className="mb-modality-grid" role="group" aria-label="readout modalities">
                 {MODALITIES.map((m) => (
                   <button
@@ -463,6 +465,7 @@ export function MissionBench({
                   <small>{selectedProduct.sub}</small>
                 </div>
               </div>
+              <span className="mb-group-label">Form factor <em>pick one, where the sensor lives</em></span>
               <div className="mb-forms" role="group" aria-label="product form">
                 {PRODUCTS.map((p) => (
                   <button key={p.id} className={`mb-form ${product === p.id ? "on" : ""}`} onClick={() => setProduct(p.id)} aria-pressed={product === p.id}>
@@ -472,7 +475,9 @@ export function MissionBench({
                 ))}
               </div>
               <div className="mb-gauges">
+                <span className="mb-group-label">Operating conditions <em>pick one per row</em></span>
                 <div className="mb-gauge-row" role="group" aria-label="temperature">
+                  <span className="mb-gauge-label">Temperature</span>
                   {TEMPS.map((t) => (
                     <button key={t.id} className={`mb-chip ${temp === t.id ? "on" : ""}`} onClick={() => setTemp(t.id)} aria-pressed={temp === t.id}>
                       {t.label}
@@ -480,6 +485,7 @@ export function MissionBench({
                   ))}
                 </div>
                 <div className="mb-gauge-row" role="group" aria-label="oxygen">
+                  <span className="mb-gauge-label">Oxygen</span>
                   {OXY.map((o) => (
                     <button key={o.id} className={`mb-chip ${oxy === o.id ? "on" : ""}`} onClick={() => setOxy(o.id)} aria-pressed={oxy === o.id}>
                       {o.label}
@@ -487,6 +493,7 @@ export function MissionBench({
                   ))}
                 </div>
                 <div className="mb-gauge-row" role="group" aria-label="integration">
+                  <span className="mb-gauge-label">Placement</span>
                   <button className={`mb-chip ${integrated ? "on" : ""}`} onClick={() => setIntegrated(true)} aria-pressed={integrated}>Matrix integrated</button>
                   <button className={`mb-chip ${!integrated ? "on" : ""}`} onClick={() => setIntegrated(false)} aria-pressed={!integrated}>Free moving</button>
                 </div>
