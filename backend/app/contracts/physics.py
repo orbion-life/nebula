@@ -69,12 +69,18 @@ class RadicalPairModel(BaseModel):
     separation_angstrom: float
     exchange_j_mT: float
     dipolar_d_mT: float
+    # A COARSE model estimate of the magnetic field effect (max |MFE| over a field sweep, percent), or
+    # None if it could not be computed. Assumption-heavy (see method_note): NOT a validated prediction
+    # and NOT a claim the protein works as a magnetic sensor.
+    magnetic_field_effect_percent: float | None = None
     method_note: str = (
         "electron-transfer partner from this protein's aromatic hopping chain (light Beratan-Onuchic "
         "heuristic; eMap/pyemap is the fuller tool). D from the point dipole is well constrained by the "
-        "separation; J from the Moser et al. 1992 tunnelling decay is order-of-magnitude only (the real "
-        "exchange is poorly constrained and usually taken small). Geometry-derived and assumption-derived; "
-        "hyperfine is still class-level and no spin-dynamics yield is predicted."
+        "separation; J from the Moser et al. 1992 tunnelling decay is order-of-magnitude only. The "
+        "magnetic field effect is a COARSE RadicalPy model estimate from D under stated assumptions "
+        "(class-level flavin+tryptophan hyperfine, J taken small, generic recombination/relaxation, no "
+        "optical transduction) -- an approximate figure, NOT a validated prediction and NOT a claim "
+        "this protein works as a magnetic sensor. Geometry-derived; hyperfine still class-level."
     )
 
 

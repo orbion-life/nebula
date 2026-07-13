@@ -73,6 +73,10 @@ def upgrade_with_radical_pair(elig: PhysicsEligibility, rp) -> PhysicsEligibilit
     """Attach the per-protein radical-pair model (partner + geometry-derived J, D) computed from THIS
     protein's structure. rp is a RadicalPair dataclass from physics.radical_pair; partner identity,
     separation, J and D become per-protein, while the hyperfine stays class-level (Tier 1 territory)."""
+    from .radical_pair_response import estimate_mfe
+
+    mfe = estimate_mfe(rp.dipolar_d_mT)  # coarse RadicalPy estimate, cached; None if unavailable
+    mfe_pct = mfe.get("mfe_amplitude_percent") if mfe else None
     model = RadicalPairModel(
         partner_residue=rp.partner_residue,
         partner_kind=rp.partner_kind,
@@ -80,15 +84,22 @@ def upgrade_with_radical_pair(elig: PhysicsEligibility, rp) -> PhysicsEligibilit
         separation_angstrom=rp.separation_angstrom,
         exchange_j_mT=rp.exchange_j_mT,
         dipolar_d_mT=rp.dipolar_d_mT,
+        magnetic_field_effect_percent=mfe_pct,
     )
-    return elig.model_copy(update={
-        "radical_pair": model,
-        "reason": elig.reason
+    reason = (
+        elig.reason
         + f" | RADICAL PAIR: electron-transfer partner {rp.partner_residue} at {rp.separation_angstrom} A; "
         + f"D={rp.dipolar_d_mT:.3f} mT (point dipole, well constrained by the separation), J~{rp.exchange_j_mT:.1e} mT "
-        + "(tunnelling estimate, order-of-magnitude only, usually taken small). Partner, separation and D are "
-        + "per-protein; hyperfine still class-level and no spin-dynamics yield is predicted.",
-    })
+        + "(tunnelling estimate, order-of-magnitude only, usually taken small)."
+    )
+    if mfe_pct is not None:
+        reason += (
+            f" Coarse RadicalPy magnetic field effect estimate up to ~{mfe_pct}% (assumption-heavy: "
+            "class-level hyperfine, J taken small, generic kinetics; an approximate figure, not a validated "
+            "prediction and not a working-sensor claim)."
+        )
+    reason += " Partner, separation and D are per-protein; hyperfine is still class-level."
+    return elig.model_copy(update={"radical_pair": model, "reason": reason})
 
 
 def assess_eligibility(candidate: CandidateRecord) -> PhysicsEligibility:

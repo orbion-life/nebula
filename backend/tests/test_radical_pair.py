@@ -67,7 +67,20 @@ def test_upgrade_attaches_radical_pair_to_eligibility():
     assert upgraded.radical_pair is not None
     assert upgraded.radical_pair.partner_residue == rp.partner_residue
     assert upgraded.radical_pair.dipolar_d_mT == rp.dipolar_d_mT
-    # honest framing: D leads, J flagged order-of-magnitude, no yield/sensor claim
+    # honest framing: D leads (point dipole), J flagged order-of-magnitude, hyperfine still class-level
     low = upgraded.reason.lower()
     assert "point dipole" in low and "order-of-magnitude" in low
-    assert "no spin-dynamics yield" in low
+    assert "hyperfine is still class-level" in low
+    # the coarse magnetic field effect estimate (radicalpy available in this env) stays honestly framed
+    mfe = upgraded.radical_pair.magnetic_field_effect_percent
+    if mfe is not None:
+        assert 0.0 < mfe < 100.0
+        assert "coarse radicalpy magnetic field effect" in low
+        assert "not a validated prediction and not a working-sensor claim" in low
+
+
+def test_mfe_estimate_is_bounded_and_positive():
+    from app.physics.radical_pair_response import estimate_mfe
+    out = estimate_mfe(-0.97)  # a cryptochrome-scale dipolar coupling
+    if out is not None:  # radicalpy is optional (absent in the slim runtime image)
+        assert 0.0 < out["mfe_amplitude_percent"] < 100.0

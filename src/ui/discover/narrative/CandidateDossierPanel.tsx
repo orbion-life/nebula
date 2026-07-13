@@ -72,8 +72,11 @@ export function CandidateDossierPanel({ candidate, dossier, score, frontier, run
                   <div><dt>separation</dt><dd>{rp.separation_angstrom} Å</dd></div>
                   <div><dt>dipolar D</dt><dd>{rp.dipolar_d_mT.toFixed(3)} mT <small>point dipole, well constrained</small></dd></div>
                   <div><dt>exchange J</dt><dd>~{rp.exchange_j_mT.toExponential(1)} mT <small>tunnelling estimate, order of magnitude only</small></dd></div>
+                  {rp.magnetic_field_effect_percent != null ? (
+                    <div><dt>field effect</dt><dd>up to ~{rp.magnetic_field_effect_percent}% <small>coarse RadicalPy estimate, not validated</small></dd></div>
+                  ) : null}
                 </dl>
-                <p className="dossier-rp-note">Partner, separation and D are per-protein, read from this structure. The hyperfine couplings are still class-level and no magnetic response is predicted.</p>
+                <p className="dossier-rp-note">Partner, separation and D are per-protein, read from this structure. The magnetic field effect is a coarse RadicalPy model estimate under stated assumptions (class-level hyperfine, generic kinetics, no optical transduction), not a validated prediction and not a claim this protein works as a sensor.</p>
               </div>
             ) : null}
             <details className="dossier-reference" open>

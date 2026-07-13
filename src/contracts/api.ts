@@ -1217,9 +1217,11 @@ export interface components {
             exchange_j_mT: number;
             /** Dipolar D Mt */
             dipolar_d_mT: number;
+            /** Magnetic Field Effect Percent */
+            magnetic_field_effect_percent?: number | null;
             /**
              * Method Note
-             * @default electron-transfer partner from this protein's aromatic hopping chain (light Beratan-Onuchic heuristic; eMap/pyemap is the fuller tool). D from the point dipole is well constrained by the separation; J from the Moser et al. 1992 tunnelling decay is order-of-magnitude only (the real exchange is poorly constrained and usually taken small). Geometry-derived and assumption-derived; hyperfine is still class-level and no spin-dynamics yield is predicted.
+             * @default electron-transfer partner from this protein's aromatic hopping chain (light Beratan-Onuchic heuristic; eMap/pyemap is the fuller tool). D from the point dipole is well constrained by the separation; J from the Moser et al. 1992 tunnelling decay is order-of-magnitude only. The magnetic field effect is a COARSE RadicalPy model estimate from D under stated assumptions (class-level flavin+tryptophan hyperfine, J taken small, generic recombination/relaxation, no optical transduction) -- an approximate figure, NOT a validated prediction and NOT a claim this protein works as a magnetic sensor. Geometry-derived; hyperfine still class-level.
              */
             method_note: string;
         };
