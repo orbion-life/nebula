@@ -13,6 +13,8 @@ False, claim ceiling unchanged. No sequence is ever requested or surfaced here.
 """
 from __future__ import annotations
 
+import time
+
 import httpx
 
 from ..contracts.candidate import CandidateRecord
@@ -50,10 +52,13 @@ class ModalRFdiffusionAdapter:
 
     name = "rfdiffusion@modal"
 
-    def __init__(self, url: str, token: str, *, timeout: float = 300.0) -> None:
+    def __init__(self, url: str, token: str, *, timeout: float = 360.0, poll_interval: float = 4.0) -> None:
         self._url = url
+        # the async result endpoint sits beside generate: ...-generate.modal.run -> ...-result.modal.run
+        self._result_url = url.replace("-generate.modal.run", "-result.modal.run")
         self._token = token
         self._timeout = timeout
+        self._poll = poll_interval
 
     def invent(self, objective: ObjectiveSpec, candidates: list[CandidateRecord] | None = None, n: int = 3) -> list[GenerativePreview]:
         # imported lazily-safe: this module is only imported after app.design.__init__ is loaded
@@ -76,12 +81,30 @@ class ModalRFdiffusionAdapter:
             "target_pdb_id": top_pdb,
             "mechanism_route_id": (top.mechanism_route_id if top else None),
         }
-        resp = httpx.post(self._url, json=payload, timeout=self._timeout)
+        # ASYNC submit -> poll. `generate` returns a call_id in <1s; `result` yields the designs once
+        # the GPU job finishes. Every HTTP call is short, so a multi-minute cold start never overruns a
+        # single request — which is exactly what silently degraded the old synchronous call to preview.
+        resp = httpx.post(self._url, json=payload, timeout=30.0)
         resp.raise_for_status()
         data = resp.json()
         model = data.get("model")
+        designs = data.get("designs")
+        call_id = data.get("call_id")
+        if call_id and designs is None:  # async endpoint: poll result until the GPU job completes
+            deadline = time.monotonic() + self._timeout
+            while time.monotonic() < deadline:
+                time.sleep(self._poll)
+                r = httpx.post(self._result_url, json={"token": self._token, "call_id": call_id}, timeout=30.0)
+                r.raise_for_status()
+                rd = r.json()
+                if rd.get("status") == "completed":
+                    designs = rd.get("designs") or []
+                    model = rd.get("model") or model
+                    break
+            if designs is None:
+                raise TimeoutError("modal generation did not complete within the adapter timeout")
         out: list[GenerativePreview] = []
-        for i, d in enumerate(data.get("designs", [])[:n], 1):
+        for i, d in enumerate((designs or [])[:n], 1):
             pdb = d.get("backbone_pdb")
             if not pdb:  # a backbone with no coordinates is not a design; skip it
                 continue

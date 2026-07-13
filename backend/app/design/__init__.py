@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 from typing import Protocol
 
 from ..contracts.candidate import CandidateRecord
@@ -144,6 +145,31 @@ class PreviewDesigner:
 
 _OFF = {"", "preview", "none", "off", "0", "false"}
 
+_GEN_DAY: str | None = None
+_GEN_COUNT = 0
+
+
+def _under_daily_gen_cap() -> bool:
+    """Bound public GPU spend: a per-process daily cap on real (adapter) generations. Env
+    NEBULA_MODAL_MAX_PER_DAY (default 80; 0 = unlimited). Past the cap, runs fall back to the free
+    deterministic preview rather than billing another A10G job — so a public URL cannot be abused
+    into unbounded spend. Single-instance by design (local SQLite run store, deployed min=max=1),
+    so an in-process counter is sufficient; it resets on restart and at each UTC date change."""
+    global _GEN_DAY, _GEN_COUNT
+    try:
+        cap = int(os.environ.get("NEBULA_MODAL_MAX_PER_DAY", "80"))
+    except ValueError:
+        cap = 80
+    if cap <= 0:
+        return True
+    today = time.strftime("%Y-%m-%d")
+    if today != _GEN_DAY:
+        _GEN_DAY, _GEN_COUNT = today, 0
+    if _GEN_COUNT >= cap:
+        return False
+    _GEN_COUNT += 1
+    return True
+
 
 def _select_adapter() -> DesignAdapter:
     """Pick the design adapter from the environment. Default: the deterministic preview.
@@ -175,6 +201,9 @@ def generate_previews(objective: ObjectiveSpec, candidates: list[CandidateRecord
     adapter = _select_adapter()
     if isinstance(adapter, PreviewDesigner):
         return adapter.invent(objective, candidates, n)
+    if not _under_daily_gen_cap():  # bound public GPU spend — honest preview past the daily cap
+        _log.warning("Modal daily generation cap reached; using the deterministic preview.")
+        return PreviewDesigner().invent(objective, candidates, n)
     try:
         out = adapter.invent(objective, candidates, n)
         return out or PreviewDesigner().invent(objective, candidates, n)

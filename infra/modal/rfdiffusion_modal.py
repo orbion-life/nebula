@@ -78,8 +78,11 @@ with rfdiffusion_image.imports():
 @app.function(
     image=rfdiffusion_image,
     gpu="A10G",
-    timeout=600,
-    # bills YOUR account; only the endpoint (below) can trigger it, and only with your token.
+    timeout=1800,
+    # keep the container warm for 5 min after a call, so back-to-back generations in a demo skip the
+    # cold start (GPU provision + weights load). Idle past this scales to zero — no idle GPU cost.
+    scaledown_window=300,
+    # bills YOUR account; only the endpoints (below) can trigger it, and only with your token.
 )
 def _run_rfdiffusion(n: int, length: int, contig: str | None = None) -> list[dict]:
     """RFdiffusion monomer backbones. Returns [{backbone_pdb, n_residues, run_ref, params}].
@@ -123,25 +126,53 @@ def _run_rfdiffusion(n: int, length: int, contig: str | None = None) -> list[dic
     return designs
 
 
-@app.function(
-    image=modal.Image.debian_slim().pip_install("fastapi[standard]"),
-    secrets=[modal.Secret.from_name("nebula-rfdiffusion")],
-)
-@modal.fastapi_endpoint(method="POST")
-def generate(payload: dict):
-    """Token-gated web endpoint. Rejects any request whose `token` does not match your Modal secret,
-    so nobody without your token can spend your GPU budget. fastapi is imported INSIDE the function
-    so this module still imports cleanly in the GPU image (which has no fastapi)."""
+_WEB_IMAGE = modal.Image.debian_slim().pip_install("fastapi[standard]")
+
+
+def _auth(payload: dict) -> None:
+    """Reject any request whose `token` does not match your Modal secret, so nobody without your
+    token can spend your GPU budget. fastapi is imported INSIDE the endpoint functions so this
+    module still imports cleanly in the GPU image (which has no fastapi)."""
     from fastapi import HTTPException
 
     expected = os.environ.get("RFDIFFUSION_TOKEN", "")
     provided = str(payload.get("token", "")).strip()
     if not expected or provided != expected:
         raise HTTPException(status_code=401, detail="missing or invalid token")
+
+
+@app.function(image=_WEB_IMAGE, secrets=[modal.Secret.from_name("nebula-rfdiffusion")])
+@modal.fastapi_endpoint(method="POST")
+def generate(payload: dict):
+    """ASYNC submit. Spawns the GPU job and returns a `call_id` immediately (sub-second), so the
+    caller never holds an HTTP connection through a multi-minute GPU cold start — poll `result` with
+    the returned call_id. A synchronous GPU call worked only when warm (~150s for 3 designs); a cold
+    GPU (~270s) overran the web-endpoint response window and 5xx'd, silently degrading to preview."""
+    _auth(payload)
     n = int(payload.get("n", 3))
     length = int(payload.get("length", 100))
     # optional per-protein motif conditioning (see docs/DESIGN_ADAPTERS.md). The backend adapter may
     # forward a `contig` derived from the target candidate's cofactor site; None → unconditional.
     contig = payload.get("contig")
-    designs = _run_rfdiffusion.remote(n, length, contig if isinstance(contig, str) else None)
-    return {"model": "rfdiffusion-base", "designs": designs}
+    call = _run_rfdiffusion.spawn(n, length, contig if isinstance(contig, str) else None)
+    return {"model": "rfdiffusion-base", "call_id": call.object_id, "status": "running"}
+
+
+@app.function(image=_WEB_IMAGE, secrets=[modal.Secret.from_name("nebula-rfdiffusion")])
+@modal.fastapi_endpoint(method="POST")
+def result(payload: dict):
+    """Poll a spawned generation by `call_id`. Returns {status:"running"} until the GPU job finishes,
+    then {status:"completed", designs:[...]}. Token-gated like `generate`. If the GPU job itself
+    raised, `.get` re-raises here → 5xx, and the caller degrades to the deterministic preview."""
+    from fastapi import HTTPException
+
+    _auth(payload)
+    call_id = str(payload.get("call_id", "")).strip()
+    if not call_id:
+        raise HTTPException(status_code=400, detail="missing call_id")
+    fc = modal.FunctionCall.from_id(call_id)
+    try:
+        designs = fc.get(timeout=0)  # non-blocking poll; TimeoutError while still running
+    except TimeoutError:
+        return {"status": "running"}
+    return {"model": "rfdiffusion-base", "status": "completed", "designs": designs}
