@@ -255,7 +255,7 @@ export function NarrativeReplay({ run }: Props) {
         <div className="atlas-reveal">
           <header className="atlas-section-head">
             <div><span className="atlas-eyebrow">03 · generate</span><h2>Then search beyond nature.</h2></div>
-            <p>RFdiffusion proposes new backbone geometry for the same sensing mission — each brief targeting a shortlisted protein's cofactor motif. Coordinates are a starting point, not a finished construct.</p>
+            <p>RFdiffusion proposes new backbone geometry for the same sensing mission, each linked to a shortlisted protein's cofactor motif. Coordinates are a starting point, not a finished construct.</p>
           </header>
           <div className="atlas-generator">
             <div className="atlas-design-list" role="list" aria-label="generated design directions">

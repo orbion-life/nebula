@@ -26,6 +26,23 @@ _DESIGN_NOTE = (
 )
 
 
+def _modal_rationale(accession: str | None) -> str:
+    """Honest 'why this design' for a REAL RFdiffusion backbone.
+
+    Unlike the preview brief, coordinates DO exist here — so this must not echo the preview's
+    "coordinates require the adapter / not a produced construct" text (it would contradict the
+    produced backbone shown alongside it). The geometry is generated unconditionally (not scaffolded
+    around the cofactor site), so the motif is named as the design GOAL, never as something the
+    backbone already encodes. Claim ceiling unchanged: geometry only, no sequence, unvalidated."""
+    target = accession or "the top-ranked candidate"
+    return (
+        f"A de novo RFdiffusion backbone generated for {target}'s sensing route — real coordinates, "
+        "geometry only. It is not conditioned on the cofactor pocket and carries no sequence; "
+        "scaffolding the motif in and designing a sequence come next. An unvalidated design "
+        "hypothesis to prove at a bench, not a finished construct."
+    )
+
+
 class ModalRFdiffusionAdapter:
     """Posts an objective to the deployer's own Modal RFdiffusion endpoint and maps the
     returned backbones onto the GenerativePreview firewall shape. Holds the URL/token only
@@ -40,7 +57,7 @@ class ModalRFdiffusionAdapter:
 
     def invent(self, objective: ObjectiveSpec, candidates: list[CandidateRecord] | None = None, n: int = 3) -> list[GenerativePreview]:
         # imported lazily-safe: this module is only imported after app.design.__init__ is loaded
-        from . import _design_rationale, candidate_motif_note, cofactor_residues
+        from . import candidate_motif_note, cofactor_residues
 
         sensed = objective.sensed_quantity_or_state or "the stated target"
         cands = candidates or []
@@ -81,7 +98,7 @@ class ModalRFdiffusionAdapter:
                     invented_from_accession=accession,
                     mechanism_route_id=cand.mechanism_route_id if cand else None,
                     motif_note=motif,
-                    design_rationale=_design_rationale(accession, motif) if motif else None,
+                    design_rationale=_modal_rationale(accession) if cand else None,
                     backbone_pdb=pdb,
                     n_residues=d.get("n_residues"),
                     provenance=DesignProvenance(

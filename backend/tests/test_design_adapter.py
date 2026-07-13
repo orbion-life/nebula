@@ -142,6 +142,42 @@ def test_modal_adapter_maps_backbone_to_firewalled_preview(monkeypatch):
     assert captured["json"]["token"] == "secret-token"
 
 
+def test_modal_backbone_rationale_is_honest_for_real_coordinates(monkeypatch):
+    """A REAL modal backbone must not carry the preview's 'coordinates require the adapter / not a
+    produced construct' text — that would contradict the produced coordinates shown alongside it —
+    and must not claim motif conditioning the unconditional run did not do."""
+
+    def fake_post(url, json=None, headers=None, timeout=None):
+        return _FakeResp(
+            {
+                "model": "rfdiffusion-base",
+                "designs": [
+                    {
+                        "backbone_pdb": "ATOM      1  CA  GLY A   1      0.0   0.0   0.0",
+                        "n_residues": 80,
+                        "run_ref": "r1",
+                        "params": {"length": 80, "unconditional": "true"},
+                    }
+                ],
+            }
+        )
+
+    monkeypatch.setattr("app.design.modal_rfdiffusion.httpx.post", fake_post)
+    cand = _cand("Q43125", RouteClass.cryptochrome_fad_radical_pair, "FAD")
+    out = ModalRFdiffusionAdapter("https://you--x.modal.run", "tok").invent(OBJ, [cand], n=1)
+    assert len(out) == 1
+    p = out[0]
+    assert p.backbone_pdb and p.design_rationale
+    low = p.design_rationale.lower()
+    # no contradiction with the produced coordinates (the preview brief text is gone)
+    assert "coordinates require" not in low and "not a produced" not in low
+    assert "real coordinates" in low
+    # honest about unconditional geometry + unchanged claim ceiling
+    assert "not conditioned" in low and "no sequence" in low
+    assert "validated sensor" not in low and "predicts magnetic" not in low
+    assert p.invented_from_accession == "Q43125"
+
+
 def test_modal_failure_falls_back_to_preview(monkeypatch):
     _clear_env(monkeypatch)
     monkeypatch.setenv("NEBULA_DESIGN_ADAPTER", "modal")
