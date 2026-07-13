@@ -75,12 +75,25 @@ def test_upgrade_attaches_radical_pair_to_eligibility():
     mfe = upgraded.radical_pair.magnetic_field_effect_percent
     if mfe is not None:
         assert 0.0 < mfe < 100.0
-        assert "coarse radicalpy magnetic field effect" in low
-        assert "not a validated prediction and not a working-sensor claim" in low
+        sensitivity = upgraded.radical_pair.magnetic_field_effect
+        assert sensitivity is not None
+        assert sensitivity.lower_percent <= sensitivity.baseline_percent <= sensitivity.upper_percent
+        assert len(sensitivity.scenarios) >= 5
+        assert len(sensitivity.fields_mT) == len(sensitivity.baseline_curve_percent)
+        assert len(sensitivity.fields_mT) == len(sensitivity.lower_curve_percent)
+        assert len(sensitivity.fields_mT) == len(sensitivity.upper_curve_percent)
+        assert "kinetic-sensitivity envelope" in low
+        assert "not a validated response prediction or a working-sensor claim" in low
 
 
 def test_mfe_estimate_is_bounded_and_positive():
     from app.physics.radical_pair_response import estimate_mfe
-    out = estimate_mfe(-0.97)  # a cryptochrome-scale dipolar coupling
+    out = estimate_mfe(-0.97, 20.0)  # cryptochrome-scale D with an uncertain strong J estimate
     if out is not None:  # radicalpy is optional (absent in the slim runtime image)
         assert 0.0 < out["mfe_amplitude_percent"] < 100.0
+        assert out["lower_percent"] <= out["mfe_amplitude_percent"] <= out["upper_percent"]
+        assert len(out["scenarios"]) >= 5
+        names = {row["name"] for row in out["scenarios"]}
+        assert "geometry_j__baseline" in names
+        assert "negligible_j__baseline" in names
+        assert len(out["fields_mT"]) == len(out["baseline_curve_percent"])

@@ -21,6 +21,14 @@ import { exportJson, exportMarkdown } from "../src/core/export";
 // reveals nothing private on its own. All private specifics (memory-vault names,
 // company domain, retired codenames) live in .leak-terms.local.json.
 const GENERIC_PRIVATE_MARKERS = ["/Users/"];
+// These exact strings are intentional public contact details, requested for the app and
+// exported dossier. Keep this list exact: the local domain marker must still catch any
+// unrelated occurrence elsewhere in the public repository.
+const PUBLIC_CONTACT_STRINGS = [
+  "aniruddh.goteti@orbion.life",
+  "https://www.orbion.life",
+  "www.orbion.life",
+];
 
 function localTerms(): string[] {
   const path = join(cwd(), ".leak-terms.local.json");
@@ -91,7 +99,10 @@ describe("repository source boundary", () => {
     const leaks: string[] = [];
     for (const f of files) {
       if (allowFiles.some((a) => f.endsWith(a))) continue;
-      const text = readFileSync(f, "utf8");
+      const text = PUBLIC_CONTACT_STRINGS.reduce(
+        (source, allowed) => source.replaceAll(allowed, ""),
+        readFileSync(f, "utf8"),
+      );
       for (const term of terms) {
         if (text.includes(term)) leaks.push(`${f}: ${term}`);
       }

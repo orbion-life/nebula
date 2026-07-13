@@ -7,11 +7,15 @@
  * (this is not run progress, the run has its own counter later).
  */
 import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "./motion/useReducedMotion";
 
 const R = 46;
 const CIRC = 2 * Math.PI * R;
 
 export function Preloader({ onDone }: { onDone: () => void }) {
+  const reduced = useReducedMotion();
+  const reducedRef = useRef(reduced);
+  reducedRef.current = reduced;
   const [pct, setPct] = useState(0);
   const [gone, setGone] = useState(false);
   const doneRef = useRef(false);
@@ -19,22 +23,21 @@ export function Preloader({ onDone }: { onDone: () => void }) {
   onDoneRef.current = onDone;
 
   useEffect(() => {
-    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
     let active = true;
     let exitTimer = 0;
     let doneTimer = 0;
     let capTimer = 0;
     setPct(50); // application shell is mounted
     const fonts = (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts?.ready ?? Promise.resolve();
-    const cap = new Promise<void>((resolve) => { capTimer = window.setTimeout(resolve, reduced ? 0 : 900); });
+    const cap = new Promise<void>((resolve) => { capTimer = window.setTimeout(resolve, reducedRef.current ? 0 : 900); });
     Promise.race([fonts.then(() => undefined), cap]).then(() => {
       if (!active || doneRef.current) return;
       doneRef.current = true;
       setPct(100); // required typography is ready, or the bounded fallback elapsed
       exitTimer = window.setTimeout(() => {
         setGone(true);
-        doneTimer = window.setTimeout(() => onDoneRef.current(), reduced ? 0 : 320);
-      }, reduced ? 0 : 120);
+        doneTimer = window.setTimeout(() => onDoneRef.current(), reducedRef.current ? 0 : 320);
+      }, reducedRef.current ? 0 : 120);
     });
     return () => {
       active = false;

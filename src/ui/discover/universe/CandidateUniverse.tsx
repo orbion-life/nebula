@@ -11,7 +11,7 @@
  * unavailable the parent renders a DOM fallback instead of this module.
  */
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Text } from "@react-three/drei";
+import { Line, OrbitControls, Text } from "@react-three/drei";
 import { useMemo, useRef, useState } from "react";
 // troika (drei <Text>) defaults to Roboto; point it at the app's Hanken Grotesk (.woff — troika
 // cannot read .woff2) so the 3D accession labels match the one uniform UI typeface.
@@ -56,8 +56,9 @@ function targetPositions(nodes: UNode[]): Map<string, [number, number, number]> 
     const mid = (arr.length - 1) / 2;
     arr.forEach((n, i) => m.set(n.id, [x, (mid - i) * 1.5, z]));
   };
-  column(lanes.evidence, -3.6, 0);
-  column(lanes.frontier, 3.6, 0);
+  const split = lanes.evidence.length > 0 && lanes.frontier.length > 0;
+  column(lanes.evidence, split ? -2.8 : 0, 0);
+  column(lanes.frontier, split ? 2.8 : 0, 0);
   // excluded: a faint arc behind the two lanes
   lanes.excluded.forEach((n, i) => {
     const a = (i / Math.max(1, lanes.excluded.length - 1) - 0.5) * Math.PI * 0.8;
@@ -80,10 +81,11 @@ function Node({ node, target, selected, onSelect, reducedMotion }: {
   onSelect: (id: string) => void; reducedMotion: boolean;
 }) {
   const ref = useRef<THREE.Group>(null);
+  const halo = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
   const tvec = useMemo(() => new THREE.Vector3(...target), [target[0], target[1], target[2]]);
-  // selected node lifts toward the camera
-  const goal = useMemo(() => tvec.clone().add(new THREE.Vector3(0, 0, selected ? 2.2 : 0)), [tvec, selected]);
+  // selected node becomes the decision centre; alternatives remain around it.
+  const goal = useMemo(() => selected ? new THREE.Vector3(0, 0, 2.2) : tvec.clone(), [tvec, selected]);
   const ONE = useMemo(() => new THREE.Vector3(1, 1, 1), []);
 
   useFrame(() => {
@@ -95,11 +97,15 @@ function Node({ node, target, selected, onSelect, reducedMotion }: {
     } else {
       g.position.lerp(goal, 0.09);
       g.scale.lerp(ONE, 0.14); // scale-in entrance from 0 when a node arrives
+      if (halo.current) {
+        halo.current.rotation.x += 0.002;
+        halo.current.rotation.y += 0.003;
+      }
     }
   });
 
   const color = selected ? COLORS.selected : COLORS[node.lane];
-  const size = 0.16 + node.score * 0.26 + (selected ? 0.1 : 0);
+  const size = 0.28 + node.score * 0.32 + (selected ? 0.15 : 0);
   return (
     <group
       ref={ref}
@@ -118,14 +124,26 @@ function Node({ node, target, selected, onSelect, reducedMotion }: {
           metalness={0.1}
         />
       </mesh>
+      {selected && (
+        <group ref={halo}>
+          <mesh rotation={[Math.PI / 2.8, 0.2, 0]}>
+            <ringGeometry args={[size + 0.28, size + 0.31, 64]} />
+            <meshBasicMaterial color={COLORS.selected} transparent opacity={0.42} side={THREE.DoubleSide} />
+          </mesh>
+          <mesh rotation={[0.35, Math.PI / 2.4, 0.7]}>
+            <ringGeometry args={[size + 0.52, size + 0.55, 64]} />
+            <meshBasicMaterial color={PALETTE.steel} transparent opacity={0.32} side={THREE.DoubleSide} />
+          </mesh>
+        </group>
+      )}
       {node.candidateSpecific && (
         <mesh>
           <ringGeometry args={[size + 0.08, size + 0.13, 32]} />
           <meshBasicMaterial color={COLORS.selected} side={THREE.DoubleSide} transparent opacity={0.8} />
         </mesh>
       )}
-      {(selected || hovered) && (
-        <Text font={hankenFont} position={[0, size + 0.32, 0]} fontSize={0.34} color={PALETTE.ink} anchorX="center" anchorY="bottom" outlineWidth={0.01} outlineColor={PALETTE.navy}>
+      {(selected || hovered || node.lane === "evidence" || node.lane === "frontier") && (
+        <Text font={hankenFont} position={[0, size + 0.34, 0]} fontSize={selected ? 0.42 : 0.3} color={selected ? PALETTE.goldBright : PALETTE.ink} anchorX="center" anchorY="bottom" outlineWidth={0.012} outlineColor={PALETTE.navy}>
           {node.accession}
         </Text>
       )}
@@ -141,6 +159,16 @@ function Scene({ nodes, selectedId, onSelect, reducedMotion, fieldProgress = 0.4
       <pointLight position={[6, 8, 8]} intensity={80} />
       <pointLight position={[-8, -4, 4]} intensity={30} color={PALETTE.steel} />
       <QuantumField progress={fieldProgress} reducedMotion={reducedMotion} />
+      {nodes.filter((node) => node.id !== selectedId && node.lane !== "excluded").map((node) => (
+        <Line
+          key={`line-${node.id}`}
+          points={[targets.get(node.id) ?? [0, 0, 0], [0, 0, 2.2]]}
+          color={node.lane === "evidence" ? COLORS.evidence : COLORS.frontier}
+          lineWidth={0.7}
+          transparent
+          opacity={0.24}
+        />
+      ))}
       {nodes.map((n) => (
         <Node key={n.id} node={n} target={targets.get(n.id) ?? [0, 0, 0]} selected={n.id === selectedId} onSelect={onSelect} reducedMotion={reducedMotion} />
       ))}

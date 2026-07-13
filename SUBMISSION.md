@@ -1,58 +1,87 @@
-# Nebula Discover: hackathon submission pack
+# Nebula: hackathon submission pack
 
-**Built with Claude: Life Sciences**
+**Built with Claude: Life Sciences — Builder track**
 
 ## One-line pitch
 
-Turn a sensing objective into annotation-checked public protein hypotheses across
-multiple sensing modalities and one falsifiable measurement handoff, with every
-physics assumption exposed.
+Turn a quantum-sensing objective into one public protein lead and a measurement brief
+with a predeclared stop rule for the stated construct, assay, and conditions.
 
-## Problem
+## Named user
 
-Protein and biomaterial teams can generate candidate ideas faster than they can
-measure them. Familiar sequence and structure tools do not answer whether a proposed
-transduction mechanism (radical-pair, redox, or photochemical) will create a control-surviving readout. Nebula Discover narrows
-the public search and makes the next experiment auditable without claiming the sensor
-works.
+**Aniruddh Goteti, founder of Orbion, is Nebula's first internal user.** Orbion has no
+in-house wet lab. Before a planned measurement-scoping discussion with a physicist, he
+needs to turn public protein evidence and model assumptions into a lead, an observable,
+and a predeclared stop rule for the stated construct, assay, and conditions. This is a
+concrete workflow need, not external adoption or bench validation.
+
+## Final form description — 183 words
+
+Nebula's named first user is Aniruddh Goteti, founder of Orbion. Orbion has no wet lab.
+Before a planned measurement-scoping discussion, Aniruddh needs to turn a sensing
+objective into one public protein lead, a bounded mechanism rationale, and a measurement
+with a predeclared stop rule for the stated conditions.
+
+Nebula is open-source software for that job. An objective compiles into
+mechanism-specific UniProt, InterPro, and RCSB retrieval. Family and cofactor evidence
+gate each route; structure-associated diagnostics and versioned spin-dynamics scenario
+sweeps expose assumptions rather than predict performance. The output is a
+measurement-scoping brief with an observable, instrument class, controls, repeat plan,
+provisional advance rule, stop rule, missing information, and provenance. The workflow
+is built around a planned measurement-scoping discussion; this is workflow evidence,
+not bench validation.
+
+Claude's repository-visible scientific review system contains:
+thirteen agents, twenty-seven skills, and nine commands shaped contracts, challenged
+claims, corrected science, hardened accessibility, and built backend-connected tests.
+Fixed-input ranking and diagnostics are inspectable; live public-data retrieval can
+change. Claude is not presented as experimental evidence.
+
+Nebula performs measurement triage. It does not claim a validated sensor, predicted
+response, or assay protocol.
+
+## Live artifacts
+
+- **App:** https://nebula-discover.greenforest-ed82ac43.westeurope.azurecontainerapps.io
+- **Demo video:** add the final uploaded URL after recording
+- **Script:** [`DEMO_SCRIPT.md`](./DEMO_SCRIPT.md)
+- **Claude transparency:** [`CLAUDE_TRANSPARENCY.md`](./CLAUDE_TRANSPARENCY.md)
+- **First-use record:** [`artifacts/first-use/ANIRUDDH_FIRST_USE.md`](./artifacts/first-use/ANIRUDDH_FIRST_USE.md)
 
 ## What the demo proves
 
-- Beginner and expert objectives compile into the same editable contract.
-- The sensed quantity drives mechanism-specific public-protein search.
-- Public family and cofactor annotations prevent route relabeling.
-- A real public structure can support a bounded cofactor-cluster UHF diagnostic.
-- Reference spin dynamics, candidate diagnostics, and uncalibrated triage axes remain
-  visibly separate.
-- The output carries a route-compatible measurement scenario, controls, uncertainty,
-  and a falsifier.
-- Unsupported objectives, missing evidence, and unavailable WebGL fail honestly.
+- Mission Bench selections compile into the backend `ObjectiveSpec`; the result states
+  which fields affected the decision and which remain handoff context.
+- The sensed quantity drives mechanism-specific public-protein retrieval.
+- Public family and cofactor annotations gate route assignment.
+- Candidate-associated diagnostics, route-level references, and model assumptions
+  remain visibly separate.
+- A five-section result journey leads with the decision and ends with a print-ready
+  measurement-scoping brief.
+- The brief carries a primary observable, instrument class, outcomes, controls, repeat
+  plan, provisional advance rule, stop rule, missing information, and provenance.
 
-## What it does not prove
+## Evidence status and boundary
 
-- No working or validated sensor.
-- No arbitrary sequence-to-spin-response prediction.
-- No calibrated probability of success or predicted performance.
-- No complete protein-environment quantum calculation.
-- No private Nebula logic, partner target, mutation list, or bench data.
+This submission demonstrates an implemented and tested decision-support workflow for
+a named internal user and a planned measurement-scoping need. It includes no external
+user adoption, bench-validation evidence, calibrated probability of success,
+candidate detectability claim, or arbitrary sequence-to-spin-response prediction.
 
-## Claude use
+## Claude leverage
 
-The repository contains the project agents, skills, commands, dated Claude artifacts,
-and transparency report used to plan, build, red-team, and document the project. The
-scientific execution path is deterministic and inspectable. Claude is not presented as
-having run inside the product or produced experimental evidence.
+Claude's role is visible and reviewable in the repository:
 
-See [`CLAUDE_TRANSPARENCY.md`](./CLAUDE_TRANSPARENCY.md).
+1. Scientific-skeptic reviews identified overclaims and drove claim-boundary tests.
+2. Interface agents helped migrate the concept into the current backend-connected,
+   five-section browser journey.
+3. Accessibility and test agents hardened frontend, FastAPI, browser-to-backend, and
+   deployment paths with dated artifacts and deterministic verification.
 
-## Demo
+Fixed-input ranking is inspectable Python and TypeScript; live public records can change.
+Claude is not presented as having measured a protein or established experimental evidence.
 
-- Script: [`DEMO_SCRIPT.md`](./DEMO_SCRIPT.md)
-- Browser flow: Mission Bench -> live run -> seven-scene result narrative -> Markdown handoff
-- Online-first: live public-protein and structure retrieval; a deterministic fixture replay (versioned public fixtures and a cached public-structure cluster result) is available for reproducible, network-independent judging
-- Seed: `1337`
-
-## Verify before submission
+## Final verification
 
 ```bash
 npm test
@@ -62,14 +91,5 @@ cd .. && npm run e2e
 npm audit --omit=dev
 ```
 
-Run `/audit-submit` and `/skeptic-pass` in Claude Code after the deterministic suite.
-
-## Draft form fields
-
-**Title:** Nebula Discover: Decide What Deserves Measurement Next
-
-**Description:** Nebula Discover converts a supported sensing objective into a
-mechanism-specific public protein search across multiple readout modalities, enriches real accessions with public domain,
-cofactor, and structure evidence, exposes bounded physics assumptions, and returns an
-unvalidated measurement hypothesis with controls and a kill criterion. It separates
-evidence from exploration and abstains rather than manufacturing a winner.
+Run `/audit-submit`, `/skeptic-pass`, and `/judge-qa` in Claude Code after the final
+video URL is added.

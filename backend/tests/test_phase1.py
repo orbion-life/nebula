@@ -17,7 +17,7 @@ from app.state.machine import (
 
 DEMO = (
     "We want a genetically encoded multimodal protein sensor for an optically active "
-    "hydrogel film. Optical fluorescence readout. Possible magnetic or RF-linked response. "
+    "hydrogel film. Optical fluorescence readout. Weak magnetic-field response. "
     "Bacterial expression first. Blue-light excitation acceptable. No confidential sequences."
 )
 

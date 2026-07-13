@@ -9,8 +9,8 @@ export function ActObjective({ onRun, offline }: { onRun: (spec: ObjectiveSpec) 
   return (
     <section className="act act-objective">
       <div className="act-inner">
-        <h1 className="act-h">Build a quantum biosensor for your application</h1>
-        <p className="act-lede">A protein that feels a magnetic field. A cell that reports its own redox chemistry. Choose the signal you want to sense, and the scan searches all of nature, and the generative frontier beyond it, for the candidate worth taking to a bench.</p>
+        <h1 className="act-h">Choose the protein hypothesis worth measuring next.</h1>
+        <p className="act-lede">Select a sensing world, signal, and practical constraints. Nebula searches route-compatible public protein records, separates evidence from assumptions, and returns a falsifiable measurement brief. It does not predict a working sensor.</p>
         <MissionBench onRun={onRun} offline={offline} />
       </div>
     </section>

@@ -13,7 +13,14 @@ from pathlib import Path
 
 from ..contracts.candidate import CandidateRecord
 from ..contracts.enums import PhysicsEligibilityKind, RouteClass
-from ..contracts.physics import PhysicsEligibility, QmClusterPlan, RadicalPairModel, SpinDynamicsPlan
+from ..contracts.physics import (
+    MagneticFieldEffectScenario,
+    MagneticFieldEffectSensitivity,
+    PhysicsEligibility,
+    QmClusterPlan,
+    RadicalPairModel,
+    SpinDynamicsPlan,
+)
 
 _ARTIFACT = Path(__file__).resolve().parents[3] / "src" / "data" / "generated" / "radical_pair_mary.v1.json"
 
@@ -75,8 +82,24 @@ def upgrade_with_radical_pair(elig: PhysicsEligibility, rp) -> PhysicsEligibilit
     separation, J and D become per-protein, while the hyperfine stays class-level (Tier 1 territory)."""
     from .radical_pair_response import estimate_mfe
 
-    mfe = estimate_mfe(rp.dipolar_d_mT)  # coarse RadicalPy estimate, cached; None if unavailable
+    mfe = estimate_mfe(
+        rp.dipolar_d_mT,
+        rp.exchange_j_mT,
+    )  # coarse RadicalPy estimate, cached; None if unavailable
     mfe_pct = mfe.get("mfe_amplitude_percent") if mfe else None
+    mfe_sensitivity = None
+    if mfe:
+        mfe_sensitivity = MagneticFieldEffectSensitivity(
+            field_range_mT=mfe["field_range_mT"],
+            lower_percent=mfe["lower_percent"],
+            baseline_percent=mfe["mfe_amplitude_percent"],
+            upper_percent=mfe["upper_percent"],
+            scenarios=[MagneticFieldEffectScenario(**row) for row in mfe["scenarios"]],
+            fields_mT=mfe["fields_mT"],
+            lower_curve_percent=mfe["lower_curve_percent"],
+            baseline_curve_percent=mfe["baseline_curve_percent"],
+            upper_curve_percent=mfe["upper_curve_percent"],
+        )
     model = RadicalPairModel(
         partner_residue=rp.partner_residue,
         partner_kind=rp.partner_kind,
@@ -85,6 +108,7 @@ def upgrade_with_radical_pair(elig: PhysicsEligibility, rp) -> PhysicsEligibilit
         exchange_j_mT=rp.exchange_j_mT,
         dipolar_d_mT=rp.dipolar_d_mT,
         magnetic_field_effect_percent=mfe_pct,
+        magnetic_field_effect=mfe_sensitivity,
     )
     reason = (
         elig.reason
@@ -94,9 +118,10 @@ def upgrade_with_radical_pair(elig: PhysicsEligibility, rp) -> PhysicsEligibilit
     )
     if mfe_pct is not None:
         reason += (
-            f" Coarse RadicalPy magnetic field effect estimate up to ~{mfe_pct}% (assumption-heavy: "
-            "class-level hyperfine, J taken small, generic kinetics; an approximate figure, not a validated "
-            "prediction and not a working-sensor claim)."
+            f" RadicalPy kinetic-sensitivity envelope {mfe['lower_percent']}–{mfe['upper_percent']}% "
+            f"over 0–{mfe['field_range_mT']} mT ({len(mfe['scenarios'])} named J/rate scenarios; candidate D "
+            "and geometry-derived starting J, class-level hyperfine, no environment or optical transduction). This is not a validated "
+            "response prediction or a working-sensor claim."
         )
     reason += " Partner, separation and D are per-protein; hyperfine is still class-level."
     return elig.model_copy(update={"radical_pair": model, "reason": reason})

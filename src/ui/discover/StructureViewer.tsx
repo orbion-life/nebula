@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import type { StructureResponse } from "../../api/client";
 import { PALETTE, hex0x } from "./render/palette";
 import { canUseWebGL } from "./render/webgl";
+import { useReducedMotion } from "./motion/useReducedMotion";
 
 interface Props {
   structure: StructureResponse | null;
@@ -19,11 +20,35 @@ interface Props {
   cofactorLabel?: string | null;
 }
 
+// AlphaFold's standard pLDDT bands. They are visual confidence annotations, never
+// a statement about sensing performance or whether a cofactor is present.
+const PLDDT = {
+  veryHigh: 0x0053d6,
+  confident: 0x65cbf3,
+  low: 0xffdb13,
+  veryLow: 0xff7d45,
+} as const;
+
+export function plddtColor(value: unknown): number {
+  const score = Number(value);
+  if (!Number.isFinite(score)) return hexToNumber(PALETTE.steel);
+  if (score >= 90) return PLDDT.veryHigh;
+  if (score >= 70) return PLDDT.confident;
+  if (score >= 50) return PLDDT.low;
+  return PLDDT.veryLow;
+}
+
+function hexToNumber(hex: string): number {
+  return Number.parseInt(hex.replace("#", ""), 16);
+}
+
 export function StructureViewer({ structure, loading, cofactorLabel }: Props) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<{ clear: () => void; render: () => void; resize?: () => void; stopAnimate?: () => void } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const reducedMotion = useReducedMotion();
+  const isAlphaFold = structure?.source === "alphafold_prediction";
 
   useEffect(() => {
     let disposed = false;
@@ -45,7 +70,7 @@ export function StructureViewer({ structure, loading, cofactorLabel }: Props) {
         const create = ($3Dmol as any).createViewer as (el: HTMLElement, cfg: unknown) => any;
         if (!hostRef.current || disposed) return;
         hostRef.current.innerHTML = "";
-        const viewer = create(hostRef.current, { backgroundColor: hex0x(PALETTE.navy) });
+        const viewer = create(hostRef.current, { backgroundColor: hex0x(PALETTE.navy), antialias: true });
         viewerRef.current = viewer;
 
         let cif = structure.inline_cif;
@@ -56,14 +81,29 @@ export function StructureViewer({ structure, loading, cofactorLabel }: Props) {
         }
         if (disposed) return;
         viewer.addModel(cif, "cif");
-        // muted protein cartoon
-        viewer.setStyle({}, { cartoon: { color: hex0x(PALETTE.structProtein), opacity: 0.9 } });
-        // emphasise the cofactor / hetero groups (the proposed spin center)
-        viewer.setStyle({ hetflag: true }, { stick: { colorscheme: "yellowCarbon", radius: 0.22 } });
-        viewer.addSurface?.(2 /* VDW */, { opacity: 0.28, color: hex0x(PALETTE.gold) }, { hetflag: true });
-        const hasHet = (viewer.selectedAtoms?.({ hetflag: true }) ?? []).length > 0;
-        viewer.zoomTo(hasHet ? { hetflag: true } : {});
-        viewer.zoom(0.85);
+        const proteinSelection = { hetflag: false };
+        if (structure.source === "alphafold_prediction") {
+          // AF mmCIF stores pLDDT in the B-factor field. The color bands make the
+          // structure legible while exposing where the predicted geometry is firm.
+          viewer.setStyle(proteinSelection, { cartoon: { colorfunc: (atom: { b?: number }) => plddtColor(atom.b), opacity: 0.98 } });
+        } else {
+          // Experimental coordinates have B-factors, not pLDDT. Color them by residue
+          // progression instead of implying a prediction-confidence meaning.
+          viewer.setStyle(proteinSelection, { cartoon: { color: "spectrum", opacity: 0.98 } });
+        }
+        const ligand = structure.verified_ligand_comp_id;
+        const ligandSelection = ligand ? { hetflag: true, resn: ligand } : null;
+        if (ligandSelection) {
+          viewer.setStyle(ligandSelection, { stick: { colorscheme: "yellowCarbon", radius: 0.22 } });
+          viewer.addSurface?.(2 /* VDW */, { opacity: 0.28, color: hex0x(PALETTE.gold) }, ligandSelection);
+        }
+        const hasVerifiedLigand = ligandSelection
+          ? (viewer.selectedAtoms?.(ligandSelection) ?? []).length > 0
+          : false;
+        viewer.zoomTo(hasVerifiedLigand && ligandSelection ? ligandSelection : proteinSelection);
+        viewer.zoom(hasVerifiedLigand ? 1.05 : 1.18);
+        viewer.rotate?.(12, "x");
+        if (!reducedMotion) viewer.spin?.("y", 0.16);
         viewer.render();
         if (!disposed) setReady(true);
       } catch (err) {
@@ -100,11 +140,24 @@ export function StructureViewer({ structure, loading, cofactorLabel }: Props) {
       }
       if (hostRef.current) hostRef.current.innerHTML = "";
     };
-  }, [structure]);
+  }, [structure, reducedMotion]);
 
   return (
     <div className="struct">
       <div className="struct-canvas" ref={hostRef} aria-label="protein structure viewer" role="img" />
+      {structure && ready && (
+        <div className="struct-lens" aria-label={isAlphaFold ? "AlphaFold pLDDT confidence colors" : "residue progression colors"}>
+          {isAlphaFold ? (
+            <>
+              <span>pLDDT</span>
+              <i className="plddt-vh" title="very high confidence" />
+              <i className="plddt-c" title="confident" />
+              <i className="plddt-l" title="low confidence" />
+              <i className="plddt-vl" title="very low confidence" />
+            </>
+          ) : <span>residue progression</span>}
+        </div>
+      )}
       {loading && <div className="struct-overlay">loading structure…</div>}
       {error && (
         <div className="struct-overlay struct-error">
@@ -131,7 +184,11 @@ export function StructureViewer({ structure, loading, cofactorLabel }: Props) {
               AlphaFold prediction {structure.mean_plddt ? `· mean pLDDT ${structure.mean_plddt.toFixed(0)}` : ""}
             </>
           )}
-          {cofactorLabel ? <span className="struct-cofactor"> · cofactor {cofactorLabel} highlighted</span> : null}
+          {structure.verified_ligand_name ? (
+            <span className="struct-cofactor"> · verified cofactor {structure.verified_ligand_name} highlighted</span>
+          ) : cofactorLabel ? (
+            <span className="struct-cofactor"> · expected cofactor {cofactorLabel} is not verified in this structure</span>
+          ) : null}
         </div>
       )}
       {!structure && !loading && <div className="struct-overlay">no interactive structure for this candidate</div>}

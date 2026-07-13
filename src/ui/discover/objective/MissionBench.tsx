@@ -173,7 +173,9 @@ const WORLDS: MissionWorld[] = [
   },
 ];
 
-const OFFLINE_TEST_SEEDS = ["Q8LPD9", "Q43125", "P28861"];
+// Public, recorded fixtures spanning LOV, cryptochrome, redox, and fluorescent-protein routes.
+// Keeping every Mission Bench world on this bounded set makes the offline demo reproducible.
+const OFFLINE_TEST_SEEDS = ["Q8LPD9", "Q43125", "P28861", "P42212"];
 
 type Stage = "world" | "signals" | "survival";
 const STAGE_FLOW: Stage[] = ["world", "signals", "survival"];
@@ -202,7 +204,14 @@ function ProductGlyph({ shape }: { shape: Product["shape"] }) {
   const common = { fill: "none", stroke, strokeWidth: 1.7, strokeLinecap: "round", strokeLinejoin: "round" } as const;
   return (
     <svg viewBox="0 0 120 90" width="100%" height="100%" aria-hidden>
-      {shape === "patch" && <rect x="24" y="24" width="72" height="42" rx="14" {...common} />}
+      {shape === "patch" && (
+        <g {...common}>
+          <rect x="26" y="22" width="68" height="46" rx="16" />
+          <rect x="37" y="33" width="46" height="24" rx="11" opacity="0.45" />
+          <circle cx="60" cy="45" r="6.5" />
+          <circle cx="60" cy="45" r="1.7" fill={stroke} stroke="none" />
+        </g>
+      )}
       {shape === "film" && (
         <g {...common}>
           <path d="M18 50 C38 34 76 66 102 40" />
@@ -518,9 +527,11 @@ export function MissionBench({
             continue to {stage === "world" ? "signals" : "survival"} →
           </button>
         )}
-        <button className="btn-run" onClick={dive} disabled={busy}>
-          {busy ? "discovering…" : "discover constructs"}
-        </button>
+        {stage !== "world" && (
+          <button className="btn-run" onClick={dive} disabled={busy}>
+            {busy ? "discovering…" : "discover constructs"}
+          </button>
+        )}
         {err && <span className="obj-err">{err}</span>}
       </div>
     </div>

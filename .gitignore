@@ -35,3 +35,16 @@ backend/*.egg-info/
 test-results/
 playwright-report/
 .playwright/
+
+# Local Claude Code settings (may hold local permission allowlists / paths)
+.claude/settings.local.json
+
+# Editor / OS / build cruft
+.vscode/
+.idea/
+*.tsbuildinfo
+*.log
+
+# Never commit private keys or certs (belt-and-suspenders; none are tracked)
+*.pem
+*.key

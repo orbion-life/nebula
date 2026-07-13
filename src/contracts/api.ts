@@ -228,7 +228,7 @@ export interface paths {
         };
         /**
          * Get Structure
-         * @description A structure source for Mol*. Prefers the experimental cofactor-bound PDB,
+         * @description A structure source for 3Dmol. Prefers a verified cofactor-bound PDB,
          *     falls back to the AlphaFold model. `inline_cif` is populated (from cache/fixture
          *     or a best-effort fetch) so the viewer works offline; otherwise the client loads
          *     `provider_url` directly (RCSB/AlphaFold both allow browser CORS).
@@ -324,6 +324,25 @@ export interface components {
              * @constant
              */
             private_candidate: false;
+        };
+        /**
+         * CandidateMeasurementProposal
+         * @description Route-specific, falsifiable measurement handoff for any ranked candidate.
+         *
+         *     Evidence-lane candidates need an actionable next measurement just as much as
+         *     frontier candidates do. This contract deliberately carries no performance claim.
+         */
+        CandidateMeasurementProposal: {
+            /** Candidate Id */
+            candidate_id: string;
+            /** Accession */
+            accession: string;
+            /** Title */
+            title: string;
+            discriminating_experiment: components["schemas"]["DiscriminatingExperiment"];
+            /** Falsifier */
+            falsifier: string;
+            claim_ceiling: components["schemas"]["ClaimLevel"];
         };
         /** CandidateRecord */
         CandidateRecord: {
@@ -500,7 +519,7 @@ export interface components {
         };
         /**
          * DiscriminatingExperiment
-         * @description The cheapest experiment that would confirm/kill a hypothesis.
+         * @description A lowest-cost measurement intended to discriminate a route from its controls.
          */
         DiscriminatingExperiment: {
             /** What To Measure */
@@ -515,6 +534,10 @@ export interface components {
             positive_controls?: string[];
             /** Negative Controls */
             negative_controls?: string[];
+            /** Replicate Plan */
+            replicate_plan: string;
+            /** Acceptance Rule */
+            acceptance_rule: string;
             /** Kill Criterion */
             kill_criterion: string;
             /** Information Gained */
@@ -752,6 +775,57 @@ export interface components {
          * @enum {string}
          */
         KnowledgeStateKind: "known" | "assumed" | "unknown";
+        /**
+         * MagneticFieldEffectScenario
+         * @description One explicit kinetic assumption set in the RadicalPy sensitivity sweep.
+         */
+        MagneticFieldEffectScenario: {
+            /** Name */
+            name: string;
+            /** Singlet Recombination S */
+            singlet_recombination_s: number;
+            /** Triplet Recombination S */
+            triplet_recombination_s: number;
+            /** Relaxation S */
+            relaxation_s: number;
+            /** Exchange J Mt */
+            exchange_j_mT: number;
+            /** Amplitude Percent */
+            amplitude_percent: number;
+        };
+        /**
+         * MagneticFieldEffectSensitivity
+         * @description Assumption sensitivity, not a predicted protein response.
+         *
+         *     A structure-derived geometry sets D and a heuristic starting J. J and kinetic
+         *     rates are then varied explicitly; hyperfine remains class-level. The result is
+         *     therefore an assumption range, not a single candidate-response percentage.
+         */
+        MagneticFieldEffectSensitivity: {
+            /** Field Range Mt */
+            field_range_mT: number;
+            /** Lower Percent */
+            lower_percent: number;
+            /** Baseline Percent */
+            baseline_percent: number;
+            /** Upper Percent */
+            upper_percent: number;
+            /** Scenarios */
+            scenarios?: components["schemas"]["MagneticFieldEffectScenario"][];
+            /** Fields Mt */
+            fields_mT?: number[];
+            /** Lower Curve Percent */
+            lower_curve_percent?: number[];
+            /** Baseline Curve Percent */
+            baseline_curve_percent?: number[];
+            /** Upper Curve Percent */
+            upper_curve_percent?: number[];
+            /**
+             * Note
+             * @default Sensitivity envelope across explicit exchange-coupling and generic kinetic scenarios; candidate geometry supplies D and the starting J estimate, while hyperfine remains class-level and protein environment plus optical transduction are not modeled.
+             */
+            note: string;
+        };
         /**
          * MaterialContext
          * @enum {string}
@@ -1194,12 +1268,10 @@ export interface components {
          * RadicalPairModel
          * @description Per-protein radical-pair geometry + geometry-derived couplings (Tier 0).
          *
-         *     The electron-transfer partner (terminal Trp/Tyr) and inter-radical separation are read from THIS
-         *     protein's real structure; the exchange (J) and dipolar (D) couplings are the standard closed forms
-         *     of that separation. So the radical-pair model is per-protein in four inputs the generic template
-         *     fixed: partner identity, separation, J and D. Two honest limits stay explicit: the hyperfine
-         *     couplings are still class-level (not computed on this geometry) and NO spin-dynamics yield or
-         *     magnetic response is predicted. Parameter derivation only, assumption-derived, never a sensor claim.
+         *     An aromatic-network heuristic assigns a terminal Trp/Tyr partner from this protein's structure;
+         *     centroid separation and the standard distance formulas then parameterize D and an uncertain J.
+         *     These are candidate-associated model inputs, not measured radical localization. Hyperfine remains
+         *     class-level and no protein environment or optical transduction is modeled.
          */
         RadicalPairModel: {
             /** Partner Residue */
@@ -1219,9 +1291,10 @@ export interface components {
             dipolar_d_mT: number;
             /** Magnetic Field Effect Percent */
             magnetic_field_effect_percent?: number | null;
+            magnetic_field_effect?: components["schemas"]["MagneticFieldEffectSensitivity"] | null;
             /**
              * Method Note
-             * @default electron-transfer partner from this protein's aromatic hopping chain (light Beratan-Onuchic heuristic; eMap/pyemap is the fuller tool). D from the point dipole is well constrained by the separation; J from the Moser et al. 1992 tunnelling decay is order-of-magnitude only. The magnetic field effect is a COARSE RadicalPy model estimate from D under stated assumptions (class-level flavin+tryptophan hyperfine, J taken small, generic recombination/relaxation, no optical transduction) -- an approximate figure, NOT a validated prediction and NOT a claim this protein works as a magnetic sensor. Geometry-derived; hyperfine still class-level.
+             * @default electron-transfer partner assigned from this protein's aromatic contact graph (light Beratan-Onuchic heuristic; eMap/pyemap is the fuller tool). D is a point-dipole estimate from centroid separation; J from Moser et al. 1992 tunnelling decay is order-of-magnitude only. The magnetic field effect is a RadicalPy sensitivity envelope from candidate D/J under named generic kinetic assumptions (class-level flavin+tryptophan hyperfine, no protein environment or optical transduction). It is NOT a validated response prediction or a sensor claim. Geometry-derived; hyperfine and kinetics remain class-level.
              */
             method_note: string;
         };
@@ -1316,6 +1389,11 @@ export interface components {
             evidence_shortlist?: string[];
             /** Frontier Experiments */
             frontier_experiments?: components["schemas"]["FrontierExperiment"][];
+            /**
+             * Measurement Proposals
+             * @description route-specific falsifiable measurement handoff for every ranked candidate
+             */
+            measurement_proposals?: components["schemas"]["CandidateMeasurementProposal"][];
             /** Generative Frontier */
             generative_frontier?: components["schemas"]["GenerativePreview"][];
             /** Selected Candidate Id */
@@ -1392,6 +1470,10 @@ export interface components {
             resolution?: number | null;
             /** Mean Plddt */
             mean_plddt?: number | null;
+            /** Verified Ligand Comp Id */
+            verified_ligand_comp_id?: string | null;
+            /** Verified Ligand Name */
+            verified_ligand_name?: string | null;
             /** Inline Cif */
             inline_cif?: string | null;
         };

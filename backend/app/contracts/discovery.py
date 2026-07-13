@@ -57,7 +57,7 @@ class DiscoveryScore(BaseModel):
 
 
 class DiscriminatingExperiment(BaseModel):
-    """The cheapest experiment that would confirm/kill a hypothesis."""
+    """A lowest-cost measurement intended to discriminate a route from its controls."""
     model_config = ConfigDict(extra="forbid", frozen=True)
     what_to_measure: str
     instrument_id: str | None = None
@@ -65,9 +65,26 @@ class DiscriminatingExperiment(BaseModel):
     null_expectation: str
     positive_controls: list[str] = Field(default_factory=list)
     negative_controls: list[str] = Field(default_factory=list)
+    replicate_plan: str
+    acceptance_rule: str
     kill_criterion: str
     information_gained: str
     approx_cost: str
+
+
+class CandidateMeasurementProposal(BaseModel):
+    """Route-specific, falsifiable measurement handoff for any ranked candidate.
+
+    Evidence-lane candidates need an actionable next measurement just as much as
+    frontier candidates do. This contract deliberately carries no performance claim.
+    """
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    candidate_id: str
+    accession: str
+    title: str
+    discriminating_experiment: DiscriminatingExperiment
+    falsifier: str
+    claim_ceiling: ClaimLevel
 
 
 class FrontierExperiment(BaseModel):

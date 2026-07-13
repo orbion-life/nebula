@@ -53,7 +53,10 @@
   --fs-2xs: 11px;   /* WCAG-AA legibility floor for claim-bearing labels — nothing smaller ships */
 }
 
-body:has(.discover) { background: var(--d-bg); }
+/* reset the UA default 8px body margin: without it the sticky header + full-bleed world canvas
+   sit 8px inset from the viewport, so the header corner never met the viewport edge (the "corner
+   not overlapping" report). */
+body:has(.discover) { margin: 0; background: var(--d-bg); }
 
 /* Persistent 3D backdrop: fixed behind all content, never captures the wheel/trackpad.
    The canvas sits at z-index 0 (above any non-positioned opaque background) and the content
@@ -171,10 +174,14 @@ body:has(.discover) { background: var(--d-bg); }
 
 .disc-stage { flex: 1; width: 100%; }
 .disc-foot {
-  padding: 12px 22px; border-top: 1px solid var(--d-line); color: var(--d-faint);
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px;
+  padding: 16px 22px; border-top: 1px solid var(--d-line); color: var(--d-faint);
   font-size: 11.5px; text-align: center;
 }
 .disc-foot strong { color: var(--d-mut); }
+.disc-foot-contact { color: var(--d-mut); }
+.disc-foot a { color: var(--d-teal); text-decoration: none; border-bottom: 1px solid rgba(127,155,192,.35); }
+.disc-foot a:hover { color: var(--d-ink); border-bottom-color: currentColor; }
 .disc-error { margin: 14px 22px; color: var(--d-red); }
 .disc-loading { padding: 80px; text-align: center; color: var(--d-faint); font-size: 13px; }
 .experience-error { min-height: 70vh; display: grid; align-content: center; justify-items: start;
@@ -498,9 +505,10 @@ body:has(.discover) { background: var(--d-bg); }
 .atlas-nav { position: fixed; right: 22px; top: 72px; z-index: 32; display: flex; gap: 4px; padding: 5px; border: 1px solid rgba(255,255,255,0.09); border-radius: 999px; background: rgba(4,9,15,0.74); backdrop-filter: blur(18px); }
 .atlas-nav button { border: 0; border-radius: 999px; padding: 7px 11px; color: var(--d-faint); background: transparent; font: 600 10px/1 var(--d-mono); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
 .atlas-nav button:hover { color: var(--atlas-green); background: rgba(156,247,189,0.08); }
+.atlas-nav button[aria-current="location"] { color: #03100a; background: var(--atlas-green); }
 .atlas-scene { position: relative; min-height: 100vh; display: grid; align-items: center; overflow: clip; scroll-margin-top: 52px; }
 .atlas-reveal { position: relative; width: min(1260px, calc(100% - 56px)); margin: 0 auto; padding: clamp(84px, 10vh, 126px) 0; z-index: 2; }
-.atlas h1:focus, .atlas h2:focus, .atlas h3:focus { outline: none; }
+.atlas h1:focus-visible, .atlas h2:focus-visible, .atlas h3:focus-visible { outline: 2px solid var(--atlas-green); outline-offset: 8px; border-radius: 2px; }
 .atlas-eyebrow { display: inline-flex; align-items: center; gap: 8px; color: var(--atlas-green); font: 700 10px/1 var(--d-mono); letter-spacing: 0.17em; text-transform: uppercase; }
 .atlas-eyebrow::before { content: ""; width: 26px; height: 1px; background: currentColor; opacity: 0.5; }
 .atlas-section-head { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr); gap: clamp(30px, 7vw, 110px); align-items: end; margin-bottom: 36px; }
@@ -514,17 +522,38 @@ body:has(.discover) { background: var(--d-bg); }
 .atlas-hero::after { content: ""; position: absolute; inset: 0; opacity: 0.36; background-image: radial-gradient(circle, rgba(255,255,255,0.28) 0 1px, transparent 1.3px); background-size: 72px 72px; mask-image: linear-gradient(90deg, transparent 10%, black 100%); }
 .atlas-hero .atlas-reveal { padding-top: clamp(88px, 12vh, 148px); width: min(1340px, calc(100% - 56px)); }
 /* graphic-forward outcome: the discovered candidate universe is the reveal, not empty space */
-.atlas-hero-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(28px, 4vw, 72px); align-items: center; }
+.atlas-hero-grid { display: grid; grid-template-columns: minmax(0, 0.98fr) minmax(0, 1.02fr); gap: clamp(36px, 5vw, 86px); align-items: center; }
 .atlas-hero-copy { min-width: 0; }
-.atlas-hero h1 { max-width: 12ch; margin: 20px 0 22px; font-family: var(--d-display); font-size: clamp(44px, 5vw, 92px); font-weight: 500; line-height: 0.82; letter-spacing: 0; }
+.atlas-hero h1 { max-width: 11ch; margin: 20px 0 22px; font-family: var(--d-display); font-size: clamp(48px, 5.4vw, 88px); font-weight: 500; line-height: 0.88; letter-spacing: 0; }
 .atlas-hero h1 em { color: var(--atlas-green); font-style: normal; font-weight: 500; }
 .atlas-hero-copy > p { max-width: 48ch; color: var(--d-mut); font-size: clamp(15px, 1.4vw, 19px); }
+.atlas-hero-why { margin: 0; color: var(--d-mut); line-height: 1.55; }
+.atlas-next-test { margin-top: var(--space-6); padding: var(--space-5); border: 1px solid rgba(156,247,189,0.26); border-left: 2px solid var(--atlas-green); background: linear-gradient(110deg, rgba(48,112,80,0.14), rgba(4,9,15,0.54)); }
+.atlas-next-test > span { display: block; color: var(--atlas-green); font: 700 var(--fs-2xs)/1 var(--d-mono); letter-spacing: 0.14em; text-transform: uppercase; }
+.atlas-next-test > strong { display: block; max-width: 27ch; margin-top: var(--space-3); color: var(--d-ink); font: 560 clamp(20px, 2vw, 29px)/1.14 var(--d-display); }
+.atlas-next-test dl { margin: var(--space-5) 0 0; display: grid; grid-template-columns: minmax(130px, .72fr) minmax(0, 1.28fr); gap: var(--space-4); padding-top: var(--space-4); border-top: 1px solid rgba(255,255,255,0.09); }
+.atlas-next-test dl > div { min-width: 0; }
+.atlas-next-test dt { margin: 0 0 var(--space-2); color: var(--d-faint); font: 650 var(--fs-2xs)/1 var(--d-mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.atlas-next-test dd { margin: 0; color: var(--d-mut); font-size: var(--fs-xs); line-height: 1.45; }
+.atlas-hero-actions { display: flex; align-items: center; gap: var(--space-5); margin-top: var(--space-5); flex-wrap: wrap; }
+.atlas-primary-action { display: inline-flex; align-items: center; justify-content: space-between; gap: var(--space-5); min-height: 48px; padding: 0 14px 0 18px; border: 1px solid var(--atlas-green); border-radius: 999px; background: var(--atlas-green); color: #03100a; font: 750 var(--fs-xs)/1 var(--d-sans); cursor: pointer; }
+.atlas-primary-action span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #03100a; color: var(--atlas-green); }
+.atlas-text-action { min-height: 44px; padding: 0; border: 0; border-bottom: 1px solid rgba(255,255,255,0.22); background: transparent; color: var(--d-mut); font: 600 var(--fs-xs)/1.2 var(--d-sans); cursor: pointer; }
+.atlas-primary-action:hover { filter: brightness(1.06); }
+.atlas-text-action:hover { color: var(--d-ink); border-bottom-color: var(--atlas-green); }
 .atlas-hero-universe { position: relative; height: min(64vh, 560px); min-height: 320px; }
 .atlas-hero-universe .universe { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; margin: 0; }
-.atlas-hero-hint { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 4; color: var(--d-faint); font: 600 var(--fs-2xs)/1 var(--d-mono); letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.62; pointer-events: none; white-space: nowrap; }
 @media (max-width: 900px) {
   .atlas-hero-grid { grid-template-columns: 1fr; gap: var(--space-6); }
-  .atlas-hero-universe { height: 44vh; min-height: 280px; order: -1; }
+  .atlas-hero-copy { display: contents; }
+  .atlas-hero-copy > .atlas-eyebrow { grid-row: 1; }
+  .atlas-hero-copy > h1 { grid-row: 2; }
+  .atlas-hero-copy > .atlas-hero-why { grid-row: 3; }
+  .atlas-hero-universe { grid-row: 4; }
+  .atlas-hero-copy > .atlas-next-test { grid-row: 5; }
+  .atlas-hero-copy > .atlas-hero-actions { grid-row: 6; }
+  .atlas-hero-copy > .atlas-honesty { grid-row: 7; }
+  .atlas-hero-universe { height: 44vh; min-height: 280px; }
 }
 /* two paths — compact horizontal cards, integrated count, two-lane colour (evidence / frontier) */
 .atlas-paths { width: min(720px, 100%); display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-7); }
@@ -557,7 +586,14 @@ body:has(.discover) { background: var(--d-bg); }
 }
 
 .atlas-nature { background: linear-gradient(180deg, rgba(5,10,17,0.72), rgba(4,12,15,0.84)); }
-.atlas-field { position: relative; height: 380px; margin: 12px 0 32px; overflow: hidden; border-top: 1px solid rgba(255,255,255,0.09); border-bottom: 1px solid rgba(255,255,255,0.09); background: radial-gradient(ellipse 48% 80% at 50% 52%, rgba(74,143,129,0.13), transparent 70%); }
+.atlas-field-figure { margin: 12px 0 32px; }
+.atlas-field-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 18px; margin: 0 0 10px; font: 600 var(--fs-2xs)/1.3 var(--d-mono); color: var(--d-mut); }
+.atlas-field-legend .afl-item { display: inline-flex; align-items: center; gap: 7px; }
+.atlas-field-legend .afl-item i { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid currentColor; }
+.atlas-field-legend .afl-evidence { color: var(--d-evi); }
+.atlas-field-legend .afl-frontier { color: var(--d-fro); }
+.atlas-field-legend .afl-hint { color: var(--d-faint); letter-spacing: .03em; }
+.atlas-field { position: relative; height: 380px; margin: 0; overflow: hidden; border-top: 1px solid rgba(255,255,255,0.09); border-bottom: 1px solid rgba(255,255,255,0.09); background: radial-gradient(ellipse 48% 80% at 50% 52%, rgba(74,143,129,0.13), transparent 70%); }
 .atlas-field-rings { position: absolute; width: 280px; aspect-ratio: 1; left: 50%; top: 50%; translate: -50% -50%; }
 .atlas-field-rings i { position: absolute; inset: 10%; border: 1px solid rgba(156,247,189,.16); border-radius: 50%; animation: gen-orbit 18s linear infinite; }
 .atlas-field-rings i:nth-child(2) { inset: 24%; border-color: rgba(132,217,255,.17); animation-duration: 13s; animation-direction: reverse; }
@@ -722,7 +758,9 @@ body:has(.discover) { background: var(--d-bg); }
 @keyframes gen-orbit { to { rotate: 360deg; } }
 
 @media (max-width: 920px) {
-  .atlas-nav { display: none; }
+  .atlas-nav { top: 62px; right: auto; left: 50%; bottom: auto; transform: translateX(-50%); width: max-content; max-width: calc(100% - 24px); }
+  .atlas-nav button { min-height: 44px; padding: 7px 10px; }
+  .atlas-hero .atlas-reveal { padding-top: 136px; }
   .atlas-section-head, .atlas-inspector, .atlas-generator, .atlas-decision-grid { grid-template-columns: 1fr; }
   .atlas-section-head { align-items: start; gap: 22px; }
   .atlas-paths { grid-template-columns: 1fr; }
@@ -732,7 +770,10 @@ body:has(.discover) { background: var(--d-bg); }
 }
 @media (max-width: 620px) {
   .atlas-reveal { width: calc(100% - 28px); padding: 78px 0; }
-  .atlas-hero h1 { font-size: clamp(58px,20vw,88px); }
+  .atlas-hero h1 { font-size: clamp(46px,14vw,68px); }
+  .atlas-next-test { padding: var(--space-4); }
+  .atlas-next-test dl { grid-template-columns: 1fr; }
+  .atlas-hero-actions { align-items: flex-start; flex-direction: column; gap: var(--space-3); }
   .atlas-candidate-list, .atlas-design-list { grid-template-columns: 1fr; }
   .atlas-field { height: 330px; }
   .atlas-candidate-stage .struct, .gen-viewer, .gen-seed { height: 360px; }
@@ -783,15 +824,22 @@ body:has(.discover) { background: var(--d-bg); }
 .udom-node.on { border-color: var(--d-amber); color: var(--d-amber); }
 
 /* ---- structure viewer ---- */
-.struct { position: relative; width: 100%; height: 340px; background: var(--d-bg); border: 1px solid var(--d-line); border-radius: 10px; overflow: hidden; }
-.struct-canvas { position: absolute; inset: 0; }
+.struct { position: relative; isolation: isolate; width: 100%; height: 340px; background: var(--d-bg); border: 1px solid var(--d-line); border-radius: 10px; overflow: hidden; }
+.struct::after { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(ellipse 52% 52% at 50% 44%, rgba(122, 225, 244, 0.09), transparent 64%), linear-gradient(180deg, rgba(7,12,24,0.04), rgba(2,5,12,0.28)); mix-blend-mode: screen; }
+.struct-canvas { position: absolute; inset: 0; z-index: 1; }
 .struct-canvas canvas { border-radius: 10px; }
-.struct-overlay { position: absolute; inset: 0; display: grid; place-items: center; color: var(--d-faint); font-size: 12.5px; pointer-events: none; }
+.struct-overlay { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; color: var(--d-faint); font-size: 12.5px; pointer-events: none; }
 .struct-error { color: var(--d-red); pointer-events: auto; text-align: center; padding: 20px; }
-.struct-caption { position: absolute; left: 10px; bottom: 8px; right: 10px; font-size: 11px; color: var(--d-mut);
-  background: rgba(10,14,22,0.72); padding: 5px 8px; border-radius: 6px; }
+.struct-caption { position: absolute; z-index: 3; left: 10px; bottom: 8px; right: 10px; font-size: 11px; color: var(--d-mut);
+  background: rgba(5,9,18,0.76); backdrop-filter: blur(10px); padding: 6px 8px; border-left: 1px solid rgba(127,214,255,0.5); }
 .struct-caption strong { color: var(--d-teal); font-family: var(--d-mono); }
 .struct-cofactor { color: var(--d-amber); }
+.struct-lens { position: absolute; z-index: 3; top: 10px; right: 10px; display: inline-flex; align-items: center; gap: 5px; min-height: 22px; padding: 0 7px; color: var(--d-mut); background: rgba(5,9,18,0.68); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); font: 600 9px/1 var(--d-mono); letter-spacing: 0.09em; text-transform: uppercase; }
+.struct-lens i { display: block; width: 7px; height: 7px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+.struct-lens .plddt-vh { color: #0053d6; background: currentColor; }
+.struct-lens .plddt-c { color: #65cbf3; background: currentColor; }
+.struct-lens .plddt-l { color: #ffdb13; background: currentColor; }
+.struct-lens .plddt-vl { color: #ff7d45; background: currentColor; }
 
 /* ---- traces ---- */
 .traces { margin-top: 14px; }
@@ -874,13 +922,36 @@ body:has(.discover) { background: var(--d-bg); }
 .dossier-rp-vals dd small { display: block; color: var(--d-faint); font-weight: 400; font-size: var(--fs-2xs); margin-top: 2px; }
 .dossier-rp-note { color: var(--d-faint); font-size: var(--fs-2xs); line-height: 1.5; margin: 0; }
 
+/* Assumption sensitivity: a range is prominent; the baseline is deliberately subordinate. */
+.dossier-mfe { display: flex; align-items: center; gap: var(--space-5); margin: 0 0 var(--space-5); padding: var(--space-4) var(--space-5); border: 1px solid rgba(156,247,189,0.22); border-left: 3px solid var(--atlas-green); border-radius: 12px; background: rgba(156,247,189,0.05); }
+.dossier-mfe-range { display: flex; align-items: baseline; gap: 8px; color: var(--atlas-green); white-space: nowrap; font: 620 clamp(30px, 4vw, 48px)/.92 var(--d-display); }
+.dossier-mfe-range i { color: var(--d-faint); font: 600 var(--fs-2xs)/1 var(--d-mono); text-transform: uppercase; font-style: normal; letter-spacing: .08em; }
+.dossier-mfe-cap { display: grid; gap: 4px; }
+.dossier-mfe-cap strong { font: 700 var(--fs-2xs)/1 var(--d-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--d-faint); }
+.dossier-mfe-cap span { font-size: var(--fs-xs); color: var(--d-mut); line-height: 1.45; max-width: 46ch; }
+.dossier-mfe-cap small { color: var(--d-faint); font: 500 var(--fs-2xs)/1.4 var(--d-mono); }
+.dossier-mfe-none { font-size: var(--fs-sm); color: var(--d-mut); line-height: 1.5; margin: 0 0 var(--space-4); padding-left: var(--space-4); border-left: 2px solid var(--d-line); }
+@media (max-width: 620px) { .dossier-mfe { flex-direction: column; align-items: flex-start; gap: var(--space-2); } }
+.mfe-chart { margin: 0 0 var(--space-5); padding: var(--space-4); border: 1px solid var(--d-line); border-radius: 10px; background: rgba(4,9,15,.44); }
+.mfe-chart figcaption { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); }
+.mfe-chart figcaption strong { color: var(--d-ink); font-size: var(--fs-xs); font-weight: 650; }
+.mfe-chart figcaption span, .mfe-chart > p { color: var(--d-faint); font: 500 var(--fs-2xs)/1.45 var(--d-mono); }
+.mfe-chart svg { display: block; width: 100%; height: auto; margin-top: var(--space-2); overflow: visible; }
+.mfe-axis { stroke: rgba(255,255,255,.14); stroke-width: 1; }
+.mfe-band { fill: rgba(127,214,255,.13); stroke: rgba(127,214,255,.34); stroke-width: 1; }
+.mfe-baseline { fill: none; stroke: var(--atlas-green); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.mfe-tick, .mfe-label { fill: var(--d-faint); font: 500 10px/1 var(--d-mono); }
+.mfe-label { fill: var(--atlas-cyan); }
+.mfe-chart > p { margin: 0; }
+@media (max-width: 620px) { .mfe-chart figcaption { align-items: flex-start; flex-direction: column; gap: var(--space-1); } }
+
 /* Rationale constellation: the graphic navigator that replaces the text-walls. The candidate is the
    central star; each facet is a clickable satellite; only the active facet's detail shows below. */
 .dossier-cluetip { color: var(--d-mut); font-size: var(--fs-sm); text-align: center; margin: 0; }
 .dossier-cluetip strong { color: var(--d-ink); font-weight: 650; }
 .rc { display: block; width: 100%; max-width: 680px; margin: 0 auto; height: auto; overflow: visible; }
-.rc-core-acc { fill: var(--d-ink); font: 700 19px/1 var(--d-sans); letter-spacing: -0.01em; }
-.rc-core-lane { fill: var(--d-faint); font: 500 10px/1 var(--d-sans); letter-spacing: 0.14em; text-transform: uppercase; }
+.rc-core-acc { fill: var(--d-ink); font: 700 17px/1 var(--d-sans); letter-spacing: 0.01em; }
+.rc-core-lane { fill: var(--d-faint); font: 600 9px/1 var(--d-mono); letter-spacing: 0.14em; text-transform: uppercase; }
 .rc-sat { cursor: pointer; }
 .rc-sat:focus { outline: none; }
 .rc-sat:focus-visible .rc-node { stroke-width: 2.6; }

@@ -6,29 +6,42 @@
  * (driven by the real candidate count) carries the motion instead.
  */
 import { useEffect, useRef, useState } from "react";
+import { usePageVisible, useReducedMotion } from "../motion/useReducedMotion";
 
 const R = 78;
 const CIRC = 2 * Math.PI * R;
 
 export function RunCounter({ fraction, stage, candidateCount }: { fraction: number; stage: string; candidateCount: number }) {
-  const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
+  const reduced = useReducedMotion();
+  const pageVisible = usePageVisible();
   const target = useRef(fraction);
   target.current = fraction;
   const [shown, setShown] = useState(fraction);
+  const shownRef = useRef(fraction);
 
   useEffect(() => {
     if (reduced) {
+      shownRef.current = target.current;
       setShown(target.current);
       return;
     }
+    if (!pageVisible) return;
     let raf = 0;
     const tick = () => {
-      setShown((s) => (Math.abs(target.current - s) < 0.002 ? target.current : s + (target.current - s) * 0.07));
+      const current = shownRef.current;
+      if (Math.abs(target.current - current) < 0.002) {
+        shownRef.current = target.current;
+        setShown(target.current);
+        return;
+      }
+      const next = current + (target.current - current) * 0.07;
+      shownRef.current = next;
+      setShown(next);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [reduced]);
+  }, [fraction, reduced, pageVisible]);
 
   const pct = Math.round(shown * 100);
   return (

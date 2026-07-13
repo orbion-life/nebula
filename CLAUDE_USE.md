@@ -7,11 +7,26 @@ See also: [`CLAUDE_TRANSPARENCY.md`](./CLAUDE_TRANSPARENCY.md) · [`SUBMISSION.m
 
 ## How Claude is used
 
-Claude acts as a **visible, bounded panel of roles** around deterministic,
+Claude Code provides a **visible, bounded panel of roles** around deterministic,
 reviewable Python and TypeScript. The shipped browser journey uses the FastAPI
 objective, retrieval, mechanism, physics-eligibility, and run-orchestration path;
 the older TypeScript research pipeline remains a tested reference implementation.
 Claude works within the repository's contracts and scientific boundaries.
+
+## Highest-leverage interventions
+
+The value is not the inventory of agent files; it is the review-to-change loop:
+
+1. **Scientific correction.** Scientific-skeptic and claim-boundary passes identified
+   response-prediction language, unsupported route assignments, and missing caveats.
+   Accepted changes are enforced by boundary tests and candidate-specific eligibility
+   checks.
+2. **Product integration.** Interface and backend agents replaced an earlier
+   presentation-only prototype with the current FastAPI-connected, five-section result
+   journey and a print-ready measurement handoff.
+3. **Release hardening.** Accessibility, browser, backend, and deployment reviews added
+   backend-connected E2E coverage, reduced-motion behavior, structure fallbacks, and
+   post-deploy smoke checks. Dated review artifacts live under `artifacts/claude/`.
 
 ## Agents (13)
 
@@ -37,9 +52,11 @@ audit-submit, external-skill-curator
 `build-discover` · `swarm-review` · `skeptic-pass` · `demo-script` · `audit-submit`
 · `transparency-report` · `judge-qa` · `stress-test` · `submission-pack`
 
-## Mandatory swarm
+## Deterministic reference swarm
 
-Every `runDiscover` result includes `swarmReview`. See [`docs/SWARM_ARCHITECTURE.md`](./docs/SWARM_ARCHITECTURE.md).
+The older TypeScript `runDiscover` reference path includes `swarmReview`. It remains a
+tested research artifact but does not power the shipped FastAPI browser runtime. See
+[`docs/SWARM_ARCHITECTURE.md`](./docs/SWARM_ARCHITECTURE.md).
 
 ## Scientific boundary
 

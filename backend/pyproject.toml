@@ -43,4 +43,4 @@ build-backend = "setuptools.build_meta"
 include = ["app*"]
 
 [tool.setuptools.package-data]
-"app" = ["physics/qm_cache/*.json", "providers/fixtures/**/*"]
+"app" = ["physics/qm_cache/*.json", "physics/radical_pair_cache/*.json", "providers/fixtures/**/*"]

@@ -17,11 +17,8 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 import { EffectsLazy } from "../render/EffectsLazy";
+import { usePageVisible, useReducedMotion } from "../motion/useReducedMotion";
 import { PALETTE } from "../render/palette";
-
-function prefersReducedMotion(): boolean {
-  return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
-}
 function isSmallViewport(): boolean {
   return typeof window !== "undefined" && window.matchMedia?.("(max-width: 700px)").matches === true;
 }
@@ -83,8 +80,8 @@ const FRAG = /* glsl */ `
   }
 `;
 
-function Mandala({ reduced }: { reduced: boolean }) {
-  const { viewport, size } = useThree();
+function Mandala({ animate }: { animate: boolean }) {
+  const { invalidate, viewport, size } = useThree();
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
@@ -99,9 +96,11 @@ function Mandala({ reduced }: { reduced: boolean }) {
     [],
   );
   const sT = useRef(0);
+  const elapsed = useRef(0);
   const scrollTarget = useRef(0);
   useEffect(() => {
-    if (reduced) return;
+    invalidate();
+    if (!animate) return;
     const update = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
       scrollTarget.current = max > 0 ? Math.min(1, window.scrollY / max) : 0;
@@ -109,10 +108,11 @@ function Mandala({ reduced }: { reduced: boolean }) {
     update();
     window.addEventListener("scroll", update, { passive: true });
     return () => window.removeEventListener("scroll", update);
-  }, [reduced]);
-  useFrame((state) => {
-    if (!reduced) {
-      uniforms.uTime.value = state.clock.elapsedTime;
+  }, [animate, invalidate]);
+  useFrame((state, delta) => {
+    if (animate) {
+      elapsed.current += Math.min(delta, 0.05);
+      uniforms.uTime.value = elapsed.current;
       sT.current += (scrollTarget.current - sT.current) * 0.05;
       uniforms.uProgress.value = sT.current;
     }
@@ -127,27 +127,29 @@ function Mandala({ reduced }: { reduced: boolean }) {
 }
 
 export function WorldCanvas() {
-  const reduced = useRef(prefersReducedMotion()).current;
+  const reduced = useReducedMotion();
+  const pageVisible = usePageVisible();
+  const animate = !reduced && pageVisible;
   const small = useRef(isSmallViewport()).current;
   return (
     <div className="world-canvas" aria-hidden>
       <Canvas
         dpr={reduced ? 1 : [1, 1.5]}
-        frameloop={reduced ? "demand" : "always"}
+        frameloop={animate ? "always" : "demand"}
         camera={{ position: [0, 0, 6], fov: 50 }}
         gl={{ antialias: true, powerPreference: "high-performance" }}
       >
         <color attach="background" args={[PALETTE.navy]} />
-        <Mandala reduced={reduced} />
+        <Mandala animate={animate} />
         <Sparkles
           count={small ? 70 : 150}
           scale={[18, 12, 7]}
           size={2.2}
-          speed={reduced ? 0 : 0.18}
+          speed={animate ? 0.18 : 0}
           opacity={0.5}
           color={PALETTE.goldBright}
         />
-        <EffectsLazy enabled={!reduced && !small} />
+        <EffectsLazy enabled={animate && !small} />
       </Canvas>
     </div>
   );

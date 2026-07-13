@@ -3,16 +3,18 @@
  * search → result → workspace) the page resets to the top so each Act starts at its
  * beginning, and ScrollTrigger is refreshed so Act III's scroll-scrubbed chapters
  * measure against the newly-mounted layout. Lenis-aware; degrades to window.scrollTo
- * under reduced-motion (no Lenis).
+ * under reduced motion.
  */
 import { useEffect } from "react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useReducedMotion } from "../motion/useReducedMotion";
 import { useLenis } from "../scroll/useLenis";
 
 export function useRunScroll(actKey: string) {
   const lenis = useLenis();
+  const reduced = useReducedMotion();
   useEffect(() => {
-    if (lenis) lenis.scrollTo(0, { immediate: true });
+    if (lenis && !reduced) lenis.scrollTo(0, { immediate: true });
     else window.scrollTo(0, 0);
     // let the new Act lay out, then re-measure any scroll-driven triggers
     const id = window.setTimeout(() => {
@@ -28,5 +30,5 @@ export function useRunScroll(actKey: string) {
       }
     }, 60);
     return () => window.clearTimeout(id);
-  }, [actKey, lenis]);
+  }, [actKey, lenis, reduced]);
 }

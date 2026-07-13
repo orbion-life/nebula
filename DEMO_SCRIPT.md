@@ -1,64 +1,103 @@
-# Nebula Discover: 3-minute demo
+# Nebula: three-minute demo
 
-## 0:00-0:25 | The objective
+**Target runtime:** 2:50–2:58  
+**Named first user:** Aniruddh Goteti, founder of Orbion  
+**Decision:** Before a planned measurement-scoping discussion with a physicist, turn
+one sensing objective into one public lead, one observable, and a stop rule for the
+stated construct, assay, and conditions.
 
-> "A materials or biosensor team can describe what a protein should sense without
-> pretending to know the mechanism or instrument. The target drives the search;
-> deployment conditions are preserved for the experiment handoff."
+## 0:00–0:18 | Why I built it
 
-Show the Mission Bench. Point out that the supported sensing targets are explicit,
-span several readout modalities (magnetic/RF, redox-electrochemical, and optical), and
-that the product and survival fields say they are handoff context in this build. Choose
-the wearable magnetic-field example, one of several supported targets, to show the
-radical-pair route and, where a cofactor-bound structure is available, its
-candidate-specific quantum-chemistry diagnostic; start the run.
+**Picture:** Aniruddh on camera. Cut to the Nebula world.
 
-## 0:25-0:50 | The search
+> I am Aniruddh Goteti, founder of Orbion. I have survived cancer twice. Nebula does
+> not treat cancer. It addresses a different problem: when evidence runs out, how do
+> I choose the next measurement without turning possibility into proof?
 
-> "The run is not a canned animation. It plans mechanism-specific searches, retrieves
-> public accessions, and admits a protein to a route only when its family and cofactor
-> annotations support that route."
+## 0:18–0:34 | Name the user and decision
 
-Let the run counter advance from real state-machine events. Note that a deterministic
-replay of versioned public fixtures is available if a reproducible, network-independent
-run is needed.
+**Picture:** Select **Field patch**. Show the preset world, then move through **Signals**
+and **Survival**.
 
-## 0:50-1:20 | Biology constrains the physics
+> I am Nebula's first internal user. Orbion has no wet lab. I need a public protein lead,
+> the observable to measure, and a predeclared stop rule before I spend a physicist's
+> measurement time.
 
-Scroll through the objective, unique-accession count, mechanism routes, and structure.
+## 0:34–0:50 | Compile the objective
 
-> "A seed is not permission to relabel a protein. This phototropin stays on the LOV and
-> FMN route; this cryptochrome stays on the cryptochrome and FAD route. The structure
-> view focuses the cofactor context that makes the next calculation possible."
+**Picture:** Hold on **Magnetic field**, **Fluorescence**, **RF magnetic**, **Body warmth**,
+and **Oxygen present**. Start the run.
 
-## 1:20-1:55 | Computation with assumptions exposed
+> These choices compile into an objective. The sensed quantity and readouts steer
+> mechanism-specific public retrieval. Temperature, oxygen, and integration travel as
+> handoff context; they do not silently become ranking evidence.
 
-> "The MARY curve is a versioned RadicalPy reference for a model flavin radical pair,
-> not a response prediction for this protein. Where a cofactor-bound structure exists,
-> the app can run an isolated UHF cluster diagnostic on the extracted isoalloxazine.
-> The displayed Mulliken population is basis dependent. Protein environment, radical
-> partner, protonation alternatives, and dynamics remain unresolved."
+## 0:50–1:10 | The first lead
 
-Show the direct labels on both small multiples and the `not a prediction` caption.
+**Picture:** Show the run state, then the outcome. Point to the selected accession,
+instrument class, and stop rule.
 
-## 1:55-2:25 | Prioritization without a magic score
+> This fixture-backed run surfaces Q43125 as an annotation-matched cryptochrome-FAD
+> lead. It does not establish that this exact construct forms the required
+> spin-correlated radical pair. The output is a measurement priority under the current
+> evidence model, not a sensor claim.
 
-> "Evidence and exploration are separate lanes. The main view uses plain-language
-> bands; experts can open the uncalibrated P, M, D, and information-gain axes. These are
-> triage heuristics, not probabilities or predicted performance."
+## 1:10–1:32 | What nature supports
 
-Show the keyboard-accessible candidate universe and open the expert details briefly.
+**Picture:** Click **discover**. Show the two public accessions, then the structure and
+cofactor context.
 
-## 2:25-2:50 | Measurement handoff
+> Each route is gated by public family and cofactor evidence. Q43125 stays on its
+> cryptochrome-FAD route; a LOV seed stays on the LOV-FMN route. A seed is not relabeled
+> just because a different mechanism would be convenient.
 
-> "The output is a best-supported next measurement under the registered assumptions:
-> a public accession, route-compatible measurement scenario, controls, and a falsifier.
-> A collaborator can reject the hypothesis instead of being sold a finished sensor."
+## 1:32–2:00 | What the physics does and does not say
 
-Download the Markdown handoff.
+**Picture:** Click **rationale**, open **Physics**, and keep the chart caveat visible.
 
-## 2:50-3:00 | Close
+> The spin plot is a generic flavin-tryptophan model stress test with named exchange and
+> kinetic-rate assumptions. It is not candidate response, fluorescence prediction, or a
+> statistical uncertainty interval. The structure-associated diagnostic is a truncated,
+> fixed-geometry UHF output with assumed charge and spin. It is basis-dependent and not
+> a complete protein-environment calculation.
 
-> "Nebula Discover does not say the sensor works. It makes the search auditable and tells
-> you what to measure next, what remains unknown, and what result would prove the idea
-> wrong."
+## 2:00–2:24 | Expose the decision contract
+
+**Picture:** Open **Evidence**, **Fit**, and **Next test**. Show the public citations,
+uncalibrated axes, observable, expected result, null, controls, repeat plan, provisional
+advance rule, stop rule, and missing information.
+
+> Evidence, diagnostics, and assumptions stay separate. The axes are uncalibrated
+> triage heuristics. The Next test panel turns the lead into a scoped decision: what to
+> measure, what should happen, what the null looks like, and what would stop advancement
+> of this construct-assay configuration under these conditions.
+
+## 2:24–2:40 | Take the brief
+
+**Picture:** Click **handoff** in the result navigation and open the print-ready brief.
+
+> The same contract is exportable: accession, observable, instrument class, outcomes,
+> controls, repeat plan, advance rule, stop rule, missing information, and claim ceiling.
+> It is a collaborator brief, not a complete assay protocol.
+
+## 2:40–2:58 | Claude and close
+
+**Picture:** Show a concrete review-to-change montage: a dated skeptic review, the claim
+boundary test, then `.claude/agents` and `.claude/skills`. End on Aniruddh or Nebula.
+
+> Claude's repository system contains thirteen specialist agents, twenty-seven skills,
+> and nine commands. Their review artifacts shaped the contracts, claim boundaries,
+> interface, and tests. Fixed-input ranking is inspectable; live public records can
+> change. Nebula does not give me certainty. It gives me the next decision.
+
+## Recording guardrails
+
+- Keep the final cut at or below three minutes; leave silent room for UI transitions.
+- Show the candidate accession, public evidence, scenario-sweep caveat, stop rule, and
+  print-ready brief at readable scale.
+- Do not call a scenario range probability, confidence, detectability, or predicted
+  response.
+- Do not call the output a validated sensor, complete protocol, or collaborator adoption.
+- Do not imply that Claude runs inside the product or generated experimental evidence.
+- Add captions and the final uploaded YouTube, Loom, or equivalent URL to
+  `SUBMISSION.md` before submitting.

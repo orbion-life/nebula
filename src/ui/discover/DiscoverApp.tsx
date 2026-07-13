@@ -205,7 +205,8 @@ export function DiscoverApp() {
       </main>
 
       <footer className="disc-foot">
-        A candidate is a discovery to prove at the bench, not a proven sensor.
+        <span>A candidate is a discovery to prove at the bench, not a proven sensor.</span>
+        <span className="disc-foot-contact">Aniruddh Goteti · <a href="mailto:aniruddh.goteti@orbion.life">aniruddh.goteti@orbion.life</a> · <a href="https://www.orbion.life" target="_blank" rel="noreferrer">Contact us at www.orbion.life ↗</a></span>
       </footer>
       </div>
       </div>

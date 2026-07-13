@@ -95,6 +95,26 @@ def plan_queries(objective: ObjectiveSpec, *, per_route: int = 6) -> list[QueryP
     # it with an unrelated mechanism family.
     families = objective.target_scaffold_families
     route_classes = _routes_for_objective(objective)
+    aliases = {
+        "FAD": {"FAD", "FDA", "FADH"},
+        "FMN": {"FMN"},
+        "INTRINSIC CHROMOPHORE": {"INTRINSIC CHROMOPHORE"},
+    }
+    excluded = {x.strip().upper() for x in objective.excluded_cofactors}
+    excluded_expanded = {alias for name in excluded for alias in aliases.get(name, {name})}
+    allowed = {x.strip().upper() for x in objective.allowed_cofactors}
+    allowed_expanded = {alias for name in allowed for alias in aliases.get(name, {name})}
+    if excluded_expanded or allowed_expanded:
+        filtered: list[RouteClass] = []
+        for route in route_classes:
+            required = (_ROUTE_TEMPLATES[route][1] or "").upper()
+            required_aliases = aliases.get(required, {required})
+            if excluded_expanded & required_aliases:
+                continue
+            if allowed_expanded and required_aliases and not (allowed_expanded & required_aliases):
+                continue
+            filtered.append(route)
+        route_classes = filtered
     if families:
         fam_to_route = {v[0]: k for k, v in _ROUTE_TEMPLATES.items()}
         requested = {fam_to_route[f] for f in families if f in fam_to_route}

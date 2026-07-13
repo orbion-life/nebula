@@ -10,7 +10,8 @@
  *
  * MUTED BY DEFAULT. The AudioContext is created only on a user gesture (the toggle
  * click or the run-start), satisfying browser autoplay policy. Preference persists in
- * localStorage but never auto-starts without a gesture. Suspends when the tab is hidden.
+ * localStorage but never auto-starts without a gesture. Once started, it keeps playing
+ * while the user switches tabs or apps; only the user mute control stops it.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -291,7 +292,7 @@ export function useAmbientAudio() {
       }
     }
     void graphRef.current.ctx.resume();
-    fadeTo(0.06);
+    fadeTo(0.12);
     setEnabled(true);
     try {
       localStorage.setItem(KEY, "on");
@@ -311,18 +312,6 @@ export function useAmbientAudio() {
   }, []);
 
   const toggle = useCallback(() => (enabled ? disable() : enable()), [enabled, enable, disable]);
-
-  // suspend/resume with tab visibility
-  useEffect(() => {
-    const onVis = () => {
-      const g = graphRef.current;
-      if (!g) return;
-      if (document.hidden) void g.ctx.suspend();
-      else if (enabled) void g.ctx.resume();
-    };
-    document.addEventListener("visibilitychange", onVis);
-    return () => document.removeEventListener("visibilitychange", onVis);
-  }, [enabled]);
 
   useEffect(() => {
     const onMood = (event: Event) => {

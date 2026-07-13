@@ -155,8 +155,13 @@ def _build_candidate(
     has_experimental = False
     if rec.pdb_xrefs:
         req = (plan.required_cofactor_name or "").upper()
+        ligand_aliases = {
+            "FAD": {"FAD", "FDA", "FADH"},
+            "FMN": {"FMN"},
+        }
+        required_ligands = ligand_aliases.get(req, set())
         best = None
-        best_key: tuple[int, float] | None = None
+        best_key: float | None = None
         for xref in rec.pdb_xrefs[:4]:  # bound cost
             try:
                 entry, ep = rc.entry(xref.id)
@@ -164,16 +169,20 @@ def _build_candidate(
             except ProviderUnavailable:
                 degradations.append(f"RCSB entry {xref.id} unavailable")
                 continue
-            has_cof = 1 if any(req and req in (c or "").upper() for c in entry.nonpolymer_bound_components) else 0
+            present = {c.upper() for c in entry.nonpolymer_bound_components}
+            present.update(c.comp_id.upper() for c in entry.cofactors)
+            has_cof = bool(required_ligands & present)
+            if required_ligands and not has_cof:
+                continue
             res = entry.resolution_combined[0] if entry.resolution_combined else 99.0
-            key = (has_cof, -res)  # prefer cofactor-bound, then lower resolution
+            key = -res
             if best_key is None or key > best_key:
                 best_key, best = key, entry
         if best is not None:
             pdb_entries = [best]
             has_experimental = True
-            if req and not any(req in (c or "").upper() for c in best.nonpolymer_bound_components):
-                degradations.append(f"selected PDB {best.rcsb_id} does not resolve bound {req}; geometry is approximate")
+        elif required_ligands:
+            degradations.append(f"no experimental PDB with bound {req}; unrelated structures were excluded")
     if not has_experimental and rec.alphafold_id:
         try:
             model, mp = af.model_for(rec.primary_accession)

@@ -67,13 +67,13 @@ def _obj() -> ObjectiveSpec:
 
 def test_known_cryptochrome_recovers_on_evidence_lane() -> None:
     cands = [CRY]
-    _, evidence, frontier = build_discovery(cands, [_dossier(CRY)], instrument=BENCH, objective=_obj())
+    _, evidence, frontier, _ = build_discovery(cands, [_dossier(CRY)], instrument=BENCH, objective=_obj())
     assert CRY.candidate_id in evidence
 
 
 def test_family_distant_candidate_enters_only_frontier() -> None:
     cands = [CRY, REDOX]
-    _, evidence, frontier = build_discovery(cands, [_dossier(c) for c in cands], instrument=BENCH, objective=_obj())
+    _, evidence, frontier, _ = build_discovery(cands, [_dossier(c) for c in cands], instrument=BENCH, objective=_obj())
     fids = {f.candidate_id for f in frontier}
     assert REDOX.candidate_id in fids            # out-of-family redox → frontier
     assert REDOX.candidate_id not in evidence     # never on the evidence lane
@@ -83,7 +83,7 @@ def test_family_distant_candidate_enters_only_frontier() -> None:
 def test_unparameterizable_excluded_from_both_lanes() -> None:
     # heme/metal with no flavin + no spin route → ineligible → excluded from computed lanes
     assert assess_eligibility(METAL).enters_computed_ranking is False
-    _, evidence, frontier = build_discovery([METAL], [_dossier(METAL)], instrument=CONFOCAL, objective=_obj())
+    _, evidence, frontier, _ = build_discovery([METAL], [_dossier(METAL)], instrument=CONFOCAL, objective=_obj())
     fids = {f.candidate_id for f in frontier}
     assert METAL.candidate_id not in evidence and METAL.candidate_id not in fids
 
@@ -126,8 +126,8 @@ def test_model_disagreement_raises_information_value_not_quality() -> None:
 def test_instrument_changes_measurability_and_selection() -> None:
     # triplet-FP needs RF: unobservable on the benchtop, frontier-eligible on the confocal
     obj = ObjectiveSpec(objective_id="o", objective_text="odmr sensor", desired_modalities=[ReadoutMode.odmr_like, ReadoutMode.fluorescence])
-    _, _, f_bench = build_discovery([TRIPLET], [_dossier(TRIPLET)], instrument=BENCH, objective=obj)
-    _, _, f_conf = build_discovery([TRIPLET], [_dossier(TRIPLET)], instrument=CONFOCAL, objective=obj)
+    _, _, f_bench, _ = build_discovery([TRIPLET], [_dossier(TRIPLET)], instrument=BENCH, objective=obj)
+    _, _, f_conf, _ = build_discovery([TRIPLET], [_dossier(TRIPLET)], instrument=CONFOCAL, objective=obj)
     assert TRIPLET.candidate_id not in {f.candidate_id for f in f_bench}   # no RF → not measurable
     assert TRIPLET.candidate_id in {f.candidate_id for f in f_conf}        # RF → measurable → frontier
 
@@ -142,7 +142,7 @@ def test_reproducible_fingerprint_includes_versions() -> None:
 
 
 def test_measurement_scenario_varies_by_route() -> None:
-    scores, _, _ = build_discovery(
+    scores, _, _, _ = build_discovery(
         [CRY, REDOX, TRIPLET],
         [_dossier(CRY), _dossier(REDOX), _dossier(TRIPLET)],
         instrument=CONFOCAL,
@@ -171,7 +171,7 @@ def test_redox_handoff_uses_potential_not_field_rf_language() -> None:
 
 def test_every_frontier_hypothesis_has_falsifier_and_plan() -> None:
     cands = [CRY, REDOX]
-    _, _, frontier = build_discovery(cands, [_dossier(c) for c in cands], instrument=CONFOCAL, objective=_obj())
+    _, _, frontier, _ = build_discovery(cands, [_dossier(c) for c in cands], instrument=CONFOCAL, objective=_obj())
     assert frontier  # at least one frontier experiment
     for f in frontier:
         assert f.falsifier.strip()

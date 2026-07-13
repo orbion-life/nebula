@@ -10,6 +10,7 @@
  *    zero horizontal overflow at every target viewport, keyboard operability, reduced motion.
  */
 import { expect, test } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 import { PNG } from "pngjs";
 
 const BG = { r: 7, g: 12, b: 24 }; // --d-bg / 3Dmol background 0x070c18 (navy palette)
@@ -59,7 +60,7 @@ test("run returns a real accession, a non-blank structure, physics provenance, a
 
   const atlas = page.locator(".atlas");
   await expect(atlas).toContainText(/candidate-specific QM|route-level evidence/i);
-  await expect(atlas).toContainText(/decisive next measurement/i);
+  await expect(atlas).toContainText(/next discriminating measurement/i);
   await expect(atlas).toContainText(/reject when/i);
 
   const body = (await page.locator("body").innerText()).toLowerCase();
@@ -93,6 +94,22 @@ test("measurement is never asked as an input", async ({ page }) => {
   expect(objText).not.toContain("how will you measure");
 });
 
+test("objective and completed result have no serious WCAG violations", async ({ page }) => {
+  await boot(page);
+  const objectiveAudit = await new AxeBuilder({ page }).analyze();
+  expect(
+    objectiveAudit.violations.filter((violation) => violation.impact === "serious" || violation.impact === "critical"),
+  ).toEqual([]);
+
+  await page.getByRole("button", { name: /^Field patch/i }).click();
+  await page.locator(".mb .btn-run").click();
+  await expect(page.locator(".atlas-hero")).toBeVisible({ timeout: 40_000 });
+  const resultAudit = await new AxeBuilder({ page }).analyze();
+  expect(
+    resultAudit.violations.filter((violation) => violation.impact === "serious" || violation.impact === "critical"),
+  ).toEqual([]);
+});
+
 test("persistent world canvas exists and is sized", async ({ page }) => {
   await boot(page);
   const wc = page.locator(".world-canvas canvas").first();
@@ -113,6 +130,8 @@ test("WebGL failure keeps the objective usable through a non-canvas fallback", a
   });
   await boot(page);
   await expect(page.locator(".world-fallback")).toBeVisible();
+  await expect(page.getByRole("button", { name: /continue to signals/i })).toBeEnabled();
+  await page.getByRole("button", { name: /continue to signals/i }).click();
   await expect(page.locator(".mb .btn-run")).toBeEnabled();
   await ctx.close();
 });
@@ -123,6 +142,32 @@ test("completes with prefers-reduced-motion (no motion-only meaning)", async ({ 
   await runToResult(page);
   await expect(page.locator(".atlas-candidate strong").first()).toHaveText(/^[A-Z][A-Z0-9]{5,9}$/);
   await ctx.close();
+});
+
+test("rationale facets are one keyboard tab stop with arrow-key navigation", async ({ page }) => {
+  await runToResult(page);
+  await page.getByRole("button", { name: /open rationale/i }).click();
+  const tabs = page.getByRole("tab");
+  await expect(tabs).toHaveCount(5);
+  await expect(page.locator('[role="tab"][tabindex="0"]')).toHaveCount(1);
+  const active = page.getByRole("tab", { selected: true });
+  const previousId = await active.getAttribute("id");
+  await active.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(page.getByRole("tab", { selected: true })).not.toHaveAttribute("id", previousId ?? "");
+  await expect(page.locator('[role="tabpanel"]:visible')).toHaveCount(1);
+});
+
+test("mobile result navigation is touch-sized, current, and does not cover the hero", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await runToResult(page);
+  const current = page.locator('.atlas-nav button[aria-current="location"]');
+  await expect(current).toHaveCount(1);
+  const navBox = await page.locator(".atlas-nav").boundingBox();
+  const buttonBox = await page.locator(".atlas-nav button").first().boundingBox();
+  const heroBox = await page.locator(".atlas-hero-copy > :first-child").boundingBox();
+  expect(buttonBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+  expect(navBox && heroBox && navBox.y + navBox.height <= heroBox.y, "section navigation must sit above, not over, the hero copy").toBeTruthy();
 });
 
 test("wheel / trackpad scroll actually moves the page", async ({ page }) => {
@@ -148,9 +193,58 @@ test("ambient audio is muted by default", async ({ page }) => {
   await expect(toggle).toHaveAttribute("aria-pressed", "false");
 });
 
-test("the objective bench is keyboard-operable to a run", async ({ page }) => {
+test("ambient audio keeps running when another tab comes forward", async ({ browser }) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.addInitScript(() => {
+    const originalSuspend = AudioContext.prototype.suspend;
+    const originalResume = AudioContext.prototype.resume;
+    const state = window as typeof window & {
+      __nebulaAudioContext?: AudioContext;
+      __nebulaSuspendCalls?: number;
+    };
+    state.__nebulaSuspendCalls = 0;
+    AudioContext.prototype.suspend = function (...args) {
+      state.__nebulaSuspendCalls = (state.__nebulaSuspendCalls ?? 0) + 1;
+      return originalSuspend.apply(this, args);
+    };
+    AudioContext.prototype.resume = function (...args) {
+      state.__nebulaAudioContext = this;
+      return originalResume.apply(this, args);
+    };
+  });
+
   await boot(page);
+  await page.locator(".audio-toggle").click();
+  await expect(page.locator(".audio-toggle")).toHaveAttribute("aria-pressed", "true");
+  await expect.poll(() => page.evaluate(() => {
+    const state = window as typeof window & { __nebulaAudioContext?: AudioContext };
+    return state.__nebulaAudioContext?.state;
+  })).toBe("running");
+
+  const otherTab = await context.newPage();
+  await otherTab.goto("about:blank");
+  await otherTab.bringToFront();
+  await page.waitForTimeout(500);
+  await expect.poll(() => page.evaluate(() => {
+    const state = window as typeof window & {
+      __nebulaAudioContext?: AudioContext;
+      __nebulaSuspendCalls?: number;
+    };
+    return {
+      state: state.__nebulaAudioContext?.state,
+      suspendCalls: state.__nebulaSuspendCalls ?? 0,
+    };
+  })).toEqual({ state: "running", suspendCalls: 0 });
+  await context.close();
+});
+
+test("the signals and survival stages are keyboard-operable to a run", async ({ page }) => {
+  await boot(page);
+  await page.getByRole("button", { name: /continue to signals/i }).focus();
+  await page.keyboard.press("Enter");
   const dive = page.locator(".mb .btn-run");
+  await expect(dive).toBeVisible();
   await dive.focus();
   await expect(dive).toBeFocused();
   await page.keyboard.press("Enter");

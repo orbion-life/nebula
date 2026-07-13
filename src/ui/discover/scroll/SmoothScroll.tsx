@@ -6,34 +6,39 @@
  * could no-op (if the ref wasn't ready) and Lenis captured the wheel without ever moving the
  * page. GSAP ScrollTrigger stays in sync via the useLenis hook (no ref timing, no manual RAF).
  *
- * Under prefers-reduced-motion we do NOT instantiate Lenis, children render with native
- * scroll, no smoothing, no motion.
+ * Under prefers-reduced-motion or while the page is hidden, Lenis remains as a stable
+ * context provider but runs with native wheel scrolling and no RAF. Keeping the provider
+ * mounted prevents a visibility change from remounting the entire application subtree.
  */
 import { useEffect, type ReactNode } from "react";
 import { ReactLenis, useLenis } from "lenis/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { usePageVisible, useReducedMotion } from "../motion/useReducedMotion";
 
-function prefersReducedMotion(): boolean {
-  return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
-}
-
-function LenisGsapSync() {
+function LenisGsapSync({ active }: { active: boolean }) {
   // fires on every Lenis scroll frame → keeps ScrollTrigger-driven reveals in lockstep
-  useLenis(() => ScrollTrigger.update());
+  useLenis(() => { if (active) ScrollTrigger.update(); }, [active]);
   return null;
 }
 
 export function SmoothScroll({ children }: { children: ReactNode }) {
+  const reduced = useReducedMotion();
+  const pageVisible = usePageVisible();
+  const active = !reduced && pageVisible;
+
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
   }, []);
 
-  if (prefersReducedMotion()) return <>{children}</>;
-
   return (
-    <ReactLenis root options={{ lerp: 0.09, smoothWheel: true, wheelMultiplier: 1 }}>
-      <LenisGsapSync />
+    <ReactLenis
+      root
+      options={active
+        ? { autoRaf: true, lerp: 0.09, smoothWheel: true, wheelMultiplier: 1 }
+        : { autoRaf: false, lerp: 1, smoothWheel: false, wheelMultiplier: 1 }}
+    >
+      <LenisGsapSync active={active} />
       {children}
     </ReactLenis>
   );

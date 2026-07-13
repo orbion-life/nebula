@@ -30,7 +30,7 @@ class QmClusterPlan(BaseModel):
     charge: int = 0
     est_wall_seconds: float
     tractable_under_60s: bool
-    # HONEST: today the plan is a GENERIC flavin-core template shared by every
+    # Boundary: today the plan is a GENERIC flavin-core template shared by every
     # flavin protein. It becomes candidate_specific only once the protein's real
     # coordinates, charge, multiplicity, protonation, donor/acceptor geometry and
     # environment actually enter the calculation (Phase 4).
@@ -52,15 +52,48 @@ class SpinDynamicsPlan(BaseModel):
     note: str = "spin dynamics of a model flavin-based radical pair; a calibration reference, not a candidate-specific prediction"
 
 
+class MagneticFieldEffectScenario(BaseModel):
+    """One explicit kinetic assumption set in the RadicalPy sensitivity sweep."""
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    name: str
+    singlet_recombination_s: float
+    triplet_recombination_s: float
+    relaxation_s: float
+    exchange_j_mT: float
+    amplitude_percent: float
+
+
+class MagneticFieldEffectSensitivity(BaseModel):
+    """Assumption sensitivity, not a predicted protein response.
+
+    A structure-derived geometry sets D and a heuristic starting J. J and kinetic
+    rates are then varied explicitly; hyperfine remains class-level. The result is
+    therefore an assumption range, not a single candidate-response percentage.
+    """
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    field_range_mT: float
+    lower_percent: float
+    baseline_percent: float
+    upper_percent: float
+    scenarios: list[MagneticFieldEffectScenario] = Field(default_factory=list)
+    fields_mT: list[float] = Field(default_factory=list)
+    lower_curve_percent: list[float] = Field(default_factory=list)
+    baseline_curve_percent: list[float] = Field(default_factory=list)
+    upper_curve_percent: list[float] = Field(default_factory=list)
+    note: str = (
+        "Sensitivity envelope across explicit exchange-coupling and generic kinetic scenarios; "
+        "candidate geometry supplies D and the starting J estimate, while hyperfine remains "
+        "class-level and protein environment plus optical transduction are not modeled."
+    )
+
+
 class RadicalPairModel(BaseModel):
     """Per-protein radical-pair geometry + geometry-derived couplings (Tier 0).
 
-    The electron-transfer partner (terminal Trp/Tyr) and inter-radical separation are read from THIS
-    protein's real structure; the exchange (J) and dipolar (D) couplings are the standard closed forms
-    of that separation. So the radical-pair model is per-protein in four inputs the generic template
-    fixed: partner identity, separation, J and D. Two honest limits stay explicit: the hyperfine
-    couplings are still class-level (not computed on this geometry) and NO spin-dynamics yield or
-    magnetic response is predicted. Parameter derivation only, assumption-derived, never a sensor claim.
+    An aromatic-network heuristic assigns a terminal Trp/Tyr partner from this protein's structure;
+    centroid separation and the standard distance formulas then parameterize D and an uncertain J.
+    These are candidate-associated model inputs, not measured radical localization. Hyperfine remains
+    class-level and no protein environment or optical transduction is modeled.
     """
     model_config = ConfigDict(extra="forbid", frozen=True)
     partner_residue: str
@@ -69,18 +102,18 @@ class RadicalPairModel(BaseModel):
     separation_angstrom: float
     exchange_j_mT: float
     dipolar_d_mT: float
-    # A COARSE model estimate of the magnetic field effect (max |MFE| over a field sweep, percent), or
-    # None if it could not be computed. Assumption-heavy (see method_note): NOT a validated prediction
-    # and NOT a claim the protein works as a magnetic sensor.
+    # Compatibility field: the baseline scenario from magnetic_field_effect. New consumers should
+    # present the sensitivity envelope below, never this scalar as a protein-response prediction.
     magnetic_field_effect_percent: float | None = None
+    magnetic_field_effect: MagneticFieldEffectSensitivity | None = None
     method_note: str = (
-        "electron-transfer partner from this protein's aromatic hopping chain (light Beratan-Onuchic "
-        "heuristic; eMap/pyemap is the fuller tool). D from the point dipole is well constrained by the "
-        "separation; J from the Moser et al. 1992 tunnelling decay is order-of-magnitude only. The "
-        "magnetic field effect is a COARSE RadicalPy model estimate from D under stated assumptions "
-        "(class-level flavin+tryptophan hyperfine, J taken small, generic recombination/relaxation, no "
-        "optical transduction) -- an approximate figure, NOT a validated prediction and NOT a claim "
-        "this protein works as a magnetic sensor. Geometry-derived; hyperfine still class-level."
+        "electron-transfer partner assigned from this protein's aromatic contact graph (light "
+        "Beratan-Onuchic heuristic; eMap/pyemap is the fuller tool). D is a point-dipole estimate from "
+        "centroid separation; J from Moser et al. 1992 tunnelling decay is order-of-magnitude only. The "
+        "magnetic field effect is a RadicalPy sensitivity envelope from candidate D/J under named "
+        "generic kinetic assumptions (class-level flavin+tryptophan hyperfine, no protein environment "
+        "or optical transduction). It is NOT a validated response prediction or a sensor claim. "
+        "Geometry-derived; hyperfine and kinetics remain class-level."
     )
 
 

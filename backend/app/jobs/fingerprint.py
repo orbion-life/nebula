@@ -66,16 +66,31 @@ def component_versions() -> dict[str, str]:
 
 
 def input_fingerprint(objective: ObjectiveSpec, seed: int, instrument_id: str | None) -> str:
+    normalized = objective.model_dump(
+        mode="json",
+        exclude={"objective_id", "field_provenance"},
+    )
+    # These fields are declarative sets even though JSON represents them as lists. Canonicalize
+    # them so reordering controls cannot create a semantically duplicate run and spend compute twice.
+    order_insensitive = {
+        "desired_modalities", "acceptable_readouts", "allowed_cofactors", "excluded_cofactors",
+        "excitation_allowed", "available_instrumentation", "optimization_objectives",
+        "hard_constraints", "soft_preferences", "seed_accessions", "target_scaffold_families",
+        "manufacturing_constraints", "safety_constraints", "constraints", "unknowns",
+        "assumptions", "missing_information", "forbidden_assumptions", "decision_active_fields",
+        "handoff_only_fields",
+    }
+    for field in order_insensitive:
+        value = normalized.get(field)
+        if isinstance(value, list):
+            normalized[field] = sorted(value, key=lambda item: json.dumps(item, sort_keys=True))
     payload = {
         "versions": component_versions(),
         "schema": objective.schema_version,
         "seed": seed,
         "instrument_id": instrument_id,
         # normalized objective (exclude volatile provenance/ids)
-        "objective": objective.model_dump(
-            mode="json",
-            exclude={"objective_id", "field_provenance"},
-        ),
+        "objective": normalized,
     }
     blob = json.dumps(payload, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(blob.encode()).hexdigest()

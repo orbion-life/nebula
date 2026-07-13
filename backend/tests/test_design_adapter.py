@@ -14,6 +14,20 @@ from app.contracts.providers import BindingSite, CofactorRef, UniProtRecord
 from app.design import PreviewDesigner, _select_adapter, candidate_motif_note, cofactor_residues, generate_previews
 from app.design.modal_rfdiffusion import ModalRFdiffusionAdapter
 
+
+class _MemoryDesignCache:
+    def __init__(self, value=None):
+        self.value = value
+        self.keys: list[str] = []
+        self.writes: list[tuple[str, dict]] = []
+
+    def get(self, key):
+        self.keys.append(key)
+        return self.value
+
+    def put(self, key, value):
+        self.writes.append((key, value))
+
 OBJ = ObjectiveSpec(
     objective_id="o",
     objective_text="optical spin contrast demo objective",
@@ -140,6 +154,51 @@ def test_modal_adapter_maps_backbone_to_firewalled_preview(monkeypatch):
     assert "not an orderable sequence" in p.note
     # the token is sent to the deployer's own endpoint in the request body, never embedded elsewhere
     assert captured["json"]["token"] == "secret-token"
+
+
+def test_modal_adapter_uses_memory_cache_without_contacting_gpu(monkeypatch):
+    cache = _MemoryDesignCache({
+        "model": "rfdiffusion-base",
+        "designs": [{
+            "backbone_pdb": "ATOM      1  CA  GLY A   1      0.0   0.0   0.0",
+            "n_residues": 100,
+            "run_ref": "previous-run",
+            "params": {"length": 100, "unconditional": "true"},
+        }],
+    })
+    monkeypatch.setattr("app.design.cache.design_result_cache", lambda: cache)
+
+    def must_not_call(*args, **kwargs):
+        raise AssertionError("a cache hit must not call Modal")
+
+    monkeypatch.setattr("app.design.modal_rfdiffusion.httpx.post", must_not_call)
+    out = ModalRFdiffusionAdapter("https://you--x.modal.run", "tok").invent(OBJ, n=1)
+    assert len(out) == 1
+    assert out[0].provenance.params["cache"] == "memory_hit"
+    assert len(cache.keys) == 1 and not cache.writes
+
+
+def test_modal_adapter_stores_successful_gpu_result_in_memory_cache(monkeypatch):
+    cache = _MemoryDesignCache()
+    monkeypatch.setattr("app.design.cache.design_result_cache", lambda: cache)
+
+    def fake_post(url, json=None, headers=None, timeout=None):
+        return _FakeResp({
+            "model": "rfdiffusion-base",
+            "designs": [{
+                "backbone_pdb": "ATOM      1  CA  GLY A   1      0.0   0.0   0.0",
+                "n_residues": 100,
+                "run_ref": "fresh-run",
+                "params": {"length": 100, "unconditional": "true"},
+            }],
+        })
+
+    monkeypatch.setattr("app.design.modal_rfdiffusion.httpx.post", fake_post)
+    out = ModalRFdiffusionAdapter("https://you--x.modal.run", "tok").invent(OBJ, n=1)
+    assert len(out) == 1
+    assert out[0].provenance.params["cache"] == "memory_miss"
+    assert len(cache.writes) == 1
+    assert cache.writes[0][1]["designs"][0]["run_ref"] == "fresh-run"
 
 
 def test_modal_backbone_rationale_is_honest_for_real_coordinates(monkeypatch):

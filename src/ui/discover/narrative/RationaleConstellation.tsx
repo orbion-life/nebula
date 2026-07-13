@@ -9,6 +9,7 @@
 import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { usePageVisible, useReducedMotion } from "../motion/useReducedMotion";
 
 export type FacetId = "why" | "evidence" | "physics" | "fit" | "decisive";
 export interface Facet {
@@ -27,10 +28,6 @@ const TONE: Record<Facet["tone"], string> = {
   decisive: "#9cf7bd",
 };
 
-function reduced(): boolean {
-  return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
-}
-
 export function RationaleConstellation({ accession, lane, facets, activeId, onSelect }: {
   accession: string;
   lane: string;               // "evidence" | "frontier"
@@ -39,6 +36,9 @@ export function RationaleConstellation({ accession, lane, facets, activeId, onSe
   onSelect: (id: FacetId) => void;
 }) {
   const scope = useRef<SVGSVGElement>(null);
+  const tabs = useRef<Array<SVGGElement | null>>([]);
+  const reduced = useReducedMotion();
+  const pageVisible = usePageVisible();
   const W = 640, H = 380, cx = 320, cy = 190, rx = 232, ry = 128;
   // distribute satellites on an ellipse; the decisive test sits at the bottom (the "exit")
   const order: FacetId[] = ["why", "evidence", "physics", "fit", "decisive"];
@@ -49,9 +49,14 @@ export function RationaleConstellation({ accession, lane, facets, activeId, onSe
     const a = f.id === "decisive" ? Math.PI / 2 : (-Math.PI / 2) + (i / n) * Math.PI * 2 + 0.0001;
     return { f, x: cx + rx * Math.cos(a), y: cy + ry * Math.sin(a), r: f.id === "decisive" ? 30 : 25 };
   });
+  const selectAt = (index: number) => {
+    const next = (index + nodes.length) % nodes.length;
+    onSelect(nodes[next].f.id);
+    requestAnimationFrame(() => tabs.current[next]?.focus());
+  };
 
   useGSAP(() => {
-    if (reduced() || !scope.current) return;
+    if (reduced || !pageVisible || !scope.current) return;
     const s = scope.current;
     gsap.from(s.querySelectorAll(".rc-link"), { opacity: 0, duration: 0.7, stagger: 0.08, ease: "power2.out" });
     gsap.from(s.querySelectorAll(".rc-sat"), { scale: 0.4, opacity: 0, transformOrigin: "center", duration: 0.55, stagger: 0.09, ease: "back.out(1.7)", delay: 0.15 });
@@ -60,10 +65,10 @@ export function RationaleConstellation({ accession, lane, facets, activeId, onSe
     nodes.forEach((nd, i) => {
       gsap.to(s.querySelector(`.rc-sat[data-id="${nd.f.id}"]`), { y: "+=5", duration: 3 + (i % 3), repeat: -1, yoyo: true, ease: "sine.inOut", delay: i * 0.2 });
     });
-  }, { scope, dependencies: [accession] });
+  }, { scope, dependencies: [accession, reduced, pageVisible], revertOnUpdate: true });
 
   return (
-    <svg ref={scope} className="rc" viewBox={`0 0 ${W} ${H}`} role="group" aria-label={`why ${accession}: pick a facet`}>
+    <svg ref={scope} className="rc" viewBox={`0 0 ${W} ${H}`} role="tablist" aria-label={`why ${accession}: pick a facet`} aria-orientation="horizontal">
       <defs>
         <radialGradient id="rc-core" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#eafff2" />
@@ -84,25 +89,34 @@ export function RationaleConstellation({ accession, lane, facets, activeId, onSe
       ))}
       {/* central candidate star */}
       <g className="rc-core">
-        <circle className="rc-core-glow" cx={cx} cy={cy} r={62} fill="url(#rc-core)" opacity={0.6} />
-        <circle cx={cx} cy={cy} r={44} fill="#0a1f16" stroke="#9cf7bd" strokeWidth={1.5} />
-        <text x={cx} y={cy - 4} className="rc-core-acc" textAnchor="middle">{accession}</text>
-        <text x={cx} y={cy + 15} className="rc-core-lane" textAnchor="middle">{lane} lane</text>
+        <circle className="rc-core-glow" cx={cx} cy={cy} r={70} fill="url(#rc-core)" opacity={0.6} />
+        <circle cx={cx} cy={cy} r={48} fill="#0a1f16" stroke="#9cf7bd" strokeWidth={1.5} />
+        <text x={cx} y={cy + 6} className="rc-core-acc" textAnchor="middle">{accession}</text>
+        <text x={cx} y={cy + 70} className="rc-core-lane" textAnchor="middle">{lane} lane</text>
       </g>
       {/* satellite facets */}
-      {nodes.map((nd) => {
+      {nodes.map((nd, index) => {
         const on = nd.f.id === activeId;
         return (
           <g
             key={nd.f.id}
+            ref={(element) => { tabs.current[index] = element; }}
             className={`rc-sat ${on ? "on" : ""}`}
             data-id={nd.f.id}
-            role="button"
-            tabIndex={0}
-            aria-pressed={on}
+            id={`dossier-tab-${nd.f.id}`}
+            role="tab"
+            tabIndex={on ? 0 : -1}
+            aria-selected={on}
+            aria-controls={`dossier-panel-${nd.f.id}`}
             aria-label={`${nd.f.label}: ${nd.f.takeaway}`}
             onClick={() => onSelect(nd.f.id)}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(nd.f.id); } }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(nd.f.id); }
+              else if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); selectAt(index + 1); }
+              else if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); selectAt(index - 1); }
+              else if (e.key === "Home") { e.preventDefault(); selectAt(0); }
+              else if (e.key === "End") { e.preventDefault(); selectAt(nodes.length - 1); }
+            }}
           >
             <circle className="rc-node" cx={nd.x} cy={nd.y} r={nd.r} fill="#0b1420" stroke={TONE[nd.f.tone]} strokeWidth={on ? 2.4 : 1.4} />
             {nd.f.metric ? (

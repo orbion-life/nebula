@@ -60,6 +60,12 @@ describe("shipped dossier export boundary", () => {
     expect(md).toContain("Computation is not validation");
   });
 
+  it("includes the requested contact details", () => {
+    expect(md).toContain("Aniruddh Goteti");
+    expect(md).toContain("aniruddh.goteti@orbion.life");
+    expect(md).toContain("www.orbion.life");
+  });
+
   it("qualifies the computed spin number so it cannot be quoted as a performance figure", () => {
     expect(md).toMatch(/NOT a performance or spin-response prediction/);
   });
@@ -96,6 +102,12 @@ describe("branded PDF brief (dossierBriefHtml)", () => {
     expect(html).toContain("Unvalidated public-protein candidate hypothesis");
     expect(html).not.toContain("partner_ready_dossier");
     expect(html).toContain("measurement collaborator handoff");
+  });
+
+  it("includes the requested contact details", () => {
+    expect(html).toContain("Aniruddh Goteti");
+    expect(html).toContain("aniruddh.goteti@orbion.life");
+    expect(html).toContain("www.orbion.life");
   });
 
   it("escapes and sanitizes hostile public-record text before it reaches the document", () => {

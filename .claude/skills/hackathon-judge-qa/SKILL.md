@@ -20,7 +20,9 @@ Visible agents/skills; code owns simulator/firewall/swarm. Point to `CLAUDE_TRAN
 Point to the falsification kill criterion on the Measure next screen + export section.
 
 **Is this a chat wrapper?**
-No — pipeline with deterministic stages. Point to `src/core/pipeline.ts` + `npm test`.
+No — the shipped browser path is a FastAPI pipeline with deterministic stages and a
+typed frontend contract. Point to `backend/app/jobs/orchestrator.py`,
+`src/api/client.ts`, and the backend/frontend test suites.
 
 **What does the swarm do?**
 Deterministic 10-lens release audit every run. Point to the Release audit disclosure (Measure next) + `docs/SWARM_ARCHITECTURE.md`.

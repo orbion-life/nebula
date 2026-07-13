@@ -32,6 +32,8 @@ and review tools under `.claude/`, with dated artifacts under `artifacts/claude/
 | visual-system-director | `src/ui/discover/`, Playwright viewport and fallback tests |
 | demo-director | `DEMO_SCRIPT.md`, `e2e/discovery.spec.ts` |
 | code-quality-reviewer | frontend, backend, E2E, build, audit, and deploy gates |
+| design-adapter | `backend/app/design/`, `backend/tests/test_design_adapter.py` |
+| swarm-orchestrator | `.claude/commands/swarm-review.md`, dated reviews in `artifacts/claude/` |
 
 ## Commands
 

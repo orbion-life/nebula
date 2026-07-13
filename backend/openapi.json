@@ -424,7 +424,7 @@
     "/api/candidates/{candidate_id}/structure": {
       "get": {
         "summary": "Get Structure",
-        "description": "A structure source for Mol*. Prefers the experimental cofactor-bound PDB,\nfalls back to the AlphaFold model. `inline_cif` is populated (from cache/fixture\nor a best-effort fetch) so the viewer works offline; otherwise the client loads\n`provider_url` directly (RCSB/AlphaFold both allow browser CORS).",
+        "description": "A structure source for 3Dmol. Prefers a verified cofactor-bound PDB,\nfalls back to the AlphaFold model. `inline_cif` is populated (from cache/fixture\nor a best-effort fetch) so the viewer works offline; otherwise the client loads\n`provider_url` directly (RCSB/AlphaFold both allow browser CORS).",
         "operationId": "get_structure_api_candidates__candidate_id__structure_get",
         "parameters": [
           {
@@ -756,6 +756,44 @@
           "structural_evidence"
         ],
         "title": "CandidateDossier"
+      },
+      "CandidateMeasurementProposal": {
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "title": "Candidate Id"
+          },
+          "accession": {
+            "type": "string",
+            "title": "Accession"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "discriminating_experiment": {
+            "$ref": "#/components/schemas/DiscriminatingExperiment"
+          },
+          "falsifier": {
+            "type": "string",
+            "title": "Falsifier"
+          },
+          "claim_ceiling": {
+            "$ref": "#/components/schemas/ClaimLevel"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "accession",
+          "title",
+          "discriminating_experiment",
+          "falsifier",
+          "claim_ceiling"
+        ],
+        "title": "CandidateMeasurementProposal",
+        "description": "Route-specific, falsifiable measurement handoff for any ranked candidate.\n\nEvidence-lane candidates need an actionable next measurement just as much as\nfrontier candidates do. This contract deliberately carries no performance claim."
       },
       "CandidateRecord": {
         "properties": {
@@ -1294,6 +1332,14 @@
             "type": "array",
             "title": "Negative Controls"
           },
+          "replicate_plan": {
+            "type": "string",
+            "title": "Replicate Plan"
+          },
+          "acceptance_rule": {
+            "type": "string",
+            "title": "Acceptance Rule"
+          },
           "kill_criterion": {
             "type": "string",
             "title": "Kill Criterion"
@@ -1313,12 +1359,14 @@
           "what_to_measure",
           "expected_signature",
           "null_expectation",
+          "replicate_plan",
+          "acceptance_rule",
           "kill_criterion",
           "information_gained",
           "approx_cost"
         ],
         "title": "DiscriminatingExperiment",
-        "description": "The cheapest experiment that would confirm/kill a hypothesis."
+        "description": "A lowest-cost measurement intended to discriminate a route from its controls."
       },
       "ExplorationLevel": {
         "type": "string",
@@ -2057,6 +2105,116 @@
           "unknown"
         ],
         "title": "KnowledgeStateKind"
+      },
+      "MagneticFieldEffectScenario": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "singlet_recombination_s": {
+            "type": "number",
+            "title": "Singlet Recombination S"
+          },
+          "triplet_recombination_s": {
+            "type": "number",
+            "title": "Triplet Recombination S"
+          },
+          "relaxation_s": {
+            "type": "number",
+            "title": "Relaxation S"
+          },
+          "exchange_j_mT": {
+            "type": "number",
+            "title": "Exchange J Mt"
+          },
+          "amplitude_percent": {
+            "type": "number",
+            "title": "Amplitude Percent"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "singlet_recombination_s",
+          "triplet_recombination_s",
+          "relaxation_s",
+          "exchange_j_mT",
+          "amplitude_percent"
+        ],
+        "title": "MagneticFieldEffectScenario",
+        "description": "One explicit kinetic assumption set in the RadicalPy sensitivity sweep."
+      },
+      "MagneticFieldEffectSensitivity": {
+        "properties": {
+          "field_range_mT": {
+            "type": "number",
+            "title": "Field Range Mt"
+          },
+          "lower_percent": {
+            "type": "number",
+            "title": "Lower Percent"
+          },
+          "baseline_percent": {
+            "type": "number",
+            "title": "Baseline Percent"
+          },
+          "upper_percent": {
+            "type": "number",
+            "title": "Upper Percent"
+          },
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/MagneticFieldEffectScenario"
+            },
+            "type": "array",
+            "title": "Scenarios"
+          },
+          "fields_mT": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Fields Mt"
+          },
+          "lower_curve_percent": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Lower Curve Percent"
+          },
+          "baseline_curve_percent": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Baseline Curve Percent"
+          },
+          "upper_curve_percent": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Upper Curve Percent"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": "Sensitivity envelope across explicit exchange-coupling and generic kinetic scenarios; candidate geometry supplies D and the starting J estimate, while hyperfine remains class-level and protein environment plus optical transduction are not modeled."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "field_range_mT",
+          "lower_percent",
+          "baseline_percent",
+          "upper_percent"
+        ],
+        "title": "MagneticFieldEffectSensitivity",
+        "description": "Assumption sensitivity, not a predicted protein response.\n\nA structure-derived geometry sets D and a heuristic starting J. J and kinetic\nrates are then varied explicitly; hyperfine remains class-level. The result is\ntherefore an assumption range, not a single candidate-response percentage."
       },
       "MaterialContext": {
         "type": "string",
@@ -3301,10 +3459,20 @@
             ],
             "title": "Magnetic Field Effect Percent"
           },
+          "magnetic_field_effect": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MagneticFieldEffectSensitivity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "method_note": {
             "type": "string",
             "title": "Method Note",
-            "default": "electron-transfer partner from this protein's aromatic hopping chain (light Beratan-Onuchic heuristic; eMap/pyemap is the fuller tool). D from the point dipole is well constrained by the separation; J from the Moser et al. 1992 tunnelling decay is order-of-magnitude only. The magnetic field effect is a COARSE RadicalPy model estimate from D under stated assumptions (class-level flavin+tryptophan hyperfine, J taken small, generic recombination/relaxation, no optical transduction) -- an approximate figure, NOT a validated prediction and NOT a claim this protein works as a magnetic sensor. Geometry-derived; hyperfine still class-level."
+            "default": "electron-transfer partner assigned from this protein's aromatic contact graph (light Beratan-Onuchic heuristic; eMap/pyemap is the fuller tool). D is a point-dipole estimate from centroid separation; J from Moser et al. 1992 tunnelling decay is order-of-magnitude only. The magnetic field effect is a RadicalPy sensitivity envelope from candidate D/J under named generic kinetic assumptions (class-level flavin+tryptophan hyperfine, no protein environment or optical transduction). It is NOT a validated response prediction or a sensor claim. Geometry-derived; hyperfine and kinetics remain class-level."
           }
         },
         "additionalProperties": false,
@@ -3317,7 +3485,7 @@
           "dipolar_d_mT"
         ],
         "title": "RadicalPairModel",
-        "description": "Per-protein radical-pair geometry + geometry-derived couplings (Tier 0).\n\nThe electron-transfer partner (terminal Trp/Tyr) and inter-radical separation are read from THIS\nprotein's real structure; the exchange (J) and dipolar (D) couplings are the standard closed forms\nof that separation. So the radical-pair model is per-protein in four inputs the generic template\nfixed: partner identity, separation, J and D. Two honest limits stay explicit: the hyperfine\ncouplings are still class-level (not computed on this geometry) and NO spin-dynamics yield or\nmagnetic response is predicted. Parameter derivation only, assumption-derived, never a sensor claim."
+        "description": "Per-protein radical-pair geometry + geometry-derived couplings (Tier 0).\n\nAn aromatic-network heuristic assigns a terminal Trp/Tyr partner from this protein's structure;\ncentroid separation and the standard distance formulas then parameterize D and an uncertain J.\nThese are candidate-associated model inputs, not measured radical localization. Hyperfine remains\nclass-level and no protein environment or optical transduction is modeled."
       },
       "ReadoutMode": {
         "type": "string",
@@ -3526,6 +3694,14 @@
             },
             "type": "array",
             "title": "Frontier Experiments"
+          },
+          "measurement_proposals": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateMeasurementProposal"
+            },
+            "type": "array",
+            "title": "Measurement Proposals",
+            "description": "route-specific falsifiable measurement handoff for every ranked candidate"
           },
           "generative_frontier": {
             "items": {
@@ -3743,6 +3919,28 @@
               }
             ],
             "title": "Mean Plddt"
+          },
+          "verified_ligand_comp_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified Ligand Comp Id"
+          },
+          "verified_ligand_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified Ligand Name"
           },
           "inline_cif": {
             "anyOf": [

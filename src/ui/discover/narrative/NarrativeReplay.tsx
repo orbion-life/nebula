@@ -14,22 +14,23 @@ import { generateDesigns, getHealth, getRun, getStructure, type CandidateDossier
 import { GeneratedBackboneViewer } from "../GeneratedBackboneViewer";
 import { StructureViewer } from "../StructureViewer";
 import { UniverseHero } from "../universe/UniverseHero";
-import { claimLabel, dossierBriefHtml, dossierMarkdown } from "../dossierExport";
+import { claimLabel, cofactorContext, dossierBriefHtml, dossierMarkdown, sentenceCase } from "../dossierExport";
+import { usePageVisible, useReducedMotion } from "../motion/useReducedMotion";
+import { useLenis } from "../scroll/useLenis";
 import { ObjectiveSplit } from "./AppliedConstraints";
 import { CandidateDossierPanel } from "./CandidateDossierPanel";
 import { GENERATE_PRECEDENT } from "./FieldPrecedent";
 
 interface Props { run: RunState }
 
-function reducedMotion(): boolean {
-  return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
-}
-
 export function NarrativeReplay({ run }: Props) {
   const scope = useRef<HTMLDivElement>(null);
-  const reduced = reducedMotion();
+  const reduced = useReducedMotion();
+  const pageVisible = usePageVisible();
+  const lenis = useLenis();
   const initialId = run.selected_candidate_id ?? run.evidence_shortlist?.[0] ?? run.frontier_experiments?.[0]?.candidate_id ?? run.candidates?.[0]?.candidate_id ?? null;
   const [selectedId, setSelectedId] = useState<string | null>(initialId);
+  const [activeSection, setActiveSection] = useState("atlas-outcome");
   const [designIndex, setDesignIndex] = useState(0);
   const [structure, setStructure] = useState<StructureResponse | null>(null);
   const [structureStatus, setStructureStatus] = useState<"loading" | "ready" | "unavailable">("loading");
@@ -52,9 +53,24 @@ export function NarrativeReplay({ run }: Props) {
   const dossier = useMemo(() => (run.dossiers ?? []).find((d) => d.candidate.candidate_id === selected?.candidate_id), [run.dossiers, selected]);
   const score = scores.find((s) => s.candidate_id === selected?.candidate_id);
   const frontier = (run.frontier_experiments ?? []).find((f) => f.candidate_id === selected?.candidate_id);
+  const measurement = (run.measurement_proposals ?? []).find((proposal) => proposal.candidate_id === selected?.candidate_id);
+  const experiment = measurement?.discriminating_experiment ?? frontier?.discriminating_experiment;
   const design = designs[designIndex] ?? designs[0] ?? null;
   const realBackbones = designs.filter((d) => Boolean(d.backbone_pdb)).length;
   const uniqueAccessions = new Set(candidates.map((c) => c.uniprot?.primary_accession ?? c.candidate_id)).size;
+
+  useEffect(() => {
+    const ids = ["atlas-outcome", "atlas-nature", "atlas-dossier", "atlas-generate", "atlas-handoff"];
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (visible?.target.id) setActiveSection(visible.target.id);
+    }, { rootMargin: "-20% 0px -62%", threshold: [0, 0.15, 0.4] });
+    ids.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) observer.observe(element);
+    });
+    return () => observer.disconnect();
+  }, []);
   const shortlistIds = new Set([...(run.evidence_shortlist ?? []), ...(run.frontier_experiments ?? []).map((f) => f.candidate_id)]);
   const shortlist = candidates
     .filter((c) => shortlistIds.has(c.candidate_id))
@@ -113,7 +129,7 @@ export function NarrativeReplay({ run }: Props) {
   }, [selected?.candidate_id]);
 
   useGSAP(() => {
-    if (reduced || !scope.current) return;
+    if (reduced || !pageVisible || !scope.current) return;
     gsap.registerPlugin(ScrollTrigger);
     const scenes = gsap.utils.toArray<HTMLElement>(".atlas-scene", scope.current);
     scenes.forEach((scene) => {
@@ -135,12 +151,16 @@ export function NarrativeReplay({ run }: Props) {
         scrollTrigger: { trigger: scope.current, start: "top top", end: "bottom bottom", scrub: true },
       });
     }
-  }, { scope, dependencies: [run.run_id] });
+  }, { scope, dependencies: [run.run_id, reduced, pageVisible], revertOnUpdate: true });
 
   const jumpTo = (id: string) => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+    // Lenis hijacks scrolling, so native scrollIntoView is a no-op under it — drive Lenis directly
+    // (the negative offset clears the sticky header). Fall back to native scroll when Lenis is
+    // absent (reduced-motion path does not instantiate it).
+    if (lenis && !reduced) lenis.scrollTo(el, { offset: -72 });
+    else el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
     // move focus to the section heading so keyboard + screen-reader users land where they jumped
     const heading = el.querySelector<HTMLElement>("h1, h2");
     if (heading) {
@@ -173,7 +193,7 @@ export function NarrativeReplay({ run }: Props) {
     try {
       html = dossierBriefHtml(selected, dossier, run, {
         score,
-        frontier,
+        frontier: measurement ?? frontier,
         design,
         generatedAt: new Date().toISOString().slice(0, 10),
       });
@@ -202,49 +222,43 @@ export function NarrativeReplay({ run }: Props) {
     <div className="atlas" ref={scope}>
       <div className="atlas-progress" aria-hidden><div className="atlas-progress-fill" /></div>
       <nav className="atlas-nav" aria-label="discovery result sections">
-        <button onClick={() => jumpTo("atlas-outcome")}>outcome</button>
-        <button onClick={() => jumpTo("atlas-nature")}>discover</button>
-        <button onClick={() => jumpTo("atlas-dossier")}>rationale</button>
-        <button onClick={() => jumpTo("atlas-generate")}>generate</button>
+        <button aria-current={activeSection === "atlas-outcome" ? "location" : undefined} onClick={() => jumpTo("atlas-outcome")}>outcome</button>
+        <button aria-current={activeSection === "atlas-nature" ? "location" : undefined} onClick={() => jumpTo("atlas-nature")}>discover</button>
+        <button aria-current={activeSection === "atlas-dossier" ? "location" : undefined} onClick={() => jumpTo("atlas-dossier")}>rationale</button>
+        <button aria-current={activeSection === "atlas-generate" ? "location" : undefined} onClick={() => jumpTo("atlas-generate")}>generate</button>
+        <button aria-current={activeSection === "atlas-handoff" ? "location" : undefined} onClick={() => jumpTo("atlas-handoff")}>handoff</button>
       </nav>
 
       <section className="atlas-scene atlas-hero" id="atlas-outcome">
         <div className="atlas-reveal atlas-hero-grid">
           <div className="atlas-hero-copy">
-          <span className="atlas-eyebrow">mission resolved</span>
-          <h1>The search opened<br /><em>two paths.</em></h1>
-          <p>{run.objective.sensed_quantity_or_state?.replace(/-/g, " ") ?? "Your sensing objective"}, translated into candidates that exist and structures that could.</p>
-          <div className="atlas-paths">
-            <button className="atlas-path atlas-path-natural" onClick={() => jumpTo("atlas-nature")}>
-              <svg className="atlas-path-glyph" viewBox="0 0 44 44" aria-hidden>
-                <line x1="8" y1="30" x2="22" y2="11" /><line x1="22" y1="11" x2="36" y2="27" /><line x1="22" y1="11" x2="17" y2="35" />
-                <circle cx="8" cy="30" r="2.3" /><circle cx="22" cy="11" r="3" /><circle cx="36" cy="27" r="2.3" /><circle cx="17" cy="35" r="1.9" />
-              </svg>
-              <strong className="atlas-path-count">{uniqueAccessions}</strong>
-              <span className="atlas-path-text">
-                <b>found in nature</b>
-                <small>public protein{uniqueAccessions === 1 ? "" : "s"} inspected</small>
-              </span>
-              <span className="atlas-path-arrow" aria-hidden>→</span>
-            </button>
-            <button className="atlas-path atlas-path-generated" onClick={() => jumpTo("atlas-generate")}>
-              <svg className="atlas-path-glyph" viewBox="0 0 44 44" aria-hidden>
-                <ellipse cx="22" cy="22" rx="16" ry="6.5" transform="rotate(32 22 22)" /><ellipse cx="22" cy="22" rx="16" ry="6.5" transform="rotate(-32 22 22)" />
-                <circle cx="22" cy="22" r="3" />
-              </svg>
-              <strong className="atlas-path-count">{realBackbones || designs.length}</strong>
-              <span className="atlas-path-text">
-                <b>generated beyond nature</b>
-                <small>{realBackbones ? "RFdiffusion backbones" : "de novo design briefs"}</small>
-              </span>
-              <span className="atlas-path-arrow" aria-hidden>→</span>
-            </button>
-          </div>
-          <p className="atlas-honesty">Nothing here is a proven sensor. Everything here is a clearer next experiment.</p>
+            <span className="atlas-eyebrow">measurement priority · {score?.lane ?? "candidate"}</span>
+            <h1>Test<br /><em>{selected?.uniprot?.primary_accession ?? "this candidate"} first.</em></h1>
+            <p className="atlas-hero-why">
+              {selected?.why_it_might_work?.[0] ?? "This candidate best matches the supported mechanism and measurement route in this search."} This is a heuristic priority; the matched-control test below is designed to reject it quickly.
+            </p>
+            <div className="atlas-next-test">
+              <span>measure next</span>
+              <strong>{sentenceCase(experiment?.what_to_measure ?? "Run the route-specific measurement with matched controls.")}</strong>
+              <dl>
+                <div>
+                  <dt>bench</dt>
+                  <dd>{sentenceCase((experiment?.instrument_id ?? score?.suggested_instrument_id ?? "route-compatible measurement bench").replace(/_/g, " "))}</dd>
+                </div>
+                <div>
+                  <dt>stop if</dt>
+                  <dd>{sentenceCase(experiment?.kill_criterion ?? selected?.why_it_might_fail?.[0] ?? "matched controls reproduce the response")}</dd>
+                </div>
+              </dl>
+            </div>
+            <div className="atlas-hero-actions">
+              <button className="atlas-primary-action" onClick={() => jumpTo("atlas-dossier")}>open rationale <span aria-hidden>→</span></button>
+              <button className="atlas-text-action" onClick={() => jumpTo("atlas-nature")}>compare {uniqueAccessions} public candidate{uniqueAccessions === 1 ? "" : "s"}</button>
+            </div>
+            <p className="atlas-honesty">Measurement priority. No sensing or performance result is asserted.</p>
           </div>
           <div className="atlas-hero-universe">
             <UniverseHero run={run} settled selectedId={selected?.candidate_id ?? null} onSelect={(id) => { setSelectedId(id); jumpTo("atlas-dossier"); }} interactive />
-            <span className="atlas-hero-hint" aria-hidden>select a star to open its case ↓</span>
           </div>
         </div>
       </section>
@@ -256,9 +270,9 @@ export function NarrativeReplay({ run }: Props) {
             <p>Public proteins filtered by mechanism support, measurement fit, and developability context. Select one to open its full rationale.</p>
           </header>
           <ObjectiveSplit run={run} />
-          <CandidateConstellation candidates={candidates} scores={scores} selectedId={selected?.candidate_id ?? null} onSelect={setSelectedId} />
+          <CandidateConstellation candidates={candidates} scores={scores} selectedId={selected?.candidate_id ?? null} onSelect={(id) => { setSelectedId(id); jumpTo("atlas-dossier"); }} />
           <div className="atlas-inspector">
-            <div className="atlas-candidate-list" role="list" aria-label="candidate shortlist">
+            <div className="atlas-candidate-list" role="group" aria-label="candidate shortlist">
               {visibleCandidates.map((candidate, index) => {
                 const candidateScore = scores.find((item) => item.candidate_id === candidate.candidate_id);
                 const active = candidate.candidate_id === selected?.candidate_id;
@@ -284,9 +298,9 @@ export function NarrativeReplay({ run }: Props) {
         <div className="atlas-reveal">
           <header className="atlas-section-head">
             <div><span className="atlas-eyebrow">02 · rationale</span><h2>{selected ? `The case for ${selected.uniprot?.primary_accession ?? selected.title.split(" — ")[0]}.` : "The case for the candidate."}</h2></div>
-            <p>Everything specific to this protein in one place: why it ranked, its own physics, the public evidence, the constraints, and the one measurement that could prove it wrong.</p>
+            <p>Why it ranked, the public evidence, structure-associated diagnostics, model assumptions, and the measurement that could reject this construct-and-assay hypothesis.</p>
           </header>
-          <CandidateDossierPanel candidate={selected} dossier={dossier} score={score} frontier={frontier} run={run} />
+          <CandidateDossierPanel candidate={selected} dossier={dossier} score={score} frontier={frontier} measurement={measurement} run={run} />
         </div>
       </section>
 
@@ -294,7 +308,7 @@ export function NarrativeReplay({ run }: Props) {
         <div className="atlas-reveal">
           <header className="atlas-section-head">
             <div><span className="atlas-eyebrow">03 · generate</span><h2>Then search beyond nature.</h2></div>
-            <p>RFdiffusion proposes new backbone geometry for the same sensing mission, each linked to a shortlisted protein's cofactor motif. Coordinates are a starting point, not a finished construct.</p>
+            <p>An optional adjacent lane for unconditional RFdiffusion backbone proposals. Coordinates are not conditioned on the selected protein, cofactor pocket, sensing mechanism, or sequence, and do not support the public-candidate decision above.</p>
           </header>
           {adapterConnected && realBackbones === 0 && (
             <div className={`atlas-gen-cta ${genState}`}>
@@ -311,7 +325,7 @@ export function NarrativeReplay({ run }: Props) {
             </div>
           )}
           <div className="atlas-generator">
-            <div className="atlas-design-list" role="list" aria-label="generated design directions">
+            <div className="atlas-design-list" role="group" aria-label="generated design directions">
               {designs.map((item, index) => {
                 const active = index === designIndex;
                 return (
@@ -347,7 +361,7 @@ export function NarrativeReplay({ run }: Props) {
         <div className="atlas-reveal">
           <span className="atlas-eyebrow">handoff</span>
           <h2>Take the next experiment with you.</h2>
-          <p>One selected public candidate, one generated design direction, the assumptions, and the experiment that can prove the idea wrong.</p>
+          <p>One selected public candidate, an optional design brief, the assumptions, and the experiment that can reject the proposed route for this construct and assay.</p>
           <button className="atlas-download" onClick={downloadHandoff} disabled={!selected}>download brief <span>↓</span></button>
           <small>Evidence is public. Generated coordinates, when present, are unvalidated RFdiffusion output with no sequence.</small>
         </div>
@@ -362,7 +376,7 @@ function CandidateCaption({ candidate, dossier, score }: { candidate?: Candidate
   return (
     <div className="atlas-candidate-caption">
       <div><span>selected public protein</span><strong>{candidate.uniprot?.primary_accession ?? candidate.title}</strong></div>
-      <div><span>cofactor context</span><strong>{candidate.cofactors?.map((c) => c.name).join(" + ") || "not annotated"}</strong></div>
+      <div><span>cofactor context</span><strong>{cofactorContext(candidate)}</strong></div>
       <div><span>physics provenance</span><strong>{candidateSpecific ? "candidate-specific QM" : "route-level evidence"}</strong></div>
       <div><span>current ceiling</span><strong>{claimLabel(dossier?.claim_ceiling ?? candidate.claim_ceiling)}</strong></div>
       <div><span>lane</span><strong>{score?.lane ?? "unassigned"}</strong></div>
@@ -387,8 +401,13 @@ function CandidateConstellation({ candidates, scores, selectedId, onSelect }: {
     return [Math.round(x), Math.round(y)];
   };
   return (
-    <div className="atlas-field" role="group" aria-label="candidate scatter: horizontal is mechanism support, vertical is measurement value">
-      <div className="atlas-field-rings" aria-hidden><i /><i /><i /></div>
+    <figure className="atlas-field-figure">
+    <figcaption className="atlas-field-legend">
+      <span className="afl-item afl-evidence"><i />evidence lane · known mechanism family</span>
+      <span className="afl-item afl-frontier"><i />frontier lane · plausible, outside known families</span>
+      <span className="afl-hint">position: mechanism support → · measurement value ↑ &nbsp;·&nbsp; click a star to open its case</span>
+    </figcaption>
+    <div className="atlas-field" role="group" aria-label="candidate scatter: horizontal is mechanism support, vertical is measurement value. Click a star to open its case.">
       <div className="atlas-field-core" aria-hidden><b /><span>nebula</span></div>
       <svg className="atlas-field-links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
         {visible.map((candidate) => {
@@ -416,6 +435,7 @@ function CandidateConstellation({ candidates, scores, selectedId, onSelect }: {
       <div className="atlas-field-axis atlas-field-axis-x" aria-hidden>mechanism support →</div>
       <div className="atlas-field-axis atlas-field-axis-y" aria-hidden>measurement value →</div>
     </div>
+    </figure>
   );
 }
 

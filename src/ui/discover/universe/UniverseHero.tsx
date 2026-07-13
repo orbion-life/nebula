@@ -5,14 +5,11 @@
  */
 import { Component, Suspense, lazy, useMemo, type ReactNode } from "react";
 import type { DiscoveryScore, RunState } from "../../../api/client";
+import { usePageVisible, useReducedMotion } from "../motion/useReducedMotion";
 import type { UNode } from "./CandidateUniverse";
 import { canUseWebGL } from "../render/webgl";
 
 const CandidateUniverse = lazy(() => import("./CandidateUniverse"));
-
-function prefersReducedMotion(): boolean {
-  return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
-}
 
 /** Project the run into universe nodes: lane, rank, score, candidate-specific flag.
  * Until the run has ranked (settled), every retrieved candidate is `pending`, a loose
@@ -62,8 +59,10 @@ function isSmallViewport(): boolean {
 
 export function UniverseHero({ run, selectedId, onSelect, settled = true, fieldProgress = 0.45, interactive = true }: Props) {
   const nodes = useMemo(() => buildNodes(run, settled), [run, settled]);
-  const reduced = prefersReducedMotion();
-  const effects = !reduced && !isSmallViewport(); // bloom off for reduced-motion/mobile (+ software-GL, gated in Effects)
+  const reduced = useReducedMotion();
+  const pageVisible = usePageVisible();
+  const motionSuppressed = reduced || !pageVisible;
+  const effects = !motionSuppressed && !isSmallViewport(); // bloom off for reduced-motion/mobile/hidden tabs (+ software-GL, gated in Effects)
   if (nodes.length === 0) return null;
 
   const fallback = <DomFallback nodes={nodes} selectedId={selectedId} onSelect={onSelect} />;
@@ -85,7 +84,7 @@ export function UniverseHero({ run, selectedId, onSelect, settled = true, fieldP
       </div>
       <WebGLBoundary fallback={fallback}>
         <Suspense fallback={<div className="universe-loading">assembling candidate universe…</div>}>
-          <CandidateUniverse nodes={nodes} selectedId={selectedId} onSelect={onSelect} reducedMotion={reduced} fieldProgress={fieldProgress} effects={effects} />
+          <CandidateUniverse nodes={nodes} selectedId={selectedId} onSelect={onSelect} reducedMotion={motionSuppressed} fieldProgress={fieldProgress} effects={effects} />
         </Suspense>
       </WebGLBoundary>
       {interactive && <div className="universe-a11y">{fallback}</div>}

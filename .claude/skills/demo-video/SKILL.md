@@ -9,27 +9,28 @@ Script: `DEMO_SCRIPT.md`. Post-record QA: skill `demo-recording-qa`.
 
 ## Timeline (3:00)
 
-- 0:00-0:20 Problem + claim boundary (diagnostic only)
-- 0:20-0:45 Ask — objective compiler + instrument
-- 0:45-1:10 Explain — routes ranked by experiment value + mechanism chain
-- 1:10-1:35 Explain — public evidence anchors + DOI links
-- 1:35-2:00 Simulate — MARY/RF traces + parameter provenance + observability
-- 2:00-2:20 Simulate — switch instrument to move the ranking (live)
-- 2:20-2:35 Measure next — decisive experiment + falsification kill criterion
-- 2:35-2:50 Measure next — claim firewall + handoff export (select rank-2)
-- 2:50-3:00 Release audit (deterministic) + `.claude/` + close
+- 0:00-0:24 Founder motivation and product boundary
+- 0:24-0:42 Named user and live decision
+- 0:42-0:58 Objective compilation and public search
+- 0:58-1:22 Decision, public evidence, and stop rule
+- 1:22-2:10 Scenario sweep, provenance, and caveats
+- 2:10-2:36 Measurement contract and rejection rule
+- 2:36-2:48 Print-ready handoff
+- 2:48-2:58 Claude leverage + close
 
 ## Must show
 
-- "synthetic assumption sweep, not prediction" on traces
-- Falsification kill criterion card
-- Release audit disclosure (deterministic, not live agents)
-- `.claude/` mention in close
+- Named first user and job to be done
+- "scenario sweep, not predicted response" adjacent to the trace
+- Rejection rule, matched controls, and missing-information fields
+- Print-ready brief carrying the same decision contract
+- Repository-visible Claude roles plus deterministic runtime disclosure
 
 ## Optional punch
 
-Load stress-test objective to show swarm warnings.
+Do not show RFdiffusion in the timed recording. The optional generator does not support
+the public-candidate measurement decision.
 
 ## Closing
 
-"Decide what deserves measurement first."
+"Nebula does not give me certainty. It gives me the next decision."

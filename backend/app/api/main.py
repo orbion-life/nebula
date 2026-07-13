@@ -28,6 +28,7 @@ from ..jobs.fingerprint import input_fingerprint, run_id_for
 from ..jobs.orchestrator import orchestrate
 from ..jobs.store import RunStore
 from ..objective.compile import compile_objective
+from ..discovery.scoring import supported_optimization_objectives
 from ..providers.rcsb import RcsbProvider
 from ..state.machine import assert_transition, progress_fraction
 from .fixtures_static import INSTRUMENTS, ROUTES
@@ -60,7 +61,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-STORE = RunStore()
+# Tests and ephemeral deployments can select an isolated store. Production keeps the
+# durable default unless NEBULA_RUN_DB is explicitly set.
+STORE = RunStore(os.environ.get("NEBULA_RUN_DB"))
 _BG_TASKS: set = set()
 _MAX_ACTIVE_RUNS = max(1, int(os.environ.get("NEBULA_MAX_ACTIVE_RUNS", "2")))
 _RUNS_PER_MINUTE = max(1, int(os.environ.get("NEBULA_RUNS_PER_MINUTE", "20")))
@@ -147,6 +150,8 @@ class StructureResponse(BaseModel):
     method: str | None = None
     resolution: float | None = None
     mean_plddt: float | None = None
+    verified_ligand_comp_id: str | None = None
+    verified_ligand_name: str | None = None
     inline_cif: str | None = None  # populated for offline; else load provider_url client-side
 
 
@@ -235,6 +240,51 @@ async def create_run(body: dict) -> RunCreated:
     except Exception as exc:  # surfaced validation error — never bypassed
         raise HTTPException(status_code=422, detail=str(exc))
 
+    supported_hard_constraints = {
+        "reviewed only",
+        "experimental structure required",
+        "fluorescence required",
+        "lifetime required",
+        "computed spin dynamics required",
+    }
+    unknown_hard = sorted({c.strip().lower() for c in objective.hard_constraints} - supported_hard_constraints)
+    if unknown_hard:
+        raise HTTPException(
+            status_code=422,
+            detail=f"These hard constraints are not computationally enforced: {', '.join(unknown_hard)}.",
+        )
+    unknown_objectives = sorted({
+        name.strip().lower().replace(" ", "_")
+        for name, _weight in objective.optimization_objectives
+    } - supported_optimization_objectives())
+    if unknown_objectives:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Unsupported optimization objectives: {', '.join(unknown_objectives)}.",
+        )
+
+    active = ["sensed_quantity_or_state", "desired_modalities"]
+    for field in (
+        "target_scaffold_families", "seed_query", "seed_accessions", "instrument_id",
+        "allowed_cofactors", "excluded_cofactors", "hard_constraints", "optimization_objectives",
+    ):
+        if getattr(objective, field):
+            active.append(field)
+    if objective.include_unreviewed:
+        active.append("include_unreviewed")
+    handoff = [
+        field for field in (
+            "material_context", "immobilization_or_integration", "expression_host",
+            "temperature_range_C", "pH_range", "oxygen_condition", "maximum_response_time_s",
+            "minimum_effect_size", "response_direction",
+        )
+        if getattr(objective, field) not in (None, [], "unknown")
+    ]
+    objective = objective.model_copy(update={
+        "decision_active_fields": list(dict.fromkeys(active)),
+        "handoff_only_fields": list(dict.fromkeys(handoff)),
+    })
+
     sensed = (objective.sensed_quantity_or_state or "").strip().lower()
     if sensed not in _SUPPORTED_SENSES:
         supported = ", ".join(sorted(_SUPPORTED_SENSES))
@@ -296,8 +346,11 @@ def _generate_backbones(run_id: str, store: RunStore) -> None:
     ranked = [by_id[cid] for cid in run.evidence_shortlist if cid in by_id]
     ranked += [c for c in run.candidates if c.candidate_id not in shortlist]
     designs = generate_previews(run.objective, ranked)  # configured adapter (modal in production)
-    fresh = store.get(run_id) or run
-    store.put(fresh.model_copy(update={"generative_frontier": designs, "updated_at": datetime.now(timezone.utc)}))
+    store.enrich_completed(
+        run_id,
+        generative_frontier=designs,
+        updated_at=datetime.now(timezone.utc),
+    )
 
 
 @app.post("/api/runs/{run_id}/designs", status_code=202)
@@ -399,15 +452,35 @@ async def get_dossier(candidate_id: str) -> CandidateDossier:
 
 @app.get("/api/candidates/{candidate_id}/structure", response_model=StructureResponse)
 async def get_structure(candidate_id: str) -> StructureResponse:
-    """A structure source for Mol*. Prefers the experimental cofactor-bound PDB,
+    """A structure source for 3Dmol. Prefers a verified cofactor-bound PDB,
     falls back to the AlphaFold model. `inline_cif` is populated (from cache/fixture
     or a best-effort fetch) so the viewer works offline; otherwise the client loads
     `provider_url` directly (RCSB/AlphaFold both allow browser CORS)."""
-    ev = _find_dossier(candidate_id).structural_evidence
+    dossier = _find_dossier(candidate_id)
+    ev = dossier.structural_evidence
+    expected_names = {c.name.strip().upper() for c in dossier.candidate.cofactors if c.name.strip()}
+    ligand_aliases = {
+        "FAD": {"FAD", "FDA", "FADH"},
+        "FMN": {"FMN"},
+    }
+    expected_comp_ids = {
+        comp_id
+        for name in expected_names
+        for comp_id in ligand_aliases.get(name, set())
+    }
     best_pdb = None
+    best_ligand = None
     for e in ev.pdb_entries:
+        present = {c.upper() for c in e.nonpolymer_bound_components}
+        present.update(c.comp_id.upper() for c in e.cofactors)
+        matched = sorted(expected_comp_ids & present)
+        # Flavin routes require the actual route cofactor in the experimental structure.
+        # A short mapped peptide or unrelated crystallization ligand is not sufficient.
+        if expected_comp_ids and not matched:
+            continue
         if best_pdb is None or (e.resolution_combined and (not best_pdb.resolution_combined or min(e.resolution_combined) < min(best_pdb.resolution_combined))):
             best_pdb = e
+            best_ligand = matched[0] if matched else None
     if best_pdb is not None and best_pdb.coordinates_url:
         inline = None
         try:
@@ -418,6 +491,8 @@ async def get_structure(candidate_id: str) -> StructureResponse:
             source="experimental_pdb", format="mmcif", pdb_id=best_pdb.rcsb_id,
             provider_url=best_pdb.coordinates_url, method=best_pdb.experimental_method,
             resolution=min(best_pdb.resolution_combined) if best_pdb.resolution_combined else None,
+            verified_ligand_comp_id=best_ligand,
+            verified_ligand_name=next((name for name, ids in ligand_aliases.items() if best_ligand in ids), None),
             inline_cif=inline,
         )
     af = ev.alphafold_model

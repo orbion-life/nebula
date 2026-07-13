@@ -1,6 +1,6 @@
 /**
  * Re-export of Lenis's React hook so consumers (e.g. useRunScroll) import from one
- * place. Returns the active Lenis instance, or undefined under reduced-motion / outside
- * the provider, callers must null-check and fall back to native scroll.
+ * place. The provider stays mounted across motion-preference changes so application state
+ * is preserved; callers choosing animated scrolling must still honor reduced motion.
  */
 export { useLenis } from "lenis/react";

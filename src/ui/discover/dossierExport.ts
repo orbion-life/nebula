@@ -8,6 +8,20 @@ import { auditClaim, exportAffirmativeViolations } from "../../core/claimFirewal
 
 export const SPIN_PARAM = "candidate_isoalloxazine_max_spin_density";
 
+/**
+ * Capitalize the first letter of a backend-authored value so rendered content reads as
+ * proper sentence case ("plate reader screen" → "Plate reader screen"), without mangling
+ * deliberate lower-initial tokens (iLOV, mScarlet, pH) whose second character is already
+ * uppercase. Idempotent on already-capitalized strings.
+ */
+export function sentenceCase(s: string | null | undefined): string {
+  const str = (s ?? "").toString();
+  const i = str.search(/[A-Za-z]/);
+  if (i < 0) return str;
+  if (/[A-Z]/.test(str[i + 1] ?? "")) return str; // leave iLOV / mScarlet / pH intact
+  return str.slice(0, i) + str[i].toUpperCase() + str.slice(i + 1);
+}
+
 // Humanize the claim-ceiling enum so the raw token (esp. "partner_ready_dossier") can
 // never be screenshotted/exported as a commercial or validated claim. It is a CEILING
 // (a cap), not an achievement.
@@ -18,6 +32,26 @@ export const CLAIM_LABELS: Record<string, string> = {
 };
 export function claimLabel(c: string | undefined): string {
   return CLAIM_LABELS[c ?? ""] ?? `ceiling: ${c ?? "unknown"}`;
+}
+
+// When UniProt annotates no COFACTOR the raw fallback "not annotated" reads as missing data,
+// but for most scaffolds the cofactor context is genuinely known FROM THE ROUTE (a fluorescent
+// protein has an intrinsic chromophore, not an external cofactor; a flavin route implies a flavin).
+// So show the route-inferred context instead of a bare "not annotated". Honest: "route-inferred"
+// says it comes from the mechanism route, not a UniProt annotation.
+const SCAFFOLD_COFACTOR: Record<string, string> = {
+  fluorescent_protein: "intrinsic chromophore, no external cofactor",
+  RFP_plus_flavin: "flavin, route-inferred",
+  LOV_flavin: "flavin, route-inferred",
+  cryptochrome_FAD: "FAD, route-inferred",
+  redox_flavoprotein: "flavin, route-inferred",
+  metal_cofactor: "metal center, route-inferred",
+  material_composite: "material state, no molecular cofactor",
+};
+export function cofactorContext(candidate: CandidateRecord): string {
+  const named = candidate.cofactors?.map((c) => c.name).filter(Boolean).join(" + ");
+  if (named) return named;
+  return SCAFFOLD_COFACTOR[candidate.scaffold_family] ?? "not annotated";
 }
 
 export function routeLabel(route: string): string {
@@ -55,10 +89,14 @@ export function dossierMarkdown(candidate: CandidateRecord, dossier: CandidateDo
   const acc = candidate.uniprot?.primary_accession;
   const L: string[] = [];
   const safe = (text: string) => auditClaim(text).rewrite;
+  const measurement = (run.measurement_proposals ?? []).find((proposal) => proposal.candidate_id === candidate.candidate_id);
+  const frontier = (run.frontier_experiments ?? []).find((proposal) => proposal.candidate_id === candidate.candidate_id);
+  const experiment = measurement?.discriminating_experiment ?? frontier?.discriminating_experiment;
+  const stopRule = measurement?.falsifier ?? frontier?.falsifier;
   L.push(`# ${safe(candidate.title)}`, "");
   L.push(`**Status:** ${candidate.status}, unvalidated public-protein candidate hypothesis. Computation is not validation.`);
   if (acc) L.push(`**UniProt:** [${acc}](https://www.uniprot.org/uniprotkb/${acc})`);
-  L.push(`**Route:** ${routeLabel(candidate.route_class)} · **Claim ${claimLabel(candidate.claim_ceiling)}**`);
+  L.push(`**Route:** ${routeLabel(candidate.route_class)} · **Claim ${claimLabel(measurement?.claim_ceiling ?? dossier?.claim_ceiling ?? candidate.claim_ceiling)}**`);
   if (candidate.readout_modes?.length)
     L.push(`**Candidate readouts to test:** ${candidate.readout_modes.map((m) => m.replace(/_/g, " ")).join(", ")}, separate readouts the scaffold family can support, not measured together here and not a detectability claim.`);
   L.push(`**Run:** ${run.run_id} · seed ${run.seed} · ${run.offline ? "public fixtures (deterministic replay)" : "live retrieval"} · fingerprint ${run.input_fingerprint}`, "");
@@ -77,7 +115,24 @@ export function dossierMarkdown(candidate: CandidateRecord, dossier: CandidateDo
   if (candidate.why_it_might_work?.length) { L.push("## Why it might work"); candidate.why_it_might_work.forEach((x) => L.push(`- ${safe(x)}`)); L.push(""); }
   if (candidate.why_it_might_fail?.length) { L.push("## Why it might fail"); candidate.why_it_might_fail.forEach((x) => L.push(`- ${safe(x)}`)); L.push(""); }
   if (candidate.required_controls?.length) { L.push("## Controls"); candidate.required_controls.forEach((x) => L.push(`- ${safe(x)}`)); L.push(""); }
+  if (experiment) {
+    L.push("## Measurement-scoping brief");
+    L.push(`- **Observable:** ${safe(experiment.what_to_measure)}`);
+    if (experiment.instrument_id) L.push(`- **Instrument class:** ${safe(experiment.instrument_id.replace(/_/g, " "))}`);
+    L.push(`- **Expected result:** ${safe(experiment.expected_signature)}`);
+    L.push(`- **Null result:** ${safe(experiment.null_expectation)}`);
+    if (experiment.positive_controls?.length) L.push(`- **Reference controls:** ${experiment.positive_controls.map(safe).join(" · ")}`);
+    if (experiment.negative_controls?.length) L.push(`- **Nuisance controls:** ${experiment.negative_controls.map(safe).join(" · ")}`);
+    L.push(`- **Repeat plan:** ${safe(experiment.replicate_plan)}`);
+    L.push(`- **Advance rule:** ${safe(experiment.acceptance_rule)}`);
+    L.push(`- **Stop rule:** ${safe(stopRule ?? experiment.kill_criterion)}`);
+    L.push(`- **Decision earned:** ${safe(experiment.information_gained)}`);
+    L.push(`- **Bench class:** ${safe(experiment.approx_cost)}`);
+    if (run.objective?.missing_information?.length) L.push(`- **Missing information:** ${run.objective.missing_information.map(safe).join(" · ")}`);
+    L.push("");
+  }
   if (dossier?.disclaimers?.length) { L.push("## Disclaimers"); dossier.disclaimers.forEach((x) => L.push(`- ${safe(x)}`)); }
+  L.push("", "---", "**Contact**  ", "Aniruddh Goteti · [aniruddh.goteti@orbion.life](mailto:aniruddh.goteti@orbion.life) · [www.orbion.life](https://www.orbion.life)");
   const output = L.join("\n");
   if (exportAffirmativeViolations(output).length > 0) {
     throw new Error("The claim boundary blocked this handoff export.");
@@ -94,7 +149,22 @@ export function dossierMarkdown(candidate: CandidateRecord, dossier: CandidateDo
 
 type BriefExtras = {
   score?: DiscoveryScore;
-  frontier?: { discriminating_experiment?: { what_to_measure?: string | null; instrument_id?: string | null } | null; falsifier?: string | null } | null;
+  frontier?: {
+    discriminating_experiment?: {
+      what_to_measure?: string | null;
+      instrument_id?: string | null;
+      expected_signature?: string | null;
+      null_expectation?: string | null;
+      positive_controls?: string[];
+      negative_controls?: string[];
+      replicate_plan?: string | null;
+      acceptance_rule?: string | null;
+      information_gained?: string | null;
+      approx_cost?: string | null;
+    } | null;
+    falsifier?: string | null;
+    claim_ceiling?: string | null;
+  } | null;
   design?: { label?: string; generator?: string; backbone_pdb?: string | null; invented_for?: string | null; n_residues?: number | null } | null;
   generatedAt?: string;
 };
@@ -118,7 +188,7 @@ export function dossierBriefHtml(candidate: CandidateRecord, dossier: CandidateD
   const acc = candidate.uniprot?.primary_accession ?? candidate.candidate_id;
   const title = safe(candidate.title);
   const route = esc(routeLabel(candidate.route_class));
-  const ceiling = esc(claimLabel(dossier?.claim_ceiling ?? candidate.claim_ceiling));
+  const ceiling = esc(claimLabel(extras.frontier?.claim_ceiling ?? dossier?.claim_ceiling ?? candidate.claim_ceiling));
   const sensed = esc((run.objective?.sensed_quantity_or_state ?? "the sensing objective").replace(/-/g, " "));
   const spin = computedSpin(dossier);
   const candSpecific = isCandidateSpecific(dossier);
@@ -152,7 +222,16 @@ export function dossierBriefHtml(candidate: CandidateRecord, dossier: CandidateD
       <p class="nb-measure-what">${safe(frontier?.discriminating_experiment?.what_to_measure ?? "Test the proposed readout against its mechanism-specific controls.")}</p>
       <div class="nb-measure-grid">
         ${metaRow("instrument", esc((score?.suggested_instrument_id ?? frontier?.discriminating_experiment?.instrument_id ?? run.instrument_id ?? "route-compatible measurement bench").replace(/_/g, " ")))}
+        ${frontier?.discriminating_experiment?.expected_signature ? metaRow("expected result", safe(frontier.discriminating_experiment.expected_signature)) : ""}
+        ${frontier?.discriminating_experiment?.null_expectation ? metaRow("null result", safe(frontier.discriminating_experiment.null_expectation)) : ""}
+        ${frontier?.discriminating_experiment?.positive_controls?.length ? metaRow("reference controls", frontier.discriminating_experiment.positive_controls.map(safe).join(" · ")) : ""}
+        ${frontier?.discriminating_experiment?.negative_controls?.length ? metaRow("nuisance controls", frontier.discriminating_experiment.negative_controls.map(safe).join(" · ")) : ""}
+        ${frontier?.discriminating_experiment?.replicate_plan ? metaRow("repeat plan", safe(frontier.discriminating_experiment.replicate_plan)) : ""}
+        ${frontier?.discriminating_experiment?.acceptance_rule ? metaRow("advance when", safe(frontier.discriminating_experiment.acceptance_rule)) : ""}
         ${metaRow("reject when", safe(frontier?.falsifier ?? candidate.why_it_might_fail?.[0] ?? "the mechanism-specific control is indistinguishable from the candidate"))}
+        ${frontier?.discriminating_experiment?.information_gained ? metaRow("decision earned", safe(frontier.discriminating_experiment.information_gained)) : ""}
+        ${frontier?.discriminating_experiment?.approx_cost ? metaRow("bench class", safe(frontier.discriminating_experiment.approx_cost)) : ""}
+        ${run.objective?.missing_information?.length ? metaRow("missing information", run.objective.missing_information.map(safe).join(" · ")) : ""}
         ${metaRow("claim ceiling", ceiling)}
       </div>
     </div>`;
@@ -225,8 +304,9 @@ li{color:var(--mut);font-size:12.5px;line-height:1.55;margin-bottom:5px;}
 .nb-cites em{color:var(--faint);font-style:italic;}
 .nb-cites a{color:var(--evi);font-family:var(--mono);font-size:11px;text-decoration:none;word-break:break-all;}
 .nb-cols{display:grid;grid-template-columns:1fr 1fr;gap:26px;}
-.nb-foot{margin-top:38px;padding-top:14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;align-items:baseline;color:var(--faint);font-size:10.5px;}
+.nb-foot{margin-top:38px;padding-top:14px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px;align-items:baseline;color:var(--faint);font-size:10.5px;}
 .nb-foot b{color:var(--green);font-weight:800;letter-spacing:-0.03em;}
+.nb-contact{white-space:nowrap;}.nb-contact a{color:var(--teal);text-decoration:none;}
 @media print{.nb-page{min-height:auto;}a{color:inherit;}}
 </style></head>
 <body><div class="nb-page">
@@ -262,7 +342,7 @@ li{color:var(--mut);font-size:12.5px;line-height:1.55;margin-bottom:5px;}
   ${designBlock}
   ${discBlock}
 
-  <footer class="nb-foot"><span>A candidate is a discovery to prove at the bench, not a proven sensor.</span><span><b>nebula</b>${generatedAt ? ` · ${generatedAt}` : ""}</span></footer>
+  <footer class="nb-foot"><span>A candidate is a discovery to prove at the bench, not a proven sensor.</span><span class="nb-contact">Aniruddh Goteti · <a href="mailto:aniruddh.goteti@orbion.life">aniruddh.goteti@orbion.life</a> · <a href="https://www.orbion.life">www.orbion.life</a></span><span><b>nebula</b>${generatedAt ? ` · ${generatedAt}` : ""}</span></footer>
 </div></body></html>`;
 
   if (exportAffirmativeViolations(body).length > 0) {

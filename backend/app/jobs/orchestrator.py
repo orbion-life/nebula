@@ -52,7 +52,7 @@ def _scoring_instrument(run: RunState) -> dict:
     if run.instrument_id:
         return _instrument(run.instrument_id)
     sensed = (run.objective.sensed_quantity_or_state or "").strip().lower()
-    if sensed == "optical spin contrast":
+    if sensed in {"radio-frequency field", "optical spin contrast"}:
         return _instrument("odmr_confocal")
     return INSTRUMENTS[0]
 
@@ -132,6 +132,29 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
         store.put(run)
         if _cancelled(store, run_id):
             return store.get(run_id)
+
+        if not candidates:
+            now = datetime.now(timezone.utc)
+            message = (
+                "No public candidates were retrieved for this supported objective. "
+                "The providers may be unavailable or the selected mechanism route has no matching evidence."
+            )
+            failed = run.model_copy(update={
+                "status": RunStatus.failed,
+                "current_stage": "no_candidates",
+                "updated_at": now,
+                "errors": [*run.errors, message],
+                "events": [*run.events, RunEvent(
+                    at=now,
+                    from_status=RunStatus.retrieving_evidence,
+                    to_status=RunStatus.failed,
+                    stage="no_candidates",
+                    note=message,
+                    progress=progress_fraction(RunStatus.retrieving_evidence),
+                )],
+            })
+            store.put(failed)
+            return failed
 
         # physics eligibility gate + partial dossiers
         run = _advance(run, RunStatus.assessing_physics, "assessing_physics", "computing per candidate physics eligibility (gate, not prediction)")
@@ -227,7 +250,12 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
         run = _advance(run, RunStatus.ranking, "ranking", "Discovery Frontier: separating evidence and frontier lanes")
         store.put(run)
         instrument = _scoring_instrument(run)
-        scores, evidence_shortlist, frontier = build_discovery(candidates, dossiers, instrument=instrument, objective=run.objective)
+        scores, evidence_shortlist, frontier, measurement_proposals = build_discovery(
+            candidates,
+            dossiers,
+            instrument=instrument,
+            objective=run.objective,
+        )
         # rank the candidates so each de novo brief can name the top protein + motif it targets
         _by_id = {c.candidate_id: c for c in candidates}
         _ranked = [_by_id[cid] for cid in evidence_shortlist if cid in _by_id]
@@ -240,6 +268,7 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
             "discovery_scores": scores,
             "evidence_shortlist": evidence_shortlist,
             "frontier_experiments": frontier,
+            "measurement_proposals": measurement_proposals,
             "generative_frontier": PreviewDesigner().invent(run.objective, _ranked),
             "updated_at": datetime.now(timezone.utc),
         })

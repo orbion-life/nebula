@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import sqlite3
 import threading
+from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from ..contracts.enums import TERMINAL_STATUSES
 from ..contracts.run import RunState
@@ -76,6 +78,42 @@ class RunStore:
                         (run.run_id, run.input_fingerprint, run.status.value, raw),
                     )
         return True
+
+    def enrich_completed(self, run_id: str, **updates: Any) -> bool:
+        """Atomically attach post-run artifacts without reopening a terminal run.
+
+        Completed discovery runs are immutable except for explicitly allowed artifacts that
+        are produced on demand after ranking. Reading the persisted state under the same lock
+        prevents a stale worker from overwriting cancellation/failure or another enrichment.
+        """
+        allowed = {"generative_frontier", "updated_at"}
+        unknown = set(updates) - allowed
+        if unknown:
+            raise ValueError(f"unsupported completed-run enrichment fields: {sorted(unknown)}")
+        if "updated_at" in updates and not isinstance(updates["updated_at"], datetime):
+            raise TypeError("updated_at must be a datetime")
+
+        with self._lock:
+            if self._path == ":memory:":
+                raw = self._mem.get(run_id)
+                current = RunState.model_validate_json(raw) if raw else None
+                if current is None or current.status.value != "completed":
+                    return False
+                enriched = current.model_copy(update=updates)
+                self._mem[run_id] = enriched.model_dump_json()
+                return True
+
+            with self._connect() as con:
+                row = con.execute("SELECT json FROM runs WHERE run_id=?", (run_id,)).fetchone()
+                current = RunState.model_validate_json(row[0]) if row else None
+                if current is None or current.status.value != "completed":
+                    return False
+                enriched = current.model_copy(update=updates)
+                con.execute(
+                    "UPDATE runs SET status=?, json=? WHERE run_id=? AND status=?",
+                    (enriched.status.value, enriched.model_dump_json(), run_id, current.status.value),
+                )
+                return con.total_changes == 1
 
     def put_new(self, run: RunState) -> bool:
         """Insert a new attempt atomically; return False when the id already exists."""

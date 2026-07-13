@@ -45,9 +45,9 @@ _EXCITATION_RULES: list[tuple[str, re.Pattern[str]]] = [
 _SENSED_RULES: list[tuple[str, re.Pattern[str]]] = [
     # ODMR / optical-spin first so "optically detected magnetic resonance" is not swallowed by the magnetic rule
     ("optical spin contrast", re.compile(r"\bodmr|optically[- ]detected|optical spin|triplet[- ]?state\b", re.I)),
-    ("magnetic field", re.compile(r"\bmagnetic|magneto|b[- ]?field\b", re.I)),
-    ("radio-frequency field", re.compile(r"\brf|radio[- ]?frequenc\b", re.I)),
-    ("redox potential", re.compile(r"\bredox|oxidation|reduction|potential\b", re.I)),
+    ("magnetic field", re.compile(r"\bmagneto|\bmagnetic(?:\s+(?:field|response|sensing|signal))?\b|\bb[- ]?field\b", re.I)),
+    ("radio-frequency field", re.compile(r"\brf\b|\bradio[- ]?frequenc(?:y|ies)\b", re.I)),
+    ("redox potential", re.compile(r"\bredox(?:\s+potential)?\b|\boxidation\b|\breduction\b|\belectrochemical\s+potential\b", re.I)),
     ("material swelling / mechanical state", re.compile(r"\bswelling|crosslink|stiffness|mechanical|strain\b", re.I)),
     ("light history", re.compile(r"\blight history|illumination history|photo[- ]?history\b", re.I)),
 ]
@@ -66,16 +66,6 @@ _SUPPORTED_SENSES = {
     "optical spin contrast",
 }
 
-_DECISION_ACTIVE_FIELDS = [
-    "sensed_quantity_or_state",
-    "desired_modalities",
-    "target_scaffold_families",
-    "seed_query",
-    "seed_accessions",
-    "include_unreviewed",
-    "instrument_id",
-]
-
 _HANDOFF_ONLY_FIELDS = [
     "material_context",
     "immobilization_or_integration",
@@ -83,6 +73,9 @@ _HANDOFF_ONLY_FIELDS = [
     "temperature_range_C",
     "pH_range",
     "oxygen_condition",
+    "maximum_response_time_s",
+    "minimum_effect_size",
+    "response_direction",
 ]
 
 
@@ -105,7 +98,12 @@ def compile_objective(raw: RawObjective) -> ObjectiveSpec:
     host = next((h for h, rx in _HOST_RULES if rx.search(text)), ExpressionHost.unknown)
     rule("expression_host", host is not ExpressionHost.unknown)
     excitation = [n for n, rx in _EXCITATION_RULES if rx.search(text)]
-    sensed = next((s for s, rx in _SENSED_RULES if rx.search(text)), None)
+    sensed_hits = list(dict.fromkeys(s for s, rx in _SENSED_RULES if rx.search(text)))
+    # ODMR's full name contains "magnetic resonance"; that phrase describes the readout,
+    # not a second requested sensing target.
+    if "optical spin contrast" in sensed_hits and re.search(r"optically[- ]detected\s+magnetic\s+resonance", text, re.I):
+        sensed_hits = [s for s in sensed_hits if s != "magnetic field"]
+    sensed = sensed_hits[0] if len(sensed_hits) == 1 else None
     rule("sensed_quantity_or_state", sensed is not None)
     families = [f for f, rx in _FAMILY_RULES if rx.search(text)]
 
@@ -128,12 +126,17 @@ def compile_objective(raw: RawObjective) -> ObjectiveSpec:
         missing.append("material context not specified")
     if host is ExpressionHost.unknown:
         missing.append("expression host not specified (assume bacterial-first)")
-    if sensed is None:
+    if len(sensed_hits) > 1:
+        missing.append("multiple sensing targets were stated; select one primary target for this run")
+    elif sensed is None:
         missing.append("the quantity to SENSE was not stated (only the readout modality)")
     # Measurement is an OUTPUT the app proposes, not user input: excitation wavelength and
     # sensitivity/limit-of-detection are no longer treated as "missing user info".
 
-    if sensed is None:
+    if len(sensed_hits) > 1:
+        support = "needs_clarification"
+        support_note = f"Select one primary sensing target before running discovery: {', '.join(sensed_hits)}."
+    elif sensed is None:
         support = "needs_clarification"
         support_note = "State the physical quantity the protein should sense before running discovery."
     elif sensed in _SUPPORTED_SENSES:
@@ -142,6 +145,12 @@ def compile_objective(raw: RawObjective) -> ObjectiveSpec:
     else:
         support = "unsupported"
         support_note = f"{sensed} is recorded as context but has no validated mechanism route in this build."
+
+    active_fields = ["sensed_quantity_or_state", "desired_modalities"]
+    if families:
+        active_fields.append("target_scaffold_families")
+    if raw.instrument_id:
+        active_fields.append("instrument_id")
 
     return ObjectiveSpec(
         schema_version=OBJECTIVE_SCHEMA_VERSION,
@@ -167,7 +176,7 @@ def compile_objective(raw: RawObjective) -> ObjectiveSpec:
         field_provenance=fp,
         objective_support=support,
         objective_support_note=support_note,
-        decision_active_fields=_DECISION_ACTIVE_FIELDS,
+        decision_active_fields=active_fields,
         handoff_only_fields=_HANDOFF_ONLY_FIELDS,
         seed=raw.seed,
     )

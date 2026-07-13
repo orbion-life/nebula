@@ -231,14 +231,52 @@ def pareto_rank(scores: list[DiscoveryScore], objs: tuple[str, ...]) -> None:
 EVIDENCE_OBJS = ("P_plausibility", "M_measurability", "D_developability")
 FRONTIER_OBJS = ("IG_information_gain", "N_novelty")
 
+_OBJECTIVE_METRICS = {
+    "plausibility": ("P_plausibility", False),
+    "mechanism_support": ("P_plausibility", False),
+    "measurability": ("M_measurability", False),
+    "developability": ("D_developability", False),
+    "novelty": ("N_novelty", False),
+    "uncertainty": ("U_uncertainty", True),
+    "information_gain": ("IG_information_gain", False),
+    "cost": ("C_cost", True),
+}
 
-def quality_diversity_order(frontier: list[DiscoveryScore], primitive_of: dict[str, PrimitiveKind]) -> list[DiscoveryScore]:
+
+def supported_optimization_objectives() -> set[str]:
+    return set(_OBJECTIVE_METRICS)
+
+
+def weighted_utility(score: DiscoveryScore, objectives: list[tuple[str, float]], default: float) -> float:
+    """Objective-specific utility over declared heuristic axes.
+
+    Cost and uncertainty are minimized; every other supported axis is maximized. This is
+    an ordering utility, not a calibrated probability or predicted sensor performance.
+    """
+    positive = [(name.strip().lower().replace(" ", "_"), max(0.0, weight)) for name, weight in objectives]
+    positive = [(name, weight) for name, weight in positive if weight > 0]
+    if not positive:
+        return default
+    total = sum(weight for _, weight in positive)
+    utility = 0.0
+    for name, weight in positive:
+        attr, inverse = _OBJECTIVE_METRICS[name]
+        value = float(getattr(score, attr))
+        utility += (1.0 - value if inverse else value) * weight / total
+    return _clamp(utility)
+
+
+def quality_diversity_order(
+    frontier: list[DiscoveryScore],
+    primitive_of: dict[str, PrimitiveKind],
+    utility=None,
+) -> list[DiscoveryScore]:
     """Order frontier for mechanism-space COVERAGE: best-IG per spin-forming bucket first."""
     buckets: dict[PrimitiveKind, list[DiscoveryScore]] = {}
     for s in frontier:
         buckets.setdefault(primitive_of.get(s.candidate_id, PrimitiveKind.spin_evolution), []).append(s)
     for b in buckets.values():
-        b.sort(key=lambda s: s.IG_information_gain, reverse=True)
+        b.sort(key=utility or (lambda s: s.IG_information_gain), reverse=True)
     ordered: list[DiscoveryScore] = []
     while any(buckets.values()):
         for kind in list(buckets):

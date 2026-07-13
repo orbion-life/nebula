@@ -14,39 +14,47 @@ export default defineConfig({
   workers: 1,
   reporter: [["list"]],
   use: {
-    baseURL: "http://localhost:5173",
+    baseURL: "http://localhost:15173",
     trace: "off",
     screenshot: "only-on-failure",
   },
   webServer: [
     {
-      command: "python3 -m uvicorn app.api.main:app --host 127.0.0.1 --port 8000 --log-level warning",
+      command: "python -m uvicorn app.api.main:app --host 127.0.0.1 --port 18001 --log-level warning",
       cwd: "backend",
-      env: { NEBULA_OFFLINE: "1" },
-      port: 8000,
-      reuseExistingServer: true,
+      env: { NEBULA_OFFLINE: "1", NEBULA_RUN_DB: ":memory:" },
+      port: 18001,
+      reuseExistingServer: false,
       timeout: 60_000,
     },
     {
-      command: "npm run dev",
-      port: 5173,
-      reuseExistingServer: true,
+      command: "npm run dev -- --host 127.0.0.1 --port 15173 --strictPort",
+      env: { NEBULA_API: "http://127.0.0.1:18001" },
+      port: 15173,
+      reuseExistingServer: false,
       timeout: 60_000,
     },
   ],
   projects: [
     {
       name: "chrome",
+      testIgnore: /backend-flow\.spec\.ts/,
       use: { ...devices["Desktop Chrome"], channel: "chrome", launchOptions: { args: ["--ignore-gpu-blocklist"] } },
     },
     {
       name: "chromium-swiftshader",
+      testIgnore: /backend-flow\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
         launchOptions: {
           args: ["--ignore-gpu-blocklist", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
         },
       },
+    },
+    {
+      name: "backend-api",
+      testMatch: /backend-flow\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
     },
   ],
 });

@@ -55,7 +55,7 @@ jobs:
       - run: npm ci
       - run: python -m pip install -e './backend[dev]'
       - run: npx playwright install --with-deps chromium
-      - run: npm run e2e -- --project=chromium-swiftshader
+      - run: npm run e2e -- --project=chromium-swiftshader --project=backend-api
 
   container:
     needs: [e2e]
@@ -63,3 +63,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker build --tag nebula-discover:ci .
+      - name: Smoke-test the built container and discovery pipeline
+        shell: bash
+        run: |
+          set -euo pipefail
+          container_id="$(docker run --detach \
+            --name nebula-discover-ci \
+            --publish 127.0.0.1:18080:8000 \
+            --env NEBULA_OFFLINE=1 \
+            --env NEBULA_RUN_DB=/tmp/nebula-smoke.sqlite \
+            nebula-discover:ci)"
+          cleanup() {
+            status=$?
+            trap - EXIT
+            if [ "$status" -ne 0 ]; then
+              docker logs "$container_id" || true
+            fi
+            docker rm --force "$container_id" >/dev/null 2>&1 || true
+            exit "$status"
+          }
+          trap cleanup EXIT
+          python3 scripts/container_smoke.py \
+            --base-url http://127.0.0.1:18080 \
+            --mode full \
+            --startup-timeout 120 \
+            --run-timeout 120
