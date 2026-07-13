@@ -23,6 +23,7 @@ from ..contracts.candidate import CandidateDossier, CandidateRecord
 from ..contracts.enums import TERMINAL_STATUSES, ProviderId, RunStatus
 from ..contracts.objective import ObjectiveSpec, RawObjective
 from ..contracts.run import RunCreated, RunEvent, RunState
+from ..design import generate_previews
 from ..jobs.fingerprint import input_fingerprint, run_id_for
 from ..jobs.orchestrator import orchestrate
 from ..jobs.store import RunStore
@@ -279,6 +280,46 @@ async def get_run(run_id: str) -> RunState:
     if run is None:
         raise HTTPException(status_code=404, detail=f"run {run_id} not found")
     return run
+
+
+def _generate_backbones(run_id: str, store: RunStore) -> None:
+    """On-demand real de novo generation (RFdiffusion via the configured adapter), run off the event
+    loop. Updates the run's generative_frontier with real backbones when done; on any failure or past
+    the daily cap it leaves the existing preview briefs in place (generate_previews degrades safely)."""
+    run = store.get(run_id)
+    if run is None or not run.candidates:
+        return
+    shortlist = set(run.evidence_shortlist)
+    by_id = {c.candidate_id: c for c in run.candidates}
+    ranked = [by_id[cid] for cid in run.evidence_shortlist if cid in by_id]
+    ranked += [c for c in run.candidates if c.candidate_id not in shortlist]
+    designs = generate_previews(run.objective, ranked)  # configured adapter (modal in production)
+    fresh = store.get(run_id) or run
+    store.put(fresh.model_copy(update={"generative_frontier": designs, "updated_at": datetime.now(timezone.utc)}))
+
+
+@app.post("/api/runs/{run_id}/designs", status_code=202)
+async def generate_designs(run_id: str) -> dict:
+    """Trigger real de novo backbone generation ON DEMAND for a completed run's candidates. Returns
+    202 immediately; the GPU job runs in the background and its result appears in the run's
+    generative_frontier (poll GET /api/runs/{id}). Decoupled from the search so candidates return fast
+    and a GPU is spent only when the user presses generate."""
+    run = STORE.get(run_id)
+    if run is None:
+        raise HTTPException(status_code=404, detail=f"run {run_id} not found")
+    if run.status != RunStatus.completed:
+        raise HTTPException(status_code=409, detail="run is not complete yet")
+    if not run.candidates:
+        raise HTTPException(status_code=409, detail="run has no candidates to design for")
+    if any(d.backbone_pdb for d in (run.generative_frontier or [])):
+        return {"status": "already_generated"}
+    active = sum(1 for task in _BG_TASKS if not task.done())
+    if active >= _MAX_ACTIVE_RUNS:
+        raise HTTPException(status_code=429, detail="Generation capacity is full. Retry shortly.")
+    task = asyncio.create_task(asyncio.to_thread(_generate_backbones, run_id, STORE))
+    _BG_TASKS.add(task)
+    task.add_done_callback(_BG_TASKS.discard)
+    return {"status": "generating"}
 
 
 @app.get("/api/runs/{run_id}/events")

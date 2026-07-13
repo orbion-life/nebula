@@ -10,7 +10,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { getStructure, type CandidateDossier, type CandidateRecord, type DiscoveryScore, type RunState, type StructureResponse } from "../../../api/client";
+import { generateDesigns, getRun, getStructure, type CandidateDossier, type CandidateRecord, type DiscoveryScore, type RunState, type StructureResponse } from "../../../api/client";
 import { GeneratedBackboneViewer } from "../GeneratedBackboneViewer";
 import { StructureViewer } from "../StructureViewer";
 import { UniverseHero } from "../universe/UniverseHero";
@@ -36,7 +36,10 @@ export function NarrativeReplay({ run }: Props) {
 
   const candidates = run.candidates ?? [];
   const scores = run.discovery_scores ?? [];
-  const designs = run.generative_frontier ?? [];
+  // Design briefs arrive with the run (fast, no GPU). Real RFdiffusion backbones are generated ON
+  // DEMAND (the button below), so this is local state we upgrade in place when they finish.
+  const [designs, setDesigns] = useState(run.generative_frontier ?? []);
+  const [genState, setGenState] = useState<"idle" | "generating" | "error">("idle");
   const selected = useMemo(() => candidates.find((c) => c.candidate_id === selectedId) ?? candidates[0], [candidates, selectedId]);
   const dossier = useMemo(() => (run.dossiers ?? []).find((d) => d.candidate.candidate_id === selected?.candidate_id), [run.dossiers, selected]);
   const score = scores.find((s) => s.candidate_id === selected?.candidate_id);
@@ -49,6 +52,34 @@ export function NarrativeReplay({ run }: Props) {
     .filter((c) => shortlistIds.has(c.candidate_id))
     .sort((a, b) => rankOf(a.candidate_id, run) - rankOf(b.candidate_id, run));
   const visibleCandidates = shortlist.length ? shortlist : candidates.slice(0, 6);
+
+  // On demand: ask the backend to run real RFdiffusion for this run's candidates, then poll until the
+  // 3D backbones land (a GPU step, a few minutes). Kept off the search path so candidates stay fast.
+  const runGeneration = () => {
+    if (genState === "generating") return;
+    setGenState("generating");
+    generateDesigns(run.run_id)
+      .then(() => {
+        const startedAt = Date.now();
+        const poll = () => {
+          getRun(run.run_id)
+            .then((fresh) => {
+              const gf = fresh.generative_frontier ?? [];
+              if (gf.some((d) => Boolean(d.backbone_pdb))) {
+                setDesigns(gf);
+                setGenState("idle");
+              } else if (Date.now() - startedAt > 7 * 60 * 1000) {
+                setGenState("error");
+              } else {
+                window.setTimeout(poll, 4000);
+              }
+            })
+            .catch(() => window.setTimeout(poll, 5000));
+        };
+        window.setTimeout(poll, 4000);
+      })
+      .catch(() => setGenState("error"));
+  };
 
   useEffect(() => {
     if (!selected?.candidate_id) {
@@ -257,6 +288,20 @@ export function NarrativeReplay({ run }: Props) {
             <div><span className="atlas-eyebrow">03 · generate</span><h2>Then search beyond nature.</h2></div>
             <p>RFdiffusion proposes new backbone geometry for the same sensing mission, each linked to a shortlisted protein's cofactor motif. Coordinates are a starting point, not a finished construct.</p>
           </header>
+          {realBackbones === 0 && (
+            <div className={`atlas-gen-cta ${genState}`}>
+              <button className="atlas-gen-run" onClick={runGeneration} disabled={genState === "generating"} aria-busy={genState === "generating"}>
+                {genState === "generating" ? "Generating de novo backbones on GPU…" : "Generate de novo backbones"}
+              </button>
+              <p className="atlas-gen-hint">
+                {genState === "generating"
+                  ? "Real RFdiffusion is running on a GPU. This can take a few minutes; the 3D backbones appear below when they are ready."
+                  : genState === "error"
+                    ? "Generation did not finish in time. Press to try again."
+                    : "These are design briefs so far, with no coordinates. Run real RFdiffusion for the shortlisted candidates when you want the 3D geometry, a GPU step that takes a few minutes."}
+              </p>
+            </div>
+          )}
           <div className="atlas-generator">
             <div className="atlas-design-list" role="list" aria-label="generated design directions">
               {designs.map((item, index) => {
@@ -277,7 +322,7 @@ export function NarrativeReplay({ run }: Props) {
                 <strong>{design?.invented_from_accession ? `targeting ${design.invented_from_accession}` : design?.invented_for ?? run.objective.sensed_quantity_or_state ?? "the mission"}</strong>
                 {design?.motif_note ? <small className="atlas-design-motif">{design.motif_note}</small> : null}
                 {design?.design_rationale ? <p className="atlas-design-rationale">{design.design_rationale}</p> : null}
-                <small>{design?.backbone_pdb ? "Backbone coordinates produced. Sequence design and validation remain downstream." : "The adapter returned a design direction without coordinates in this run."}</small>
+                <small>{design?.backbone_pdb ? "Backbone coordinates produced. Sequence design and validation remain downstream." : "Design brief only, without coordinates until you generate."}</small>
               </div>
             </div>
           </div>

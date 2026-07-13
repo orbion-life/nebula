@@ -105,6 +105,12 @@ export async function cancelRun(runId: string): Promise<RunState> {
   return request<RunState>(`/api/runs/${encodeURIComponent(runId)}/cancel`, { method: "POST" });
 }
 
+/** Trigger on-demand de novo backbone generation (RFdiffusion) for a completed run. Returns as soon
+ * as the GPU job is queued; poll getRun until generative_frontier carries real backbones. */
+export async function generateDesigns(runId: string): Promise<{ status: string }> {
+  return request<{ status: string }>(`/api/runs/${encodeURIComponent(runId)}/designs`, { method: "POST" });
+}
+
 export async function getDossier(candidateId: string): Promise<CandidateDossier> {
   return request<CandidateDossier>(`/api/candidates/${encodeURIComponent(candidateId)}/dossier`);
 }

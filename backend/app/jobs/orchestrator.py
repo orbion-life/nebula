@@ -14,7 +14,7 @@ from ..api.fixtures_static import INSTRUMENTS
 from ..contracts.candidate import CandidateDossier, CandidateRecord, StructuralEvidence
 from ..contracts.enums import PhysicsEligibilityKind, RunStatus
 from ..contracts.run import RunEvent, RunState
-from ..design import generate_previews
+from ..design import PreviewDesigner
 from ..retrieval.evidence_cards import citations_for_route
 from ..discovery import build_discovery
 from ..physics.candidate_specific import run_candidate_qm
@@ -209,29 +209,22 @@ def orchestrate(run_id: str, store: RunStore, *, offline: bool = True, per_route
 
         # rank: two-lane discovery (evidence vs frontier), Pareto + quality-diversity
         run = _advance(run, RunStatus.ranking, "ranking", "Discovery Frontier: separating evidence and frontier lanes")
-        store.put(run)  # persist the ranking transition BEFORE the slow scoring + design step
+        store.put(run)
         instrument = _scoring_instrument(run)
         scores, evidence_shortlist, frontier = build_discovery(candidates, dossiers, instrument=instrument, objective=run.objective)
         # rank the candidates so each de novo brief can name the top protein + motif it targets
         _by_id = {c.candidate_id: c for c in candidates}
         _ranked = [_by_id[cid] for cid in evidence_shortlist if cid in _by_id]
         _ranked += [c for c in candidates if c.candidate_id not in set(evidence_shortlist)]
-        # Persist scores + an honest, moving note for the design step BEFORE it blocks. A GPU design
-        # adapter can take ~1-3 min on a cold start; without this the UI froze on the previous stage's
-        # 57% ("simulating") because the ranking transition wasn't stored until after generation.
-        now = datetime.now(timezone.utc)
+        # Fast, free per-protein design BRIEFS (deterministic preview, no GPU, no coordinates). Real
+        # RFdiffusion backbones are generated ON DEMAND via POST /api/runs/{id}/designs, so the search
+        # stays fast and a GPU is spent only when the user asks. "the unmade" stays invented, labelled,
+        # never validated, whether a brief or a real backbone.
         run = run.model_copy(update={
             "discovery_scores": scores,
             "evidence_shortlist": evidence_shortlist,
             "frontier_experiments": frontier,
-            "events": [*run.events, RunEvent(at=now, from_status=RunStatus.ranking, to_status=RunStatus.ranking, stage="ranking", note="inventing the generative frontier — de novo backbone design runs on a GPU and can take a few minutes on a cold start", progress=progress_fraction(RunStatus.ranking))],
-            "updated_at": now,
-        })
-        store.put(run)
-        # "the unmade": de novo previews (invented, labelled, never validated), each linked to a
-        # top-ranked candidate + cofactor motif it would target. Real coordinates require the adapter.
-        run = run.model_copy(update={
-            "generative_frontier": generate_previews(run.objective, _ranked),
+            "generative_frontier": PreviewDesigner().invent(run.objective, _ranked),
             "updated_at": datetime.now(timezone.utc),
         })
         store.put(run)
