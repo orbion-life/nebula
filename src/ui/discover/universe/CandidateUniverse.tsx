@@ -13,6 +13,9 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Text } from "@react-three/drei";
 import { useMemo, useRef, useState } from "react";
+// troika (drei <Text>) defaults to Roboto; point it at the app's Hanken Grotesk (.woff — troika
+// cannot read .woff2) so the 3D accession labels match the one uniform UI typeface.
+import hankenFont from "@fontsource/hanken-grotesk/files/hanken-grotesk-latin-500-normal.woff?url";
 import * as THREE from "three";
 import { PALETTE } from "../render/palette";
 import { QuantumField } from "../render/QuantumField";
@@ -122,7 +125,7 @@ function Node({ node, target, selected, onSelect, reducedMotion }: {
         </mesh>
       )}
       {(selected || hovered) && (
-        <Text position={[0, size + 0.32, 0]} fontSize={0.34} color={PALETTE.ink} anchorX="center" anchorY="bottom" outlineWidth={0.01} outlineColor={PALETTE.navy}>
+        <Text font={hankenFont} position={[0, size + 0.32, 0]} fontSize={0.34} color={PALETTE.ink} anchorX="center" anchorY="bottom" outlineWidth={0.01} outlineColor={PALETTE.navy}>
           {node.accession}
         </Text>
       )}
