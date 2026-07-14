@@ -1,6 +1,8 @@
 # Library Roadmap
 
-Nebula keeps a **small, fast, deterministic core** and represents heavy
+> **Reference implementation note:** This roadmap describes the original deterministic TypeScript core and its adapter plan. Several items are now implemented differently in the shipped React → FastAPI runtime. See the root [runtime architecture](../README.md#shipped-web-architecture).
+
+The reference path keeps a **small, fast, deterministic core** and represents heavy
 research tools as **optional adapters**. The structured source of truth is
 [`src/core/libraryRegistry.ts`](../src/core/libraryRegistry.ts); this document is
 the narrative version.

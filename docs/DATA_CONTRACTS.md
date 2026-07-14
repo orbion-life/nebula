@@ -1,8 +1,8 @@
 # Data Contracts
 
-The authoritative, type-checked schema is [`src/core/types.ts`](../src/core/types.ts).
-This document is a human-readable summary. If the two disagree, `types.ts` wins
-(it is enforced by `tsc` and the tests).
+> **Reference implementation note:** This document describes the deterministic TypeScript pipeline under `src/core`; it is not the shipped React → FastAPI browser runtime. See the root [runtime architecture](../README.md#shipped-web-architecture).
+
+Within that reference implementation, the authoritative type-checked schema is [`src/core/types.ts`](../src/core/types.ts). For the shipped web API, the authoritative contracts are the Pydantic models in [`backend/app/contracts`](../backend/app/contracts).
 
 ## Pipeline — simulation happens BEFORE ranking
 

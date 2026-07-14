@@ -36,6 +36,10 @@ test-results/
 playwright-report/
 .playwright/
 
+# Local demo capture and rendered-video outputs (curated README frames live in docs/media/readme/).
+artifacts/demo-capture/
+artifacts/demo/
+
 # Local Claude Code settings (may hold local permission allowlists / paths)
 .claude/settings.local.json
 

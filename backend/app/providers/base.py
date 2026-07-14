@@ -158,7 +158,7 @@ class ProviderBase:
 
     def get_text(self, url: str, *, fixture_key: str, headers: dict | None = None) -> tuple[str, Provenance]:
         """Fetch a text payload (e.g. an mmCIF coordinate file) with the same
-        live → cache → fixture → unavailable ladder. Fixtures are stored as .cif."""
+        cache → live → fixture → unavailable ladder. Fixtures are stored as .cif."""
         prov_kw = dict(provider=self.provider, endpoint_url=url, retrieved_at=_now())
         fx = self._fx / f"{fixture_key.replace('/', '_')}.cif"
 

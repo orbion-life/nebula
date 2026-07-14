@@ -6,8 +6,9 @@ Nebula's "unmade" generative frontier is produced by a **design adapter** behind
 ## Default: deterministic preview (no GPU, no credentials)
 
 With no configuration, the adapter is `PreviewDesigner`: deterministic, clearly-labelled scaffold
-previews with **no coordinates and no sequence**. This is what the public build and CI run. It
-never calls out to any GPU or account.
+previews with **no coordinates and no sequence**. This is what local defaults and CI run. It never
+calls out to any GPU or account. A deployment may explicitly connect its own Modal adapter; the
+health endpoint and Generate control expose that state.
 
 ## Optional: RFdiffusion on **your own** Modal GPU
 

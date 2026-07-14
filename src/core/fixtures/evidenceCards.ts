@@ -133,7 +133,7 @@ export const EVIDENCE_CARDS: EvidenceCard[] = [
     ],
     relation: "assumes",
     capsClaimAt: "diagnostic_only",
-    note: "Triplet/dark-state population is real; a clean spin-addressable optical (ODMR) readout in a protein is not established and stays diagnostic-only.",
+    note: "Triplet/dark-state population and protein ODMR have public precedent; that readout is not established for this accession or arbitrary constructs, so the route stays diagnostic-only.",
   },
   {
     id: "ev_oxygen_quenching",
@@ -213,9 +213,9 @@ export const EVIDENCE_CARDS: EvidenceCard[] = [
   },
   {
     id: "ev_redox_flavoprotein",
-    title: "Flavin fluorescence is redox- and environment-dependent",
+    title: "FMN fluorescent reporters can operate without oxygen",
     summary:
-      "Flavin redox state modulates absorbance and fluorescence; FMN-based fluorescent proteins (FbFPs) exploit flavin fluorescence and are oxygen-independent, a public basis for redox/electrochemical readouts of flavoprotein constructs.",
+      "FMN-based fluorescent proteins (FbFPs) provide oxygen-independent optical reporting. This supports an optical component for a redox-route experiment, but does not establish potential-dependent or redox sensing for an arbitrary flavoprotein.",
     routeClasses: ["redox_electrochemical"],
     scaffoldFamilies: ["redox_flavoprotein"],
     cofactors: ["FAD", "FMN"],
@@ -231,7 +231,7 @@ export const EVIDENCE_CARDS: EvidenceCard[] = [
     ],
     relation: "supports",
     capsClaimAt: "measurement_triage",
-    note: "Redox readout is well posed; ties signal to a controllable chemical variable.",
+    note: "Supports an oxygen-independent flavin optical reporter component. Potential-dependent or redox coupling remains to be measured for the selected accession.",
   },
   {
     id: "ev_metal_confounder",

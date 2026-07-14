@@ -1,5 +1,7 @@
 # Research Adapters
 
+> **Reference implementation note:** This document covers the TypeScript adapter seams under `src/adapters`. The shipped browser calls the FastAPI providers and physics/design adapters under `backend/app`. See the root [runtime architecture](../README.md#shipped-web-architecture).
+
 Each research tool is an **optional adapter** under `src/adapters/`. Adapters are
 never required by the core demo. When not configured, an adapter returns an
 `AdapterResult` with `available: false` and a safe demo fixture fallback.
@@ -22,8 +24,7 @@ interface AdapterResult<T> {
 ```
 
 Configure via an `AdapterConfig` (`{ enabled, endpoint, binaryPath }`). Absent
-config → graceful fallback. The public repo intentionally does not wire live
-network/subprocess calls.
+config → graceful fallback. This statement applies to the TypeScript reference path; the FastAPI runtime does wire bounded public-data HTTP calls and optional subprocess/GPU adapters.
 
 ## Adapters
 

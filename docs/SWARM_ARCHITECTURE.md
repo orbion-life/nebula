@@ -1,6 +1,8 @@
 # Swarm Architecture
 
-Nebula uses a **mandatory** adversarial swarm after every pipeline run.
+> **Reference implementation note:** The deterministic swarm is mandatory for every run of the TypeScript reference pipeline under `src/core`. It does not run inside the shipped React → FastAPI browser journey. See the root [runtime architecture](../README.md#shipped-web-architecture).
+
+The reference pipeline uses a **mandatory** adversarial swarm after every pipeline run.
 The implementation is deterministic TypeScript (offline-safe, seed-stable) that
 mirrors research-backed multi-agent patterns used in production MAS design.
 

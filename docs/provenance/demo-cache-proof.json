@@ -1,0 +1,37 @@
+{
+  "captured_at": "2026-07-14",
+  "source": "https://nebula-discover.greenforest-ed82ac43.westeurope.azurecontainerapps.io/api/runs/{run_id}",
+  "purpose": "Sanitized provenance for the demo's RFdiffusion process-cache replay. Coordinates are deliberately omitted.",
+  "scientific_boundary": "A cache hit demonstrates compute reuse only. It is not evidence that two objectives or proteins are scientifically equivalent.",
+  "request": {
+    "model": "rfdiffusion-base",
+    "count": 3,
+    "length": 100,
+    "contig": null,
+    "unconditional": true
+  },
+  "first_run": {
+    "run_id": "run_0065c205deb5daf6",
+    "seed": 1337,
+    "selected_candidate_id": "cand_Q8LPD9_LOV_flavin_radical_pair",
+    "adapter": "rfdiffusion@modal",
+    "cache": "memory_miss",
+    "cache_key_prefix": "a0c4d76dec40",
+    "run_ref": "36c811f8003a",
+    "returned_backbones": 3,
+    "residues_per_backbone": 100,
+    "contains_sequence": false
+  },
+  "replay_run": {
+    "run_id": "run_853da46560bbc13e",
+    "seed": 1338,
+    "selected_candidate_id": "cand_Q8LPD9_LOV_flavin_radical_pair",
+    "adapter": "rfdiffusion@modal",
+    "cache": "memory_hit",
+    "cache_key_prefix": "a0c4d76dec40",
+    "run_ref": "36c811f8003a",
+    "returned_backbones": 3,
+    "residues_per_backbone": 100,
+    "contains_sequence": false
+  }
+}

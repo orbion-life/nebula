@@ -96,7 +96,7 @@ EVIDENCE_CARDS: dict[str, EvidenceCardDef] = {
             "On/off blinking and switching behaviour of single molecules of green fluorescent protein",
             "Nature 388:355-358", "10.1038/41048",
         ),),
-        note="Triplet/dark-state population is real; a clean spin-addressable optical (ODMR) readout in a protein is not established and stays diagnostic-only.",
+        note="Triplet/dark-state population and protein ODMR have public precedent; that readout is not established for this accession or arbitrary constructs, so the route stays diagnostic-only.",
     ),
     "ev_oxygen_quenching": EvidenceCardDef(
         id="ev_oxygen_quenching",
@@ -126,7 +126,7 @@ EVIDENCE_CARDS: dict[str, EvidenceCardDef] = {
     ),
     "ev_redox_flavoprotein": EvidenceCardDef(
         id="ev_redox_flavoprotein",
-        title="Flavin fluorescence is redox- and environment-dependent",
+        title="FMN fluorescent reporters can operate without oxygen",
         provenance="public_literature", relation="supports",
         caps_claim_at=ClaimLevel.measurement_triage,
         citations=(_c(
@@ -134,7 +134,7 @@ EVIDENCE_CARDS: dict[str, EvidenceCardDef] = {
             "Reporter proteins for in vivo fluorescence without oxygen",
             "Nature Biotechnology 25(4):443-445", "10.1038/nbt1293",
         ),),
-        note="Redox readout is well posed; ties signal to a controllable chemical variable.",
+        note="Supports an oxygen-independent flavin optical reporter component. It does not establish potential-dependent or redox sensing for this accession; that coupling remains to be measured.",
     ),
     "ev_metal_confounder": EvidenceCardDef(
         id="ev_metal_confounder",

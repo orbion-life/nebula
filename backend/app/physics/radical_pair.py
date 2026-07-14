@@ -82,7 +82,7 @@ def extract_radical_pair(cif_text: str) -> RadicalPair | None:
     no reachable aromatic chain. Intra-chain: the hopping chain is searched within the flavin's chain.
 
     Algorithm (light Beratan-Onuchic hop): build a graph over the isoalloxazine ring and every Trp/Tyr
-    ring in the chain, connect two rings when their closest heavy atoms are within ~6 Angstrom, run a
+    ring in the chain, connect two rings when their closest heavy atoms are within 9 Angstrom, run a
     Dijkstra from the flavin, and take the geodesically farthest reachable aromatic as the terminal
     radical partner. r is the flavin<->partner ring-centroid separation."""
     block = gemmi.cif.read_string(cif_text).sole_block()
